@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35825.156 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FAS_Closet", "FAS_Closet\FAS_Closet.csproj", "{242A6B3E-6B98-4C4F-8169-28E54120E6EF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{242A6B3E-6B98-4C4F-8169-28E54120E6EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{242A6B3E-6B98-4C4F-8169-28E54120E6EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{242A6B3E-6B98-4C4F-8169-28E54120E6EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{242A6B3E-6B98-4C4F-8169-28E54120E6EF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ABD5EDA8-3E55-45F3-B6C1-70D5394A92B2}
+	EndGlobalSection
+EndGlobal

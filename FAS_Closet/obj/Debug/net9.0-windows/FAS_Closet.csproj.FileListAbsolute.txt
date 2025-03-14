@@ -1,0 +1,16 @@
+c:\Project\FAS_Closet\FAS_Closet\bin\Debug\net9.0-windows\FAS_Closet.exe
+c:\Project\FAS_Closet\FAS_Closet\bin\Debug\net9.0-windows\FAS_Closet.deps.json
+c:\Project\FAS_Closet\FAS_Closet\bin\Debug\net9.0-windows\FAS_Closet.runtimeconfig.json
+c:\Project\FAS_Closet\FAS_Closet\bin\Debug\net9.0-windows\FAS_Closet.dll
+c:\Project\FAS_Closet\FAS_Closet\bin\Debug\net9.0-windows\FAS_Closet.pdb
+c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\FAS_Closet.Form1.resources
+c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\FAS_Closet.csproj.GenerateResource.cache
+c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\FAS_Closet.GeneratedMSBuildEditorConfig.editorconfig
+c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\FAS_Closet.AssemblyInfoInputs.cache
+c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\FAS_Closet.AssemblyInfo.cs
+c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\FAS_Closet.csproj.CoreCompileInputs.cache
+c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\FAS_Closet.dll
+c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\refint\FAS_Closet.dll
+c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\FAS_Closet.pdb
+c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\FAS_Closet.genruntimeconfig.cache
+c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\ref\FAS_Closet.dll
