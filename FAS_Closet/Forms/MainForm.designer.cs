@@ -43,6 +43,7 @@ namespace FASCloset.Forms
             // 
             this.lblWelcome.AutoSize = true;
             this.lblWelcome.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblWelcome.Font = new System.Drawing.Font("Arial", 12F);
             this.lblWelcome.Location = new System.Drawing.Point(3, 0);
             this.lblWelcome.Name = "lblWelcome";
             this.lblWelcome.Size = new System.Drawing.Size(192, 61);
@@ -52,7 +53,7 @@ namespace FASCloset.Forms
             // 
             // btnLogout
             // 
-            this.btnLogout.BackColor = System.Drawing.Color.DodgerBlue;
+            this.btnLogout.BackColor = System.Drawing.Color.FromArgb(0, 123, 255);
             this.btnLogout.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnLogout.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLogout.ForeColor = System.Drawing.Color.White;
@@ -69,6 +70,8 @@ namespace FASCloset.Forms
             this.ClientSize = new System.Drawing.Size(284, 61);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "MainForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.BackColor = System.Drawing.Color.FromArgb(245, 245, 245);
             this.ResumeLayout(false);
         }
     }

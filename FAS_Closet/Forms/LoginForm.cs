@@ -12,21 +12,57 @@ namespace FASCloset.Forms
         public LoginForm()
         {
             InitializeComponent();
+            AddValidationEvents();
+        }
+
+        private void AddValidationEvents()
+        {
+            txtUsername.Leave += new EventHandler(txtUsername_Leave);
+            txtPassword.Leave += new EventHandler(txtPassword_Leave);
+        }
+
+        private void txtUsername_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtUsername.Text))
+            {
+                errorProvider1.SetError(txtUsername, "Username is required.");
+            }
+            else
+            {
+                errorProvider1.SetError(txtUsername, "");
+            }
+        }
+
+        private void txtPassword_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtPassword.Text))
+            {
+                errorProvider1.SetError(txtPassword, "Password is required.");
+            }
+            else
+            {
+                errorProvider1.SetError(txtPassword, "");
+            }
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
             errorProvider1.Clear();
+            bool hasError = false;
+
             if (string.IsNullOrWhiteSpace(txtUsername.Text))
             {
                 errorProvider1.SetError(txtUsername, "Username is required.");
+                hasError = true;
             }
+
             if (string.IsNullOrWhiteSpace(txtPassword.Text))
             {
                 errorProvider1.SetError(txtPassword, "Password is required.");
+                hasError = true;
             }
 
-            if (errorProvider1.GetError(txtUsername) == "" && errorProvider1.GetError(txtPassword) == "")
+            if (!hasError)
             {
                 UserManager userManager = new UserManager();
                 User? user = userManager.Login(txtUsername.Text, txtPassword.Text);
@@ -40,7 +76,8 @@ namespace FASCloset.Forms
                 }
                 else
                 {
-                    MessageBox.Show("Invalid username or password.", "Login Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    errorProvider1.SetError(txtUsername, "Invalid username or password.");
+                    errorProvider1.SetError(txtPassword, "Invalid username or password.");
                 }
             }
         }

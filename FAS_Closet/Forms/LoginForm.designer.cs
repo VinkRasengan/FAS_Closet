@@ -72,7 +72,7 @@ namespace FASCloset.Forms
             this.labelHeader.AutoSize = true;
             this.tableLayoutPanel1.SetColumnSpan(this.labelHeader, 2);
             this.labelHeader.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.labelHeader.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelHeader.Font = new System.Drawing.Font("Arial", 14F, System.Drawing.FontStyle.Bold);
             this.labelHeader.Location = new System.Drawing.Point(3, 0);
             this.labelHeader.Name = "labelHeader";
             this.labelHeader.Size = new System.Drawing.Size(278, 40);
@@ -84,46 +84,52 @@ namespace FASCloset.Forms
             // 
             this.labelUsername.AutoSize = true;
             this.labelUsername.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.labelUsername.Font = new System.Drawing.Font("Arial", 12F);
             this.labelUsername.Location = new System.Drawing.Point(3, 40);
             this.labelUsername.Name = "labelUsername";
             this.labelUsername.Size = new System.Drawing.Size(79, 30);
             this.labelUsername.TabIndex = 1;
             this.labelUsername.Text = "Tên đăng nhập:";
-            this.labelUsername.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelUsername.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // txtUsername
             // 
             this.txtUsername.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtUsername.Font = new System.Drawing.Font("Arial", 12F);
             this.txtUsername.Location = new System.Drawing.Point(88, 43);
             this.txtUsername.Name = "txtUsername";
-            this.txtUsername.Size = new System.Drawing.Size(193, 20);
+            this.txtUsername.Size = new System.Drawing.Size(193, 26);
             this.txtUsername.TabIndex = 2;
+            this.txtUsername.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.toolTip1.SetToolTip(this.txtUsername, "Nhập tên đăng nhập của bạn.");
             // 
             // labelPassword
             // 
             this.labelPassword.AutoSize = true;
             this.labelPassword.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.labelPassword.Font = new System.Drawing.Font("Arial", 12F);
             this.labelPassword.Location = new System.Drawing.Point(3, 70);
             this.labelPassword.Name = "labelPassword";
             this.labelPassword.Size = new System.Drawing.Size(79, 30);
             this.labelPassword.TabIndex = 3;
             this.labelPassword.Text = "Mật khẩu:";
-            this.labelPassword.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelPassword.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // txtPassword
             // 
             this.txtPassword.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtPassword.Font = new System.Drawing.Font("Arial", 12F);
             this.txtPassword.Location = new System.Drawing.Point(88, 73);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
-            this.txtPassword.Size = new System.Drawing.Size(193, 20);
+            this.txtPassword.Size = new System.Drawing.Size(193, 26);
             this.txtPassword.TabIndex = 4;
+            this.txtPassword.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.toolTip1.SetToolTip(this.txtPassword, "Nhập mật khẩu của bạn.");
             // 
             // btnLogin
             // 
-            this.btnLogin.BackColor = System.Drawing.Color.DodgerBlue;
+            this.btnLogin.BackColor = System.Drawing.Color.FromArgb(0, 123, 255);
             this.btnLogin.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnLogin.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLogin.ForeColor = System.Drawing.Color.White;
@@ -137,7 +143,7 @@ namespace FASCloset.Forms
             // 
             // btnRegister
             // 
-            this.btnRegister.BackColor = System.Drawing.Color.DodgerBlue;
+            this.btnRegister.BackColor = System.Drawing.Color.FromArgb(0, 123, 255);
             this.btnRegister.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnRegister.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnRegister.ForeColor = System.Drawing.Color.White;
@@ -154,6 +160,8 @@ namespace FASCloset.Forms
             this.ClientSize = new System.Drawing.Size(284, 141);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "LoginForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.BackColor = System.Drawing.Color.FromArgb(245, 245, 245);
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).EndInit();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
