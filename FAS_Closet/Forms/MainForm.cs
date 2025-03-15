@@ -6,11 +6,8 @@ namespace FASCloset.Forms
 {
     public partial class MainForm : Form
     {
-        private readonly User user;
-
         public MainForm(User user)
         {
-            this.user = user ?? throw new ArgumentNullException(nameof(user));
             InitializeComponent();
             lblWelcome.Text = "Welcome, " + user.Name;
         }

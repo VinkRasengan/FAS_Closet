@@ -9,7 +9,6 @@ namespace FASCloset.Forms
 {
     public partial class RegisterForm : Form
     {
-        private readonly UserManager userManager;
         private const string RegistrationFailed = "Registration Failed";
 
         private bool isUsernameValid = false;
@@ -21,7 +20,6 @@ namespace FASCloset.Forms
 
         public RegisterForm()
         {
-            userManager = new UserManager();
             InitializeComponent();
             AddValidationEvents();
             btnRegister.Enabled = false;
@@ -39,7 +37,7 @@ namespace FASCloset.Forms
             txtPhone.Leave += new EventHandler(txtPhone_Leave);
         }
 
-        private void txtUsername_Leave(object sender, EventArgs e)
+        private void txtUsername_Leave(object? sender, EventArgs e)
         {
             errorProvider1.SetError(txtUsername, "");
             if (string.IsNullOrWhiteSpace(txtUsername.Text))
@@ -54,7 +52,7 @@ namespace FASCloset.Forms
             UpdateButtonState();
         }
 
-        private void txtPassword_Leave(object sender, EventArgs e)
+        private void txtPassword_Leave(object? sender, EventArgs e)
         {
             errorProvider1.SetError(txtPassword, "");
             if (string.IsNullOrWhiteSpace(txtPassword.Text))
@@ -75,7 +73,7 @@ namespace FASCloset.Forms
             UpdateButtonState();
         }
 
-        private void txtConfirmPassword_Leave(object sender, EventArgs e)
+        private void txtConfirmPassword_Leave(object? sender, EventArgs e)
         {
             ValidateConfirmPassword();
             UpdateButtonState();
@@ -100,7 +98,7 @@ namespace FASCloset.Forms
             }
         }
 
-        private void txtName_Leave(object sender, EventArgs e)
+        private void txtName_Leave(object? sender, EventArgs e)
         {
             errorProvider1.SetError(txtName, "");
             if (string.IsNullOrWhiteSpace(txtName.Text))
@@ -120,7 +118,7 @@ namespace FASCloset.Forms
             UpdateButtonState();
         }
 
-        private void txtEmail_Leave(object sender, EventArgs e)
+        private void txtEmail_Leave(object? sender, EventArgs e)
         {
             errorProvider1.SetError(txtEmail, "");
             if (string.IsNullOrWhiteSpace(txtEmail.Text))
@@ -140,7 +138,7 @@ namespace FASCloset.Forms
             UpdateButtonState();
         }
 
-        private void txtPhone_Leave(object sender, EventArgs e)
+        private void txtPhone_Leave(object? sender, EventArgs e)
         {
             errorProvider1.SetError(txtPhone, "");
             if (string.IsNullOrWhiteSpace(txtPhone.Text))
@@ -160,7 +158,7 @@ namespace FASCloset.Forms
             UpdateButtonState();
         }
 
-        private bool IsValidVietnamesePhoneNumber(string phoneNumber)
+        private static bool IsValidVietnamesePhoneNumber(string phoneNumber)
         {
             // Remove spaces and hyphens
             phoneNumber = phoneNumber.Replace(" ", "").Replace("-", "");
@@ -170,7 +168,7 @@ namespace FASCloset.Forms
             {
                 phoneNumber = phoneNumber.Substring(3); // Remove +84
             }
-            else if (phoneNumber.StartsWith("0"))
+            else if (phoneNumber.StartsWith('0'))
             {
                 // Keep as is, since Vietnamese numbers typically start with 0
             }

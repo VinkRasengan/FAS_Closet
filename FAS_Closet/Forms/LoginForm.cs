@@ -21,7 +21,7 @@ namespace FASCloset.Forms
             txtPassword.Leave += new EventHandler(txtPassword_Leave);
         }
 
-        private void txtUsername_Leave(object sender, EventArgs e)
+        private void txtUsername_Leave(object? sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtUsername.Text))
             {
@@ -33,7 +33,7 @@ namespace FASCloset.Forms
             }
         }
 
-        private void txtPassword_Leave(object sender, EventArgs e)
+        private void txtPassword_Leave(object? sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtPassword.Text))
             {
