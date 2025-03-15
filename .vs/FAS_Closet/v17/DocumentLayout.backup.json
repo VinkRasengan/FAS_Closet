@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "C:\\Project\\FAS_Closet\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\project\\fas_closet\\fas_closet\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+      "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\project\\fas_closet\\fas_closet\\fas_closet.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\fas_closet.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     }
   ],
   "DocumentGroupContainers": [
@@ -19,14 +19,15 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Form1.cs [Design]",
-              "DocumentMoniker": "C:\\Project\\FAS_Closet\\FAS_Closet\\Form1.cs",
-              "RelativeDocumentMoniker": "FAS_Closet\\Form1.cs",
-              "ToolTip": "C:\\Project\\FAS_Closet\\FAS_Closet\\Form1.cs [Design]",
-              "RelativeToolTip": "FAS_Closet\\Form1.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-14T04:07:15.55Z",
-              "EditorCaption": " [Design]"
+              "Title": "FAS_Closet",
+              "DocumentMoniker": "C:\\Project\\FAS_Closet\\FAS_Closet\\FAS_Closet.csproj",
+              "RelativeDocumentMoniker": "FAS_Closet\\FAS_Closet.csproj",
+              "ToolTip": "C:\\Project\\FAS_Closet\\FAS_Closet\\FAS_Closet.csproj",
+              "RelativeToolTip": "FAS_Closet\\FAS_Closet.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-03-15T13:45:48.072Z",
+              "EditorCaption": ""
             }
           ]
         }

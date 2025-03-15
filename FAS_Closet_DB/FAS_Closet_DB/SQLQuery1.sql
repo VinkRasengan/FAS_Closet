@@ -1,0 +1,12 @@
+CREATE DATABASE FASCloset;
+
+USE FASCloset;
+CREATE TABLE Users (
+    UserID INT PRIMARY KEY IDENTITY(1,1),
+    Username NVARCHAR(50) NOT NULL,
+    PasswordHash VARBINARY(32) NOT NULL,
+    PasswordSalt VARBINARY(16) NOT NULL,
+    Name NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(100),
+    Phone NVARCHAR(20)
+);
