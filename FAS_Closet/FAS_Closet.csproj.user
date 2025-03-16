@@ -10,9 +10,6 @@
     <Compile Update="Forms\InventoryForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Forms\LoginForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Update="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -26,9 +23,6 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Forms\ProductForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Forms\RegisterForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Forms\ReportForm.cs">

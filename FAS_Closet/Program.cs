@@ -20,7 +20,8 @@ namespace FASCloset
             try
             {
                 InitializeDatabase();
-                Application.Run(new LoginForm());
+                // Khởi chạy AuthForm
+                Application.Run(new AuthForm());
             }
             catch (Exception ex)
             {
