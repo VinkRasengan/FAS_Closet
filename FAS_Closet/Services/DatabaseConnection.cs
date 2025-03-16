@@ -1,17 +1,28 @@
 using System;
-using System.Data;
-using System.Data.SqlClient;
-using System.Configuration;
+using System.IO;
+using Microsoft.Data.Sqlite;
 
 namespace FASCloset.Services
 {
     public static class DatabaseConnection
     {
-        private static readonly string ConnectionString = ConfigurationManager.ConnectionStrings["myconnectionstring"].ConnectionString;
-
-        public static IDbConnection GetConnection()
+        public static string GetConnectionString()
         {
-            return new SqlConnection(ConnectionString);
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string projectDir = Directory.GetParent(baseDirectory)?.Parent?.Parent?.Parent?.FullName;
+            if (projectDir == null)
+            {
+                throw new InvalidOperationException("Project directory is null.");
+            }
+
+            // Use a fixed path for the database file
+            string dbPath = Path.Combine(projectDir, "Data", "FASClosetDB.sqlite");
+            return $"Data Source={dbPath};";
+        }
+
+        public static SqliteConnection GetConnection()
+        {
+            return new SqliteConnection(GetConnectionString());
         }
     }
 }
