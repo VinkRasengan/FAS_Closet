@@ -19,49 +19,53 @@ namespace FASCloset
 
             try
             {
-                string? baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                if (baseDirectory == null)
-                {
-                    throw new InvalidOperationException("Base directory is null.");
-                }
-
-                string? projectDir = Directory.GetParent(baseDirectory)?.Parent?.Parent?.Parent?.FullName;
-                if (projectDir == null)
-                {
-                    throw new InvalidOperationException("Project directory is null.");
-                }
-
-                string dataDir = Path.Combine(projectDir, "Data");
-                if (!Directory.Exists(dataDir))
-                {
-                    Directory.CreateDirectory(dataDir);
-                }
-                string dbPath = Path.Combine(dataDir, "FASClosetDB.sqlite");
-                string connectionString = $"Data Source={dbPath};";
-                using (var connection = new SqliteConnection(connectionString))
-                {
-                    connection.Open();
-                    string createTableQuery = @"
-                        CREATE TABLE IF NOT EXISTS Users (
-                            UserID INTEGER PRIMARY KEY AUTOINCREMENT,
-                            Username TEXT NOT NULL,
-                            PasswordHash BLOB NOT NULL,
-                            PasswordSalt BLOB NOT NULL,
-                            Name TEXT NOT NULL,
-                            Email TEXT,
-                            Phone TEXT
-                        );";
-                    using (var command = new SqliteCommand(createTableQuery, connection))
-                    {
-                        command.ExecuteNonQuery();
-                    }
-                }
-
+                InitializeDatabase();
                 Application.Run(new LoginForm());
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"An unexpected error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private static void InitializeDatabase()
+        {
+            string? baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            if (baseDirectory == null)
+            {
+                throw new InvalidOperationException("Base directory is null.");
+            }
+
+            string? projectDir = Directory.GetParent(baseDirectory)?.Parent?.Parent?.Parent?.FullName;
+            if (projectDir == null)
+            {
+                throw new InvalidOperationException("Project directory is null.");
+            }
+
+            string dataDir = Path.Combine(projectDir, "Data");
+            if (!Directory.Exists(dataDir))
+            {
+                Directory.CreateDirectory(dataDir);
+            }
+            string dbPath = Path.Combine(dataDir, "FASClosetDB.sqlite");
+            string connectionString = $"Data Source={dbPath};";
+            using (var connection = new SqliteConnection(connectionString))
+            {
+                connection.Open();
+                string createTableQuery = @"
+                    CREATE TABLE IF NOT EXISTS Users (
+                        UserID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Username TEXT NOT NULL,
+                        PasswordHash BLOB NOT NULL,
+                        PasswordSalt BLOB NOT NULL,
+                        Name TEXT NOT NULL,
+                        Email TEXT,
+                        Phone TEXT
+                    );";
+                using (var command = new SqliteCommand(createTableQuery, connection))
+                {
+                    command.ExecuteNonQuery();
+                }
             }
         }
     }
