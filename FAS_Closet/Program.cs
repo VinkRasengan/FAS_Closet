@@ -19,7 +19,19 @@ namespace FASCloset
 
             try
             {
-                string dataDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+                string? baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                if (baseDirectory == null)
+                {
+                    throw new InvalidOperationException("Base directory is null.");
+                }
+
+                string? projectDir = Directory.GetParent(baseDirectory)?.Parent?.Parent?.Parent?.FullName;
+                if (projectDir == null)
+                {
+                    throw new InvalidOperationException("Project directory is null.");
+                }
+
+                string dataDir = Path.Combine(projectDir, "Data");
                 if (!Directory.Exists(dataDir))
                 {
                     Directory.CreateDirectory(dataDir);
