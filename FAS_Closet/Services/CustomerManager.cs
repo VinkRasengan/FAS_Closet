@@ -33,14 +33,13 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "INSERT INTO Customers (Name, Email, Phone, Address, LoyaltyPoints) VALUES (@Name, @Email, @Phone, @Address, @LoyaltyPoints)";
+                    string query = "INSERT INTO Customers (Name, Email, Phone, Address) VALUES (@Name, @Email, @Phone, @Address)";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@Name", customer.Name);
                         command.Parameters.AddWithValue("@Email", customer.Email);
                         command.Parameters.AddWithValue("@Phone", customer.Phone);
                         command.Parameters.AddWithValue("@Address", customer.Address);
-                        command.Parameters.AddWithValue("@LoyaltyPoints", customer.LoyaltyPoints);
                         command.ExecuteNonQuery();
                     }
                 }
@@ -58,14 +57,13 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "UPDATE Customers SET Name = @Name, Email = @Email, Phone = @Phone, Address = @Address, LoyaltyPoints = @LoyaltyPoints WHERE CustomerID = @CustomerID";
+                    string query = "UPDATE Customers SET Name = @Name, Email = @Email, Phone = @Phone, Address = @Address WHERE CustomerID = @CustomerID";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@Name", customer.Name);
                         command.Parameters.AddWithValue("@Email", customer.Email);
                         command.Parameters.AddWithValue("@Phone", customer.Phone);
                         command.Parameters.AddWithValue("@Address", customer.Address);
-                        command.Parameters.AddWithValue("@LoyaltyPoints", customer.LoyaltyPoints);
                         command.Parameters.AddWithValue("@CustomerID", customer.CustomerID);
                         command.ExecuteNonQuery();
                     }
@@ -106,7 +104,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "SELECT CustomerID, Name, Email, Phone, Address, LoyaltyPoints FROM Customers";
+                    string query = "SELECT CustomerID, Name, Email, Phone, Address FROM Customers";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         using (var reader = command.ExecuteReader())
@@ -119,8 +117,7 @@ namespace FASCloset.Services
                                     Name = reader.GetString(1),
                                     Email = reader.GetString(2),
                                     Phone = reader.GetString(3),
-                                    Address = reader.GetString(4),
-                                    LoyaltyPoints = reader.GetInt32(5)
+                                    Address = reader.GetString(4)
                                 });
                             }
                         }

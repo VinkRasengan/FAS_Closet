@@ -33,13 +33,12 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "INSERT INTO Orders (CustomerID, OrderDate, TotalAmount, PaymentMethod) VALUES (@CustomerID, @OrderDate, @TotalAmount, @PaymentMethod)";
+                    string query = "INSERT INTO Orders (CustomerID, OrderDate, TotalAmount) VALUES (@CustomerID, @OrderDate, @TotalAmount)";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@CustomerID", order.CustomerID);
                         command.Parameters.AddWithValue("@OrderDate", order.OrderDate);
                         command.Parameters.AddWithValue("@TotalAmount", order.TotalAmount);
-                        command.Parameters.AddWithValue("@PaymentMethod", order.PaymentMethod);
                         command.ExecuteNonQuery();
                     }
                 }
@@ -57,13 +56,12 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "UPDATE Orders SET CustomerID = @CustomerID, OrderDate = @OrderDate, TotalAmount = @TotalAmount, PaymentMethod = @PaymentMethod WHERE OrderID = @OrderID";
+                    string query = "UPDATE Orders SET CustomerID = @CustomerID, OrderDate = @OrderDate, TotalAmount = @TotalAmount WHERE OrderID = @OrderID";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@CustomerID", order.CustomerID);
                         command.Parameters.AddWithValue("@OrderDate", order.OrderDate);
                         command.Parameters.AddWithValue("@TotalAmount", order.TotalAmount);
-                        command.Parameters.AddWithValue("@PaymentMethod", order.PaymentMethod);
                         command.Parameters.AddWithValue("@OrderID", order.OrderID);
                         command.ExecuteNonQuery();
                     }
@@ -104,21 +102,14 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "SELECT OrderID, CustomerID, OrderDate, TotalAmount, PaymentMethod FROM Orders";
+                    string query = "SELECT OrderID, CustomerID, OrderDate, TotalAmount FROM Orders";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         using (var reader = command.ExecuteReader())
                         {
                             while (reader.Read())
                             {
-                                orders.Add(new Order
-                                {
-                                    OrderID = reader.GetInt32(0),
-                                    CustomerID = reader.GetInt32(1),
-                                    OrderDate = reader.GetDateTime(2),
-                                    TotalAmount = reader.GetDecimal(3),
-                                    PaymentMethod = reader.GetString(4)
-                                });
+                                orders.Add(MapOrder(reader));
                             }
                         }
                     }
@@ -129,6 +120,17 @@ namespace FASCloset.Services
                 throw new InvalidOperationException("Database error occurred while retrieving orders.", ex);
             }
             return orders;
+        }
+
+        private static Order MapOrder(SqliteDataReader reader)
+        {
+            return new Order
+            {
+                OrderID = reader.GetInt32(0),
+                CustomerID = reader.GetInt32(1),
+                OrderDate = reader.GetDateTime(2),
+                TotalAmount = reader.GetDecimal(3)
+            };
         }
     }
 }

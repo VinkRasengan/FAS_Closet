@@ -33,13 +33,13 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "INSERT INTO OrderDetails (OrderID, ProductID, Quantity, Subtotal) VALUES (@OrderID, @ProductID, @Quantity, @Subtotal)";
+                    string query = "INSERT INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice) VALUES (@OrderID, @ProductID, @Quantity, @UnitPrice)";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@OrderID", orderDetail.OrderID);
                         command.Parameters.AddWithValue("@ProductID", orderDetail.ProductID);
                         command.Parameters.AddWithValue("@Quantity", orderDetail.Quantity);
-                        command.Parameters.AddWithValue("@Subtotal", orderDetail.Subtotal);
+                        command.Parameters.AddWithValue("@UnitPrice", orderDetail.UnitPrice);
                         command.ExecuteNonQuery();
                     }
                 }
@@ -57,13 +57,13 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "UPDATE OrderDetails SET OrderID = @OrderID, ProductID = @ProductID, Quantity = @Quantity, Subtotal = @Subtotal WHERE OrderDetailID = @OrderDetailID";
+                    string query = "UPDATE OrderDetails SET OrderID = @OrderID, ProductID = @ProductID, Quantity = @Quantity, UnitPrice = @UnitPrice WHERE OrderDetailID = @OrderDetailID";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@OrderID", orderDetail.OrderID);
                         command.Parameters.AddWithValue("@ProductID", orderDetail.ProductID);
                         command.Parameters.AddWithValue("@Quantity", orderDetail.Quantity);
-                        command.Parameters.AddWithValue("@Subtotal", orderDetail.Subtotal);
+                        command.Parameters.AddWithValue("@UnitPrice", orderDetail.UnitPrice);
                         command.Parameters.AddWithValue("@OrderDetailID", orderDetail.OrderDetailID);
                         command.ExecuteNonQuery();
                     }
@@ -104,7 +104,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "SELECT OrderDetailID, OrderID, ProductID, Quantity, Subtotal FROM OrderDetails WHERE OrderID = @OrderID";
+                    string query = "SELECT OrderDetailID, OrderID, ProductID, Quantity, UnitPrice FROM OrderDetails WHERE OrderID = @OrderID";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@OrderID", orderId);
@@ -118,7 +118,7 @@ namespace FASCloset.Services
                                     OrderID = reader.GetInt32(1),
                                     ProductID = reader.GetInt32(2),
                                     Quantity = reader.GetInt32(3),
-                                    Subtotal = reader.GetDecimal(4)
+                                    UnitPrice = reader.GetDecimal(4)
                                 });
                             }
                         }

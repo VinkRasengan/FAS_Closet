@@ -6,6 +6,6 @@ namespace FASCloset.Models
         public int CustomerID { get; set; }
         public DateTime OrderDate { get; set; }
         public decimal TotalAmount { get; set; }
-        public required string PaymentMethod { get; set; }
+        public string? Status { get; set; }
     }
 }

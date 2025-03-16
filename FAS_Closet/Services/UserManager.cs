@@ -132,7 +132,9 @@ namespace FASCloset.Services
                                     Username = reader.GetString(1),
                                     Name = reader.GetString(2),
                                     Email = reader.IsDBNull(3) ? null : reader.GetString(3),
-                                    Phone = reader.IsDBNull(4) ? null : reader.GetString(4)
+                                    Phone = reader.IsDBNull(4) ? null : reader.GetString(4),
+                                    PasswordHash = (byte[])reader["PasswordHash"],
+                                    PasswordSalt = (byte[])reader["PasswordSalt"]
                                 };
                             }
                         }

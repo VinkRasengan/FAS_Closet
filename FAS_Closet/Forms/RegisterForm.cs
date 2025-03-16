@@ -220,17 +220,16 @@ namespace FASCloset.Forms
                 return;
             }
 
+            PasswordHasher.CreatePasswordHash(txtPassword.Text, out byte[] passwordHash, out byte[] passwordSalt);
             User user = new User
             {
                 Username = txtUsername.Text,
                 Name = txtName.Text,
                 Email = txtEmail.Text,
-                Phone = txtPhone.Text
+                Phone = txtPhone.Text,
+                PasswordHash = passwordHash,
+                PasswordSalt = passwordSalt
             };
-
-            PasswordHasher.CreatePasswordHash(txtPassword.Text, out byte[] passwordHash, out byte[] passwordSalt);
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
 
             try
             {

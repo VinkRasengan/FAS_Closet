@@ -25,7 +25,6 @@ namespace FASCloset.Forms
                 txtEmail.Text = customer.Email;
                 txtPhone.Text = customer.Phone;
                 txtAddress.Text = customer.Address;
-                txtLoyaltyPoints.Text = customer.LoyaltyPoints.ToString();
             }
         }
 
@@ -35,7 +34,6 @@ namespace FASCloset.Forms
             _customer.Email = txtEmail.Text;
             _customer.Phone = txtPhone.Text;
             _customer.Address = txtAddress.Text;
-            _customer.LoyaltyPoints = int.Parse(txtLoyaltyPoints.Text);
 
             if (_customer.CustomerID == 0)
             {
