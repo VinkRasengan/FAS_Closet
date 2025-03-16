@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "C:\\Project\\FAS_Closet\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\project\\fas_closet\\fas_closet\\forms\\loginform.resx||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\forms\\loginform.resx||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Project\\FAS_Closet\\FAS_Closet\\Forms\\LoginForm.resx||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:FAS_Closet\\Forms\\LoginForm.resx||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     }
   ],
   "DocumentGroupContainers": [
@@ -24,10 +24,8 @@
               "RelativeDocumentMoniker": "FAS_Closet\\Forms\\LoginForm.resx",
               "ToolTip": "C:\\Project\\FAS_Closet\\FAS_Closet\\Forms\\LoginForm.resx",
               "RelativeToolTip": "FAS_Closet\\Forms\\LoginForm.resx",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001005|",
-              "WhenOpened": "2025-03-16T11:29:20.458Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-16T11:29:20.458Z"
             }
           ]
         }

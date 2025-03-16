@@ -19,9 +19,9 @@ namespace FASCloset.Forms
 
         private void productsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var productForm = new ProductForm();
-            productForm.MdiParent = this;
-            productForm.Show();
+            var productInventoryManagementForm = new ProductInventoryManagementForm();
+            productInventoryManagementForm.MdiParent = this;
+            productInventoryManagementForm.Show();
         }
 
         private void inventoryToolStripMenuItem_Click(object sender, EventArgs e)
@@ -40,9 +40,9 @@ namespace FASCloset.Forms
 
         private void customersToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var customerForm = new CustomerForm();
-            customerForm.MdiParent = this;
-            customerForm.Show();
+            var customerManagementForm = new CustomerManagementForm();
+            customerManagementForm.MdiParent = this;
+            customerManagementForm.Show();
         }
 
         private void reportsToolStripMenuItem_Click(object sender, EventArgs e)
