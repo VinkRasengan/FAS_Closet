@@ -43,9 +43,9 @@ namespace FASCloset.Services
                     {
                         command.Parameters.AddWithValue("@StartDate", startDate);
                         command.Parameters.AddWithValue("@EndDate", endDate);
-                        using (var adapter = new SqliteDataAdapter(command))
+                        using (var reader = command.ExecuteReader())
                         {
-                            adapter.Fill(dataTable);
+                            dataTable.Load(reader);
                         }
                     }
                 }

@@ -13,7 +13,7 @@ namespace FASCloset.Forms
             LoadInventory();
         }
 
-        private static void LoadInventory()
+        private void LoadInventory()
         {
             var inventory = InventoryManager.GetLowStockProducts();
             if (inventory != null)

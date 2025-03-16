@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Project\\FAS_Closet\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\project\\fas_closet\\fas_closet\\forms\\customereditorform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\forms\\customereditorform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\project\\fas_closet\\fas_closet\\dataaccess\\databaseconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\dataaccess\\databaseconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -22,11 +26,24 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
+              "Title": "CustomerEditorForm.cs",
+              "DocumentMoniker": "C:\\Project\\FAS_Closet\\FAS_Closet\\Forms\\CustomerEditorForm.cs",
+              "RelativeDocumentMoniker": "FAS_Closet\\Forms\\CustomerEditorForm.cs",
+              "ToolTip": "C:\\Project\\FAS_Closet\\FAS_Closet\\Forms\\CustomerEditorForm.cs",
+              "RelativeToolTip": "FAS_Closet\\Forms\\CustomerEditorForm.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAvwA4AAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-16T04:19:40.313Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "LoginForm.designer.cs",
               "DocumentMoniker": "C:\\Project\\FAS_Closet\\FAS_Closet\\Forms\\LoginForm.designer.cs",
               "RelativeDocumentMoniker": "FAS_Closet\\Forms\\LoginForm.designer.cs",
@@ -34,12 +51,11 @@
               "RelativeToolTip": "FAS_Closet\\Forms\\LoginForm.designer.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-15T13:52:42.341Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-15T13:52:42.341Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "DatabaseConnection.cs",
               "DocumentMoniker": "C:\\Project\\FAS_Closet\\FAS_Closet\\DataAccess\\DatabaseConnection.cs",
               "RelativeDocumentMoniker": "FAS_Closet\\DataAccess\\DatabaseConnection.cs",
@@ -52,16 +68,15 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "FAS_Closet",
+              "DocumentIndex": 2,
+              "Title": "FAS_Closet.csproj",
               "DocumentMoniker": "C:\\Project\\FAS_Closet\\FAS_Closet\\FAS_Closet.csproj",
               "RelativeDocumentMoniker": "FAS_Closet\\FAS_Closet.csproj",
               "ToolTip": "C:\\Project\\FAS_Closet\\FAS_Closet\\FAS_Closet.csproj",
               "RelativeToolTip": "FAS_Closet\\FAS_Closet.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-03-15T13:45:48.072Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-15T13:45:48.072Z"
             }
           ]
         }

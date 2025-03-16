@@ -12,7 +12,13 @@ namespace FASCloset.Forms
         public CustomerEditorForm(Customer? customer = null)
         {
             InitializeComponent();
-            _customer = customer ?? new Customer();
+            _customer = customer ?? new Customer
+            {
+                Name = string.Empty,
+                Email = string.Empty,
+                Phone = string.Empty,
+                Address = string.Empty
+            };
             if (customer != null)
             {
                 txtName.Text = customer.Name;

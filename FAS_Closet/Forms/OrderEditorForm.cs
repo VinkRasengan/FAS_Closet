@@ -12,7 +12,10 @@ namespace FASCloset.Forms
         public OrderEditorForm(Order? order = null)
         {
             InitializeComponent();
-            _order = order ?? new Order();
+            _order = order ?? new Order
+            {
+                PaymentMethod = string.Empty
+            };
             if (order != null)
             {
                 txtCustomerID.Text = order.CustomerID.ToString();

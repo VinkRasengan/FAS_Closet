@@ -13,13 +13,10 @@ namespace FASCloset.Forms
             LoadOrders();
         }
 
-        private static void LoadOrders()
+        private void LoadOrders()
         {
             var orders = OrderManager.GetOrders();
-            if (orders != null)
-            {
-                dataGridViewOrders.DataSource = orders;
-            }
+            dataGridViewOrders.DataSource = orders;
         }
 
         private void btnAddOrder_Click(object sender, EventArgs e)

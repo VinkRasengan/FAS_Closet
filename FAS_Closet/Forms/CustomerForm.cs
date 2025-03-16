@@ -32,11 +32,14 @@ namespace FASCloset.Forms
         {
             if (dataGridViewCustomers.SelectedRows.Count > 0)
             {
-                var selectedCustomer = (Customer)dataGridViewCustomers.SelectedRows[0].DataBoundItem;
-                var customerEditorForm = new CustomerEditorForm(selectedCustomer);
-                if (customerEditorForm.ShowDialog() == DialogResult.OK)
+                var selectedCustomer = dataGridViewCustomers.SelectedRows[0].DataBoundItem as Customer;
+                if (selectedCustomer != null)
                 {
-                    LoadCustomers();
+                    var customerEditorForm = new CustomerEditorForm(selectedCustomer);
+                    if (customerEditorForm.ShowDialog() == DialogResult.OK)
+                    {
+                        LoadCustomers();
+                    }
                 }
             }
         }
@@ -45,9 +48,12 @@ namespace FASCloset.Forms
         {
             if (dataGridViewCustomers.SelectedRows.Count > 0)
             {
-                var selectedCustomer = (Customer)dataGridViewCustomers.SelectedRows[0].DataBoundItem;
-                CustomerManager.DeleteCustomer(selectedCustomer.CustomerID);
-                LoadCustomers();
+                var selectedCustomer = dataGridViewCustomers.SelectedRows[0].DataBoundItem as Customer;
+                if (selectedCustomer != null)
+                {
+                    CustomerManager.DeleteCustomer(selectedCustomer.CustomerID);
+                    LoadCustomers();
+                }
             }
         }
     }

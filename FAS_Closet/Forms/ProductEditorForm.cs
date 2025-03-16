@@ -12,7 +12,11 @@ namespace FASCloset.Forms
         public ProductEditorForm(Product? product = null)
         {
             InitializeComponent();
-            _product = product ?? new Product();
+            _product = product ?? new Product
+            {
+                ProductName = string.Empty,
+                Description = string.Empty
+            };
             if (product != null)
             {
                 txtProductName.Text = product.ProductName;

@@ -13,7 +13,7 @@ namespace FASCloset.Forms
             LoadProducts();
         }
 
-        private static void LoadProducts()
+        private void LoadProducts()
         {
             var products = ProductManager.GetProducts();
             if (dataGridViewProducts != null)
