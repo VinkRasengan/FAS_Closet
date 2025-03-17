@@ -22,12 +22,13 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "INSERT INTO Product (ProductName, CategoryID, Price, Description) VALUES (@ProductName, @CategoryID, @Price, @Description)";
+                    string query = "INSERT INTO Product (ProductName, CategoryID, Price, Stock, Description) VALUES (@ProductName, @CategoryID, @Price, @Stock, @Description)";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@ProductName", product.ProductName);
                         command.Parameters.AddWithValue("@CategoryID", product.CategoryID);
                         command.Parameters.AddWithValue("@Price", product.Price);
+                        command.Parameters.AddWithValue("@Stock", product.Stock); // Include Stock
                         command.Parameters.AddWithValue("@Description", product.Description);
                         command.ExecuteNonQuery();
                     }

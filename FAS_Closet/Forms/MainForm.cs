@@ -1,116 +1,227 @@
-// This file defines the MainForm class, which is the main application window.
-
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
 using FASCloset.Models;
-using FASCloset.Forms; // Add this line
-using FASCloset.Services; // Add this line
+using FASCloset.Services;
 
 namespace FASCloset.Forms
 {
     public partial class MainForm : Form
     {
+        // HEADER
+        private Panel headerPanel = null!;
         private Label lblWelcome = null!;
         private Button btnLogout = null!;
+
+        // MENUS
+        private MenuStrip mainMenu = null!;
+
+        // SPLIT
+        private SplitContainer mainSplit = null!;
+
+        // LEFT PANEL (Buttons)
+        private FlowLayoutPanel leftPanel = null!;
+        private Button btnAdd = null!, btnEdit = null!, btnDelete = null!;
+        private Button btnCategorize = null!, btnDataManagement = null!;
+
+        // RIGHT PANEL
+        private Panel rightPanel = null!;
+        private Panel filterPanel = null!;
+        private ComboBox cmbFilterCategory = null!;
         private DataGridView productDisplay = null!;
-        private FlowLayoutPanel buttonPanel = null!;
-        private Button btnAdd = null!, btnEdit = null!, btnDelete = null!, btnCategorize = null!, btnDataManagement = null!;
+
+        // ADD/EDIT PANEL
         private Panel addEditPanel = null!;
         private TextBox txtProductName = null!, txtPrice = null!, txtStock = null!, txtDescription = null!;
         private ComboBox cmbCategory = null!;
-        private ComboBox cmbFilterCategory = null!; // Add this line
         private Button btnSave = null!, btnCancel = null!;
+
         private enum Mode { View, Add, Edit }
         private Mode currentMode = Mode.View;
 
         public MainForm(User user)
         {
-            InitializeComponent();
-            InitializeCustomComponents();
-            lblWelcome.Text = "Welcome, " + user.Name; // Move this line after InitializeCustomComponents
+            // XÓA HOẶC BỎ TRỐNG InitializeComponent() ĐỂ TRÁNH TẠO CONTROL TRÙNG
+            // InitializeComponent();
+            InitializeLayout();
+            lblWelcome.Text = "Welcome, " + user.Name;
+
+            // Gọi sự kiện Products để đảm bảo giao diện khởi tạo đúng
+            productsToolStripMenuItem_Click(this, EventArgs.Empty);
         }
 
-        private void InitializeCustomComponents()
+        private void InitializeLayout()
         {
-            this.ClientSize = new System.Drawing.Size(800, 600);
+            // Form
+            this.Text = "MainForm";
+            this.ClientSize = new Size(1000, 600);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.BackColor = Color.White;
 
-            var headerPanel = new Panel();
-            headerPanel.Height = 60;
-            headerPanel.Dock = DockStyle.Top;
-
-            var headerInfoPanel = new Panel();
-            headerInfoPanel.Dock = DockStyle.Top;
-            headerInfoPanel.Height = 40;
-
-            this.lblWelcome = new Label();
-            this.lblWelcome.AutoSize = true;
-            this.lblWelcome.Font = new System.Drawing.Font("Arial", 12F);
-            this.lblWelcome.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.lblWelcome.Dock = DockStyle.Left;
-            headerInfoPanel.Controls.Add(this.lblWelcome);
-
-            this.btnLogout = new Button();
-            this.btnLogout.Text = "Logout";
-            this.btnLogout.Width = 80;
-            this.btnLogout.Height = 30;
-            this.btnLogout.Dock = DockStyle.Right;
-            this.btnLogout.Click += new EventHandler(this.btnLogout_Click);
-            headerInfoPanel.Controls.Add(this.btnLogout);
-
-            var filterPanel = new Panel();
-            filterPanel.Dock = DockStyle.Fill;
-            filterPanel.Padding = new Padding(5, 0, 5, 0);
-
-            this.cmbFilterCategory = new ComboBox();
-            this.cmbFilterCategory.Dock = DockStyle.Fill;
-            this.cmbFilterCategory.SelectedIndexChanged += new EventHandler(this.cmbFilterCategory_SelectedIndexChanged);
-            filterPanel.Controls.Add(this.cmbFilterCategory);
-
-            headerPanel.Controls.Add(filterPanel);
-            headerPanel.Controls.Add(headerInfoPanel);
+            //
+            // 1) Header Panel (Dock=Top)
+            //
+            headerPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 45,
+                BackColor = Color.White
+            };
             this.Controls.Add(headerPanel);
 
-            var mainLayout = new TableLayoutPanel();
-            mainLayout.ColumnCount = 2;
-            mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 220F)); // Increase width for button panel
-            mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            mainLayout.RowCount = 1;
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            mainLayout.Dock = DockStyle.Fill;
-            this.Controls.Add(mainLayout);
+            lblWelcome = new Label
+            {
+                Dock = DockStyle.Left,
+                AutoSize = true,
+                Font = new Font("Segoe UI", 12, FontStyle.Regular),
+                Padding = new Padding(10, 10, 0, 0),
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            headerPanel.Controls.Add(lblWelcome);
 
-            this.productDisplay = new DataGridView();
-            this.productDisplay.Dock = DockStyle.Fill;
-            this.productDisplay.ReadOnly = true;
-            this.productDisplay.AllowUserToAddRows = false;
-            this.productDisplay.AllowUserToDeleteRows = false;
-            this.productDisplay.MultiSelect = false;
-            this.productDisplay.AutoGenerateColumns = false;
-            this.productDisplay.DataSource = new BindingSource();
-            this.productDisplay.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "ID", DataPropertyName = "ProductID" });
-            this.productDisplay.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Name", DataPropertyName = "ProductName" });
-            this.productDisplay.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Category", DataPropertyName = "CategoryID" });
-            this.productDisplay.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Price", DataPropertyName = "Price" });
-            this.productDisplay.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Stock", DataPropertyName = "Stock" });
-            this.productDisplay.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Description", DataPropertyName = "Description" });
-            mainLayout.Controls.Add(this.productDisplay, 1, 0);
+            btnLogout = new Button
+            {
+                Text = "Logout",
+                Width = 80,
+                Height = 30,
+                Dock = DockStyle.Right,
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(220, 53, 69),
+                ForeColor = Color.White,
+                Margin = new Padding(10)
+            };
+            btnLogout.Click += (s, e) => this.Close();
+            headerPanel.Controls.Add(btnLogout);
 
-            this.buttonPanel = new FlowLayoutPanel();
-            this.buttonPanel.Dock = DockStyle.Fill;
-            this.buttonPanel.FlowDirection = FlowDirection.TopDown;
-            this.buttonPanel.WrapContents = false;
-            this.buttonPanel.AutoScroll = true;
-            this.buttonPanel.Padding = new Padding(10);
-            mainLayout.Controls.Add(this.buttonPanel, 0, 0);
+            //
+            // 2) MenuStrip (Dock=Top) — bên dưới Header
+            //
+            mainMenu = new MenuStrip
+            {
+                Dock = DockStyle.Top,
+                BackColor = Color.White
+            };
+            var productsItem = new ToolStripMenuItem("Products");
+            productsItem.Click += productsToolStripMenuItem_Click;
+            var inventoryItem = new ToolStripMenuItem("Inventory");
+            inventoryItem.Click += inventoryToolStripMenuItem_Click;
+            var ordersItem = new ToolStripMenuItem("Orders");
+            ordersItem.Click += ordersToolStripMenuItem_Click;
+            var customersItem = new ToolStripMenuItem("Customers");
+            customersItem.Click += customersToolStripMenuItem_Click;
+            var reportsItem = new ToolStripMenuItem("Reports");
+            reportsItem.Click += reportsToolStripMenuItem_Click;
 
-            ShowProductManagementButtons();
+            mainMenu.Items.AddRange(new[]
+            {
+                productsItem, inventoryItem, ordersItem, customersItem, reportsItem
+            });
+            this.Controls.Add(mainMenu);
 
+            //
+            // 3) SplitContainer (Dock=Fill) — bên dưới MenuStrip
+            //
+            mainSplit = new SplitContainer
+            {
+                Dock = DockStyle.Fill,
+                SplitterDistance = 200, // Độ rộng panel trái
+                IsSplitterFixed = false
+            };
+            this.Controls.Add(mainSplit);
+
+            // 3a) Panel trái (FlowLayoutPanel) — chứa nút
+            leftPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                AutoScroll = true,
+                // Tăng top padding để đẩy các nút xuống
+                Padding = new Padding(10, 60, 10, 10),
+                BackColor = Color.FromArgb(250, 250, 250)
+            };
+            mainSplit.Panel1.Controls.Add(leftPanel);
+
+            // Tạo các nút
+            CreateStyledButton(out btnAdd, "Thêm", btnAdd_Click);
+            CreateStyledButton(out btnEdit, "Sửa", btnEdit_Click);
+            CreateStyledButton(out btnDelete, "Xóa", btnDelete_Click);
+            CreateStyledButton(out btnCategorize, "Phân loại", null);
+            CreateStyledButton(out btnDataManagement, "Quản lý dữ liệu", null);
+
+            // Thêm nút vào panel trái
+            leftPanel.Controls.AddRange(new Control[] { btnAdd, btnEdit, btnDelete, btnCategorize, btnDataManagement });
+
+            // 3b) Panel phải (chứa Filter + DataGridView)
+            rightPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White
+            };
+            mainSplit.Panel2.Controls.Add(rightPanel);
+
+            // Filter Panel (Dock=Top)
+            filterPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 40,
+                Padding = new Padding(10, 5, 10, 5),
+                BackColor = Color.FromArgb(240, 240, 240)
+            };
+            rightPanel.Controls.Add(filterPanel);
+
+            var lblFilter = new Label
+            {
+                Text = "Filter by Category:",
+                AutoSize = true,
+                Dock = DockStyle.Left,
+                Font = new Font("Segoe UI", 10),
+                Padding = new Padding(0, 5, 5, 0)
+            };
+            filterPanel.Controls.Add(lblFilter);
+
+            cmbFilterCategory = new ComboBox
+            {
+                Dock = DockStyle.Left,
+                Width = 200,
+                Font = new Font("Segoe UI", 10)
+            };
+            cmbFilterCategory.SelectedIndexChanged += cmbFilterCategory_SelectedIndexChanged;
+            filterPanel.Controls.Add(cmbFilterCategory);
+
+            // DataGridView (Dock=Fill)
+            productDisplay = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                ReadOnly = true,
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                MultiSelect = false,
+                AutoGenerateColumns = false,
+                BackgroundColor = Color.White,
+                BorderStyle = BorderStyle.None
+            };
+            productDisplay.Columns.AddRange(new DataGridViewColumn[]
+            {
+                new DataGridViewTextBoxColumn { HeaderText = "ID", DataPropertyName = "ProductID", Width = 50 },
+                new DataGridViewTextBoxColumn { HeaderText = "Name", DataPropertyName = "ProductName", Width = 150 },
+                new DataGridViewTextBoxColumn { HeaderText = "Category", DataPropertyName = "CategoryID", Width = 80 },
+                new DataGridViewTextBoxColumn { HeaderText = "Price", DataPropertyName = "Price", Width = 80 },
+                new DataGridViewTextBoxColumn { HeaderText = "Stock", DataPropertyName = "Stock", Width = 80 },
+                new DataGridViewTextBoxColumn { HeaderText = "Description", DataPropertyName = "Description", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill }
+            });
+            rightPanel.Controls.Add(productDisplay);
+
+            // Panel thêm/sửa
             InitializeAddEditPanel();
+
+            // Tải dữ liệu
             LoadCategories();
             LoadProducts();
         }
 
-        private void CreateStyledButton(ref Button btn, string text, EventHandler? clickHandler)
+        private void CreateStyledButton(out Button btn, string text, EventHandler? clickHandler)
         {
             btn = new Button
             {
@@ -120,263 +231,129 @@ namespace FASCloset.Forms
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(0, 123, 255),
                 ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Visible = true // Đảm bảo nút hiển thị
             };
-            if (clickHandler != null)
-                btn.Click += clickHandler;
-        }
-
-        private void ShowProductManagementButtons()
-        {
-            buttonPanel.Controls.Clear();
-            CreateStyledButton(ref btnAdd, "Thêm", btnAdd_Click);
-            CreateStyledButton(ref btnEdit, "Sửa", btnEdit_Click);
-            CreateStyledButton(ref btnDelete, "Xóa", btnDelete_Click);
-            CreateStyledButton(ref btnCategorize, "Phân loại", null);
-            CreateStyledButton(ref btnDataManagement, "Quản lý dữ liệu", null);
-            buttonPanel.Controls.Add(btnAdd);
-            buttonPanel.Controls.Add(btnEdit);
-            buttonPanel.Controls.Add(btnDelete);
-            buttonPanel.Controls.Add(btnCategorize);
-            buttonPanel.Controls.Add(btnDataManagement);
-        }
-
-        private void ShowInventoryButtons()
-        {
-            buttonPanel.Controls.Clear();
-            Button btnUpdateInventory = new Button
-            {
-                Text = "Cập nhật tồn kho",
-                Size = new Size(180, 40),
-                Margin = new Padding(5),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
-            };
-            Button btnAlertStock = new Button
-            {
-                Text = "Cảnh báo hết hàng",
-                Size = new Size(180, 40),
-                Margin = new Padding(5),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
-            };
-            buttonPanel.Controls.Add(btnUpdateInventory);
-            buttonPanel.Controls.Add(btnAlertStock);
-        }
-
-        private void ShowOrderManagementButtons()
-        {
-            buttonPanel.Controls.Clear();
-            Button btnCreateOrder = new Button
-            {
-                Text = "Tạo đơn hàng",
-                Size = new Size(180, 40),
-                Margin = new Padding(5),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
-            };
-            Button btnProcessPayment = new Button
-            {
-                Text = "Xử lý thanh toán",
-                Size = new Size(180, 40),
-                Margin = new Padding(5),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
-            };
-            Button btnPrintInvoice = new Button
-            {
-                Text = "In hóa đơn",
-                Size = new Size(180, 40),
-                Margin = new Padding(5),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
-            };
-            buttonPanel.Controls.Add(btnCreateOrder);
-            buttonPanel.Controls.Add(btnProcessPayment);
-            buttonPanel.Controls.Add(btnPrintInvoice);
-        }
-
-        private void ShowCustomerManagementButtons()
-        {
-            buttonPanel.Controls.Clear();
-            Button btnSaveCustomerInfo = new Button
-            {
-                Text = "Lưu thông tin khách hàng",
-                Size = new Size(180, 40),
-                Margin = new Padding(5),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
-            };
-            Button btnViewPurchaseHistory = new Button
-            {
-                Text = "Lịch sử mua hàng",
-                Size = new Size(180, 40),
-                Margin = new Padding(5),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
-            };
-            Button btnAccumulatePoints = new Button
-            {
-                Text = "Tích điểm",
-                Size = new Size(180, 40),
-                Margin = new Padding(5),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
-            };
-            buttonPanel.Controls.Add(btnSaveCustomerInfo);
-            buttonPanel.Controls.Add(btnViewPurchaseHistory);
-            buttonPanel.Controls.Add(btnAccumulatePoints);
-        }
-
-        private void ShowReportButtons()
-        {
-            buttonPanel.Controls.Clear();
-            Button btnSalesReport = new Button
-            {
-                Text = "Thống kê doanh số",
-                Size = new Size(180, 40),
-                Margin = new Padding(5),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
-            };
-            Button btnDetailedReport = new Button
-            {
-                Text = "Xuất báo cáo chi tiết",
-                Size = new Size(180, 40),
-                Margin = new Padding(5),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
-            };
-            buttonPanel.Controls.Add(btnSalesReport);
-            buttonPanel.Controls.Add(btnDetailedReport);
+            if (clickHandler != null) btn.Click += clickHandler;
         }
 
         private void InitializeAddEditPanel()
         {
-            addEditPanel = new Panel();
-            addEditPanel.Visible = false;
-            addEditPanel.Dock = DockStyle.Top;
-            addEditPanel.Height = 200;
+            addEditPanel = new Panel
+            {
+                Visible = false,
+                Dock = DockStyle.Top,
+                Height = 200,
+                BackColor = Color.FromArgb(245, 245, 245),
+                BorderStyle = BorderStyle.FixedSingle // Thêm đường viền
+            };
+            // Đặt panel này lên trên cùng trong rightPanel
+            rightPanel.Controls.Add(addEditPanel);
+            rightPanel.Controls.SetChildIndex(addEditPanel, 0);
 
-            var lblProductName = new Label { Text = "Product Name:", AutoSize = true };
+            var layout = new TableLayoutPanel
+            {
+                ColumnCount = 2,
+                RowCount = 6,
+                Dock = DockStyle.Fill,
+                Padding = new Padding(10)
+            };
+            addEditPanel.Controls.Add(layout);
+
             txtProductName = new TextBox { Width = 150 };
-
-            var lblCategory = new Label { Text = "Category:", AutoSize = true };
             cmbCategory = new ComboBox { Width = 150 };
-            LoadCategories();
-
-            var lblPrice = new Label { Text = "Price:", AutoSize = true };
             txtPrice = new TextBox { Width = 150 };
-
-            var lblStock = new Label { Text = "Stock:", AutoSize = true };
             txtStock = new TextBox { Width = 150 };
-
-            var lblDescription = new Label { Text = "Description:", AutoSize = true };
             txtDescription = new TextBox { Width = 150 };
 
-            btnSave = new Button { Text = "Save", Width = 75 };
-            btnSave.Click += new EventHandler(this.btnSave_Click);
+            btnSave = new Button { Text = "Save", Width = 75, BackColor = Color.FromArgb(40, 167, 69), ForeColor = Color.White };
+            btnCancel = new Button { Text = "Cancel", Width = 75, BackColor = Color.FromArgb(108, 117, 125), ForeColor = Color.White };
 
-            btnCancel = new Button { Text = "Cancel", Width = 75 };
-            btnCancel.Click += new EventHandler(this.btnCancel_Click);
-
-            var layout = new TableLayoutPanel { ColumnCount = 2, RowCount = 6, Dock = DockStyle.Fill };
-            layout.Controls.Add(lblProductName, 0, 0);
+            // Thêm label + control
+            layout.Controls.Add(new Label { Text = "Product Name:", AutoSize = true, Font = new Font("Segoe UI", 10) }, 0, 0);
             layout.Controls.Add(txtProductName, 1, 0);
-            layout.Controls.Add(lblCategory, 0, 1);
+
+            layout.Controls.Add(new Label { Text = "Category:", AutoSize = true, Font = new Font("Segoe UI", 10) }, 0, 1);
             layout.Controls.Add(cmbCategory, 1, 1);
-            layout.Controls.Add(lblPrice, 0, 2);
+
+            layout.Controls.Add(new Label { Text = "Price:", AutoSize = true, Font = new Font("Segoe UI", 10) }, 0, 2);
             layout.Controls.Add(txtPrice, 1, 2);
-            layout.Controls.Add(lblStock, 0, 3);
+
+            layout.Controls.Add(new Label { Text = "Stock:", AutoSize = true, Font = new Font("Segoe UI", 10) }, 0, 3);
             layout.Controls.Add(txtStock, 1, 3);
-            layout.Controls.Add(lblDescription, 0, 4);
+
+            layout.Controls.Add(new Label { Text = "Description:", AutoSize = true, Font = new Font("Segoe UI", 10) }, 0, 4);
             layout.Controls.Add(txtDescription, 1, 4);
+
             layout.Controls.Add(btnSave, 0, 5);
             layout.Controls.Add(btnCancel, 1, 5);
 
-            addEditPanel.Controls.Add(layout);
-            this.Controls.Add(addEditPanel);
+            btnSave.Click += btnSave_Click;
+            btnCancel.Click += btnCancel_Click;
         }
 
-        private void LoadCategories()
+        // ==================
+        // SỰ KIỆN MENU
+        // ==================
+        private void productsToolStripMenuItem_Click(object? sender, EventArgs e)
         {
-            var categories = new List<Category>();
-            categories.Add(new Category { CategoryID = 0, CategoryName = "All" });
-            categories.AddRange(CategoryManager.GetCategories());
+            leftPanel.Controls.Clear();
+            leftPanel.Controls.AddRange(new Control[] {
+                btnAdd,       // Thêm
+                btnEdit,      // Sửa
+                btnDelete,    // Xóa
+                btnCategorize, 
+                btnDataManagement
+            });
 
-            cmbFilterCategory.DataSource = categories;
-            cmbFilterCategory.DisplayMember = "CategoryName";
-            cmbFilterCategory.ValueMember = "CategoryID";
-            cmbFilterCategory.SelectedIndex = 0;
+            // Đặt lại vị trí cuộn về đầu
+            leftPanel.AutoScrollPosition = new Point(0, 0);
+            leftPanel.ScrollControlIntoView(btnAdd);
 
-            cmbCategory.DataSource = CategoryManager.GetCategories();
-            cmbCategory.DisplayMember = "CategoryName";
-            cmbCategory.ValueMember = "CategoryID";
+            // Ensure the Add button is visible
+            btnAdd.Visible = true;
+
+            // Kiểm tra trạng thái của btnAdd
+            Console.WriteLine("btnAdd.Visible: " + btnAdd.Visible);
+            Console.WriteLine("btnAdd.Enabled: " + btnAdd.Enabled);
+            Console.WriteLine("leftPanel.Controls.Count: " + leftPanel.Controls.Count);
+
+            LoadProducts();
+            HideAddEditPanel();
         }
-
-        private void btnLogout_Click(object sender, EventArgs e)
+        private void inventoryToolStripMenuItem_Click(object? sender, EventArgs e)
         {
-            this.Close();
+            leftPanel.Controls.Clear();
+            CreateStyledButton(out var btnUpdateInventory, "Cập nhật tồn kho", null);
+            CreateStyledButton(out var btnAlertStock, "Cảnh báo hết hàng", null);
+            leftPanel.Controls.AddRange(new[] { btnUpdateInventory, btnAlertStock });
+            HideAddEditPanel();
         }
+        private void ordersToolStripMenuItem_Click(object? sender, EventArgs e) => ShowCustomButtons("Tạo đơn hàng", "Xử lý thanh toán", "In hóa đơn");
+        private void customersToolStripMenuItem_Click(object? sender, EventArgs e) => ShowCustomButtons("Lưu thông tin", "Lịch sử mua hàng", "Tích điểm");
+        private void reportsToolStripMenuItem_Click(object? sender, EventArgs e) => ShowCustomButtons("Thống kê doanh số", "Xuất báo cáo");
 
-        private void productsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ShowCustomButtons(params string[] texts)
         {
-            ShowProductManagementButtons();
-            // Update DataGridView and other UI elements for product management
+            leftPanel.Controls.Clear();
+            foreach (var txt in texts)
+            {
+                CreateStyledButton(out var btn, txt, null);
+                leftPanel.Controls.Add(btn);
+            }
+            HideAddEditPanel();
         }
 
-        private void inventoryToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ShowInventoryButtons();
-            // Update DataGridView and other UI elements for inventory management
-        }
-
-        private void ordersToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ShowOrderManagementButtons();
-            // Update DataGridView and other UI elements for order management
-        }
-
-        private void customersToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ShowCustomerManagementButtons();
-            // Update DataGridView and other UI elements for customer management
-        }
-
-        private void reportsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ShowReportButtons();
-            // Update DataGridView and other UI elements for reporting
-        }
-
-        private void btnAdd_Click(object? sender, EventArgs e) // Fix nullability
+        // ==================
+        // SỰ KIỆN NÚT
+        // ==================
+        private void btnAdd_Click(object? sender, EventArgs e)
         {
             currentMode = Mode.Add;
             ClearAddEditPanel();
             ShowAddEditPanel();
         }
-
-        private void btnEdit_Click(object? sender, EventArgs e) // Fix nullability
+        private void btnEdit_Click(object? sender, EventArgs e)
         {
             if (productDisplay.SelectedRows.Count > 0)
             {
@@ -389,8 +366,7 @@ namespace FASCloset.Forms
                 }
             }
         }
-
-        private void btnDelete_Click(object? sender, EventArgs e) // Fix nullability
+        private void btnDelete_Click(object? sender, EventArgs e)
         {
             if (productDisplay.SelectedRows.Count > 0)
             {
@@ -403,23 +379,9 @@ namespace FASCloset.Forms
             }
         }
 
-        private void cmbFilterCategory_SelectedIndexChanged(object? sender, EventArgs e)
-        {
-            var selectedCategory = cmbFilterCategory.SelectedItem as Category;
-            if (selectedCategory != null)
-            {
-                int categoryId = selectedCategory.CategoryID;
-                if (categoryId == 0)
-                {
-                    LoadProducts();
-                }
-                else
-                {
-                    LoadProductsByCategory(categoryId);
-                }
-            }
-        }
-
+        // ==================
+        // SỰ KIỆN ADD/EDIT
+        // ==================
         private void btnSave_Click(object? sender, EventArgs e)
         {
             if (currentMode == Mode.Add)
@@ -434,7 +396,7 @@ namespace FASCloset.Forms
                 };
                 ProductManager.AddProduct(product);
             }
-            else if (currentMode == Mode.Edit)
+            else if (currentMode == Mode.Edit && productDisplay.SelectedRows.Count > 0)
             {
                 var selectedProduct = productDisplay.SelectedRows[0].DataBoundItem as Product;
                 if (selectedProduct != null)
@@ -450,12 +412,21 @@ namespace FASCloset.Forms
             LoadProducts();
             HideAddEditPanel();
         }
+        private void btnCancel_Click(object? sender, EventArgs e) => HideAddEditPanel();
 
-        private void btnCancel_Click(object? sender, EventArgs e)
+        // ==================
+        // HÀM PHỤ TRỢ
+        // ==================
+        private void ShowAddEditPanel()
         {
-            HideAddEditPanel();
+            addEditPanel.Visible = true;
+            addEditPanel.BringToFront(); // Đưa panel lên trên cùng
         }
-
+        private void HideAddEditPanel()
+        {
+            addEditPanel.Visible = false;
+            currentMode = Mode.View;
+        }
         private void ClearAddEditPanel()
         {
             txtProductName.Clear();
@@ -464,7 +435,6 @@ namespace FASCloset.Forms
             txtStock.Clear();
             txtDescription.Clear();
         }
-
         private void FillAddEditPanel(Product product)
         {
             txtProductName.Text = product.ProductName;
@@ -474,27 +444,39 @@ namespace FASCloset.Forms
             txtDescription.Text = product.Description;
         }
 
-        private void ShowAddEditPanel()
+        private void cmbFilterCategory_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            addEditPanel.Visible = true;
+            var selectedCategory = cmbFilterCategory.SelectedItem as Category;
+            if (selectedCategory != null)
+            {
+                if (selectedCategory.CategoryID == 0) LoadProducts();
+                else LoadProductsByCategory(selectedCategory.CategoryID);
+            }
         }
 
-        private void HideAddEditPanel()
+        private void LoadCategories()
         {
-            addEditPanel.Visible = false;
-            currentMode = Mode.View;
-        }
+            var categories = new List<Category> { new Category { CategoryID = 0, CategoryName = "All" } };
+            categories.AddRange(CategoryManager.GetCategories());
+            cmbFilterCategory.DataSource = categories;
+            cmbFilterCategory.DisplayMember = "CategoryName";
+            cmbFilterCategory.ValueMember = "CategoryID";
+            cmbFilterCategory.SelectedIndex = 0;
 
+            // ComboBox trong panel thêm/sửa
+            cmbCategory.DataSource = CategoryManager.GetCategories();
+            cmbCategory.DisplayMember = "CategoryName";
+            cmbCategory.ValueMember = "CategoryID";
+        }
         private void LoadProducts()
         {
             var products = ProductManager.GetProducts();
-            ((BindingSource)this.productDisplay.DataSource).DataSource = products; // Modify this line
+            productDisplay.DataSource = new BindingSource { DataSource = products };
         }
-
         private void LoadProductsByCategory(int categoryId)
         {
             var products = ProductManager.GetProductsByCategory(categoryId);
-            ((BindingSource)this.productDisplay.DataSource).DataSource = products; // Modify this line
+            productDisplay.DataSource = new BindingSource { DataSource = products };
         }
     }
 }
