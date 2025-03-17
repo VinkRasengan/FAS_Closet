@@ -1,3 +1,5 @@
+// This file defines the PasswordHasher class, which handles password hashing and verification.
+
 using System;
 using System.Linq;
 using System.Security.Cryptography;

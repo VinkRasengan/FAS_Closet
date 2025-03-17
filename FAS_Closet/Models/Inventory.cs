@@ -1,3 +1,5 @@
+// This file defines the Inventory class, which represents the inventory of a product.
+
 namespace FASCloset.Models
 {
     public class Inventory

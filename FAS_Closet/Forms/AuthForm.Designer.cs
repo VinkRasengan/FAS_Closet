@@ -1,3 +1,5 @@
+// This file contains the designer code for the AuthForm, which handles user authentication.
+
 namespace FASCloset.Forms
 {
     partial class AuthForm

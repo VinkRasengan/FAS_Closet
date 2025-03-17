@@ -1,3 +1,5 @@
+// This file defines the Product class, which represents a product in the system.
+
 namespace FASCloset.Models
 {
     public class Product

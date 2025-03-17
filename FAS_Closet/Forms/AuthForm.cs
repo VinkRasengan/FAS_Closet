@@ -1,3 +1,5 @@
+// This file defines the AuthForm class, which handles user authentication.
+
 using System;
 using System.Windows.Forms;
 using FASCloset.Services;
@@ -86,8 +88,8 @@ namespace FASCloset.Forms
                 Name = txtRegName.Text,
                 Email = txtRegEmail.Text,
                 Phone = txtRegPhone.Text,
-                PasswordHash = passwordHash,
-                PasswordSalt = passwordSalt
+                PasswordHash = Convert.ToBase64String(passwordHash),
+                PasswordSalt = Convert.ToBase64String(passwordSalt)
             };
 
             try

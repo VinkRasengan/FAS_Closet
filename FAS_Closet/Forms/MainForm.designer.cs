@@ -1,3 +1,5 @@
+// This file contains the designer code for the MainForm, which is the main application window.
+
 namespace FASCloset.Forms
 {
     partial class MainForm

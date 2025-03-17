@@ -16,17 +16,8 @@ namespace FASCloset
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
-            try
-            {
-                InitializeDatabase();
-                // Khởi chạy AuthForm
-                Application.Run(new AuthForm());
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"An unexpected error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            InitializeDatabase();
+            Application.Run(new AuthForm());
         }
 
         private static void InitializeDatabase()
@@ -110,6 +101,15 @@ namespace FASCloset
                         amount REAL NOT NULL,
                         method TEXT,
                         FOREIGN KEY (order_id) REFERENCES ""Order""(order_id)
+                    );
+                    CREATE TABLE IF NOT EXISTS Users (
+                        UserID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Username TEXT NOT NULL,
+                        PasswordHash BLOB NOT NULL,
+                        PasswordSalt BLOB NOT NULL,
+                        Name TEXT NOT NULL,
+                        Email TEXT,
+                        Phone TEXT
                     );";
                 using (var command = new SqliteCommand(createTablesQuery, connection))
                 {

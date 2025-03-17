@@ -1,3 +1,5 @@
+// This file defines the OrderManager class, which handles order-related operations.
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,20 +12,7 @@ namespace FASCloset.Services
     {
         private static string GetConnectionString()
         {
-            string? baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            if (baseDirectory == null)
-            {
-                throw new InvalidOperationException("Base directory is null.");
-            }
-
-            string? projectDir = Directory.GetParent(baseDirectory)?.Parent?.Parent?.Parent?.FullName;
-            if (projectDir == null)
-            {
-                throw new InvalidOperationException("Project directory is null.");
-            }
-
-            string dbPath = Path.Combine(projectDir, "Data", "FASClosetDB.sqlite");
-            return $"Data Source={dbPath};";
+            return DatabaseConnection.GetConnectionString();
         }
 
         public static void AddOrder(Order order)
@@ -129,7 +118,8 @@ namespace FASCloset.Services
                 OrderID = reader.GetInt32(0),
                 CustomerID = reader.GetInt32(1),
                 OrderDate = reader.GetDateTime(2),
-                TotalAmount = reader.GetDecimal(3)
+                TotalAmount = reader.GetDecimal(3),
+                PaymentMethod = reader.GetString(4)
             };
         }
     }

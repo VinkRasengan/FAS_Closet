@@ -1,3 +1,5 @@
+// This file defines the UserManager class, which handles user-related operations.
+
 using System;
 using Microsoft.Data.Sqlite;
 using FASCloset.Models;
@@ -9,24 +11,16 @@ namespace FASCloset.Services
     {
         private static string GetConnectionString()
         {
-            string? baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            if (baseDirectory == null)
-            {
-                throw new InvalidOperationException("Base directory is null.");
-            }
-
-            string? projectDir = Directory.GetParent(baseDirectory)?.Parent?.Parent?.Parent?.FullName;
-            if (projectDir == null)
-            {
-                throw new InvalidOperationException("Project directory is null.");
-            }
-
-            string dbPath = Path.Combine(projectDir, "Data", "FASClosetDB.sqlite");
-            return $"Data Source={dbPath};";
+            return DatabaseConnection.GetConnectionString();
         }
 
         public static void RegisterUser(User user)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             try
             {
                 using (var connection = new SqliteConnection(GetConnectionString()))
@@ -36,8 +30,8 @@ namespace FASCloset.Services
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@Username", user.Username);
-                        command.Parameters.AddWithValue("@PasswordHash", user.PasswordHash);
-                        command.Parameters.AddWithValue("@PasswordSalt", user.PasswordSalt);
+                        command.Parameters.AddWithValue("@PasswordHash", Convert.FromBase64String(user.PasswordHash));
+                        command.Parameters.AddWithValue("@PasswordSalt", Convert.FromBase64String(user.PasswordSalt));
                         command.Parameters.AddWithValue("@Name", user.Name);
                         command.Parameters.AddWithValue("@Email", string.IsNullOrWhiteSpace(user.Email) ? DBNull.Value : user.Email);
                         command.Parameters.AddWithValue("@Phone", string.IsNullOrWhiteSpace(user.Phone) ? DBNull.Value : user.Phone);
@@ -53,12 +47,22 @@ namespace FASCloset.Services
 
         public User? Login(string username, string password)
         {
+            if (username == null)
+            {
+                throw new ArgumentNullException(nameof(username));
+            }
+
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+
             try
             {
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "SELECT UserID, Username, PasswordHash, PasswordSalt FROM Users WHERE Username = @Username";
+                    string query = "SELECT UserID, Username, PasswordHash, PasswordSalt, Name, Email, Phone FROM Users WHERE Username = @Username";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@Username", username);
@@ -70,10 +74,13 @@ namespace FASCloset.Services
                                 {
                                     UserID = reader.GetInt32(0),
                                     Username = reader.GetString(1),
-                                    PasswordHash = (byte[])reader["PasswordHash"],
-                                    PasswordSalt = (byte[])reader["PasswordSalt"]
+                                    PasswordHash = Convert.ToBase64String((byte[])reader["PasswordHash"]),
+                                    PasswordSalt = Convert.ToBase64String((byte[])reader["PasswordSalt"]),
+                                    Name = reader.GetString(4),
+                                    Email = reader.IsDBNull(5) ? null : reader.GetString(5),
+                                    Phone = reader.IsDBNull(6) ? null : reader.GetString(6)
                                 };
-                                if (PasswordHasher.VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
+                                if (PasswordHasher.VerifyPasswordHash(password, Convert.FromBase64String(user.PasswordHash), Convert.FromBase64String(user.PasswordSalt)))
                                 {
                                     return user;
                                 }
@@ -91,6 +98,11 @@ namespace FASCloset.Services
 
         public static bool IsUsernameTaken(string username)
         {
+            if (username == null)
+            {
+                throw new ArgumentNullException(nameof(username));
+            }
+
             try
             {
                 using (var connection = new SqliteConnection(GetConnectionString()))
@@ -113,12 +125,17 @@ namespace FASCloset.Services
 
         public User? GetUserById(int userId)
         {
+            if (userId == 0)
+            {
+                throw new ArgumentNullException(nameof(userId));
+            }
+
             try
             {
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "SELECT UserID, Username, Name, Email, Phone FROM Users WHERE UserID = @UserID";
+                    string query = "SELECT UserID, Username, Name, Email, Phone, PasswordHash, PasswordSalt FROM Users WHERE UserID = @UserID";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@UserID", userId);
@@ -133,8 +150,8 @@ namespace FASCloset.Services
                                     Name = reader.GetString(2),
                                     Email = reader.IsDBNull(3) ? null : reader.GetString(3),
                                     Phone = reader.IsDBNull(4) ? null : reader.GetString(4),
-                                    PasswordHash = (byte[])reader["PasswordHash"],
-                                    PasswordSalt = (byte[])reader["PasswordSalt"]
+                                    PasswordHash = Convert.ToBase64String((byte[])reader["PasswordHash"]),
+                                    PasswordSalt = Convert.ToBase64String((byte[])reader["PasswordSalt"])
                                 };
                             }
                         }

@@ -1,3 +1,5 @@
+// This file defines the OrderDetail class, which represents the details of an order.
+
 namespace FASCloset.Models
 {
     public class OrderDetail

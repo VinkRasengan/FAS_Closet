@@ -1,3 +1,5 @@
+// This file defines the ProductManager class, which handles product-related operations.
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,20 +12,7 @@ namespace FASCloset.Services
     {
         private static string GetConnectionString()
         {
-            string? baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            if (baseDirectory == null)
-            {
-                throw new InvalidOperationException("Base directory is null.");
-            }
-
-            string? projectDir = Directory.GetParent(baseDirectory)?.Parent?.Parent?.Parent?.FullName;
-            if (projectDir == null)
-            {
-                throw new InvalidOperationException("Project directory is null.");
-            }
-
-            string dbPath = Path.Combine(projectDir, "Data", "FASClosetDB.sqlite");
-            return $"Data Source={dbPath};";
+            return DatabaseConnection.GetConnectionString();
         }
 
         public static void AddProduct(Product product)
@@ -33,7 +22,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "INSERT INTO Products (ProductName, CategoryID, Price, Description) VALUES (@ProductName, @CategoryID, @Price, @Description)";
+                    string query = "INSERT INTO Product (ProductName, CategoryID, Price, Description) VALUES (@ProductName, @CategoryID, @Price, @Description)";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@ProductName", product.ProductName);
@@ -57,7 +46,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "UPDATE Products SET ProductName = @ProductName, CategoryID = @CategoryID, Price = @Price, Description = @Description WHERE ProductID = @ProductID";
+                    string query = "UPDATE Product SET ProductName = @ProductName, CategoryID = @CategoryID, Price = @Price, Description = @Description WHERE ProductID = @ProductID";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@ProductName", product.ProductName);
@@ -82,7 +71,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "DELETE FROM Products WHERE ProductID = @ProductID";
+                    string query = "DELETE FROM Product WHERE ProductID = @ProductID";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@ProductID", productId);
@@ -104,7 +93,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "SELECT ProductID, ProductName, CategoryID, Price, Description FROM Products";
+                    string query = "SELECT ProductID, ProductName, CategoryID, Price, Description FROM Product";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         using (var reader = command.ExecuteReader())
@@ -129,6 +118,111 @@ namespace FASCloset.Services
                 throw new InvalidOperationException("Database error occurred while retrieving products.", ex);
             }
             return products;
+        }
+
+        public static List<Product> GetProductsByCategory(int categoryId)
+        {
+            var products = new List<Product>();
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = "SELECT ProductID, ProductName, CategoryID, Price, Description FROM Product WHERE CategoryID = @CategoryID";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@CategoryID", categoryId);
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                products.Add(new Product
+                                {
+                                    ProductID = reader.GetInt32(0),
+                                    ProductName = reader.GetString(1),
+                                    CategoryID = reader.GetInt32(2),
+                                    Price = reader.GetDecimal(3),
+                                    Description = reader.GetString(4)
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while retrieving products by category.", ex);
+            }
+            return products;
+        }
+
+        public static Product? GetProductById(int id) // Allow null return
+        {
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = "SELECT ProductID, ProductName, CategoryID, ManufacturerID, Price, Stock, Description FROM Product WHERE ProductID = @ProductID";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@ProductID", id);
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                return new Product
+                                {
+                                    ProductID = reader.GetInt32(0),
+                                    ProductName = reader.GetString(1),
+                                    CategoryID = reader.GetInt32(2),
+                                    ManufacturerID = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
+                                    Price = reader.GetDecimal(4),
+                                    Stock = reader.GetInt32(5),
+                                    Description = reader.GetString(6)
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while retrieving product by ID.", ex);
+            }
+            return null;
+        }
+
+        public static List<Category> GetCategories()
+        {
+            var categories = new List<Category>();
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = "SELECT CategoryID, CategoryName FROM Categories";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                categories.Add(new Category
+                                {
+                                    CategoryID = reader.GetInt32(0),
+                                    CategoryName = reader.GetString(1)
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while retrieving categories.", ex);
+            }
+            return categories;
         }
     }
 }

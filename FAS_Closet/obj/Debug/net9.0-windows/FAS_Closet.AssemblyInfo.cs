@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FAS_Closet")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6f0adb950da17355d1dfb6e7e90949c091b9c599")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f08488310ebd44b1e380373f0aae7988410fc4c8")]
 [assembly: System.Reflection.AssemblyProductAttribute("FAS_Closet")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FAS_Closet")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

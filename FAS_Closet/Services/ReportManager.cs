@@ -1,3 +1,5 @@
+// This file defines the ReportManager class, which handles report generation.
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,20 +12,7 @@ namespace FASCloset.Services
     {
         private static string GetConnectionString()
         {
-            string? baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            if (baseDirectory == null)
-            {
-                throw new InvalidOperationException("Base directory is null.");
-            }
-
-            string? projectDir = Directory.GetParent(baseDirectory)?.Parent?.Parent?.Parent?.FullName;
-            if (projectDir == null)
-            {
-                throw new InvalidOperationException("Project directory is null.");
-            }
-
-            string dbPath = Path.Combine(projectDir, "Data", "FASClosetDB.sqlite");
-            return $"Data Source={dbPath};";
+            return DatabaseConnection.GetConnectionString();
         }
 
         public static DataTable GenerateSalesReport(DateTime startDate, DateTime endDate)
@@ -55,6 +44,44 @@ namespace FASCloset.Services
                 throw new InvalidOperationException("Database error occurred while generating report.", ex);
             }
             return dataTable;
+        }
+
+        public static List<Product> GetBestSellingProducts()
+        {
+            var products = new List<Product>();
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = @"
+                        SELECT Products.ProductID, Products.ProductName, SUM(OrderDetails.Quantity) AS TotalSold
+                        FROM OrderDetails
+                        JOIN Products ON OrderDetails.ProductID = Products.ProductID
+                        GROUP BY Products.ProductID, Products.ProductName
+                        ORDER BY TotalSold DESC";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                products.Add(new Product
+                                {
+                                    ProductID = reader.GetInt32(0),
+                                    ProductName = reader.GetString(1),
+                                    Description = string.Empty // Provide a default value for Description
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while retrieving best-selling products.", ex);
+            }
+            return products;
         }
     }
 }
