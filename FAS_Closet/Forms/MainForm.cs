@@ -10,6 +10,8 @@ namespace FASCloset.Forms
 {
     public partial class MainForm : Form
     {
+        private Label lblWelcome = null!;
+        private Button btnLogout = null!;
         private DataGridView productDisplay = null!;
         private FlowLayoutPanel buttonPanel = null!;
         private Button btnAdd = null!, btnEdit = null!, btnDelete = null!, btnCategorize = null!, btnDataManagement = null!;
@@ -24,8 +26,8 @@ namespace FASCloset.Forms
         public MainForm(User user)
         {
             InitializeComponent();
-            lblWelcome.Text = "Welcome, " + user.Name;
             InitializeCustomComponents();
+            lblWelcome.Text = "Welcome, " + user.Name; // Move this line after InitializeCustomComponents
         }
 
         private void InitializeCustomComponents()
@@ -33,39 +35,49 @@ namespace FASCloset.Forms
             this.ClientSize = new System.Drawing.Size(800, 600);
 
             var headerPanel = new Panel();
-            headerPanel.Height = 40;
+            headerPanel.Height = 60;
             headerPanel.Dock = DockStyle.Top;
 
-            var headerTableLayoutPanel = new TableLayoutPanel();
-            headerTableLayoutPanel.ColumnCount = 2;
-            headerTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
-            headerTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
-            headerTableLayoutPanel.Dock = DockStyle.Fill;
+            var headerInfoPanel = new Panel();
+            headerInfoPanel.Dock = DockStyle.Top;
+            headerInfoPanel.Height = 40;
 
-            this.lblWelcome.Dock = DockStyle.Fill;
-            this.lblWelcome.TextAlign = ContentAlignment.MiddleLeft;
-            headerTableLayoutPanel.Controls.Add(this.lblWelcome, 0, 0);
+            this.lblWelcome = new Label();
+            this.lblWelcome.AutoSize = true;
+            this.lblWelcome.Font = new System.Drawing.Font("Arial", 12F);
+            this.lblWelcome.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblWelcome.Dock = DockStyle.Left;
+            headerInfoPanel.Controls.Add(this.lblWelcome);
 
-            this.btnLogout.Width = 50;
-            this.btnLogout.Height = 20;
+            this.btnLogout = new Button();
+            this.btnLogout.Text = "Logout";
+            this.btnLogout.Width = 80;
+            this.btnLogout.Height = 30;
             this.btnLogout.Dock = DockStyle.Right;
-            headerTableLayoutPanel.Controls.Add(this.btnLogout, 1, 0);
+            this.btnLogout.Click += new EventHandler(this.btnLogout_Click);
+            headerInfoPanel.Controls.Add(this.btnLogout);
+
+            var filterPanel = new Panel();
+            filterPanel.Dock = DockStyle.Fill;
+            filterPanel.Padding = new Padding(5, 0, 5, 0);
 
             this.cmbFilterCategory = new ComboBox();
-            this.cmbFilterCategory.Dock = DockStyle.Top;
+            this.cmbFilterCategory.Dock = DockStyle.Fill;
             this.cmbFilterCategory.SelectedIndexChanged += new EventHandler(this.cmbFilterCategory_SelectedIndexChanged);
-            headerPanel.Controls.Add(this.cmbFilterCategory); // Add this line
+            filterPanel.Controls.Add(this.cmbFilterCategory);
 
-            headerPanel.Controls.Add(headerTableLayoutPanel);
+            headerPanel.Controls.Add(filterPanel);
+            headerPanel.Controls.Add(headerInfoPanel);
             this.Controls.Add(headerPanel);
 
-            var tableLayoutPanel = new TableLayoutPanel();
-            tableLayoutPanel.ColumnCount = 2;
-            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 200F));
-            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel.RowCount = 1;
-            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel.Dock = DockStyle.Fill;
+            var mainLayout = new TableLayoutPanel();
+            mainLayout.ColumnCount = 2;
+            mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 200F));
+            mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            mainLayout.RowCount = 1;
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            mainLayout.Dock = DockStyle.Fill;
+            this.Controls.Add(mainLayout);
 
             this.productDisplay = new DataGridView();
             this.productDisplay.Dock = DockStyle.Fill;
@@ -74,19 +86,19 @@ namespace FASCloset.Forms
             this.productDisplay.AllowUserToDeleteRows = false;
             this.productDisplay.MultiSelect = false;
             this.productDisplay.AutoGenerateColumns = false;
-            this.productDisplay.DataSource = new BindingSource(); // Add this line
+            this.productDisplay.DataSource = new BindingSource();
             this.productDisplay.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "ID", DataPropertyName = "ProductID" });
             this.productDisplay.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Name", DataPropertyName = "ProductName" });
             this.productDisplay.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Category", DataPropertyName = "CategoryID" });
             this.productDisplay.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Price", DataPropertyName = "Price" });
             this.productDisplay.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Stock", DataPropertyName = "Stock" });
             this.productDisplay.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Description", DataPropertyName = "Description" });
-            tableLayoutPanel.Controls.Add(this.productDisplay, 1, 0);
+            mainLayout.Controls.Add(this.productDisplay, 1, 0);
 
             this.buttonPanel = new FlowLayoutPanel();
             this.buttonPanel.Dock = DockStyle.Fill;
             this.buttonPanel.FlowDirection = FlowDirection.TopDown;
-            tableLayoutPanel.Controls.Add(this.buttonPanel, 0, 0);
+            mainLayout.Controls.Add(this.buttonPanel, 0, 0);
 
             this.btnAdd = new Button();
             this.btnAdd.Text = "Thêm";
@@ -116,11 +128,9 @@ namespace FASCloset.Forms
             this.btnDataManagement.Size = new System.Drawing.Size(150, 30);
             this.buttonPanel.Controls.Add(this.btnDataManagement);
 
-            this.Controls.Add(tableLayoutPanel);
-
             InitializeAddEditPanel();
-            LoadCategories(); // Add this line
-            LoadProducts(); // Add this line
+            LoadCategories();
+            LoadProducts();
         }
 
         private void InitializeAddEditPanel()

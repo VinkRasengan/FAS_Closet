@@ -77,8 +77,8 @@ namespace FASCloset.Services
                                     PasswordHash = Convert.ToBase64String((byte[])reader["PasswordHash"]),
                                     PasswordSalt = Convert.ToBase64String((byte[])reader["PasswordSalt"]),
                                     Name = reader.GetString(4),
-                                    Email = reader.IsDBNull(5) ? null : reader.GetString(5),
-                                    Phone = reader.IsDBNull(6) ? null : reader.GetString(6)
+                                    Email = reader.IsDBNull(5) ? string.Empty : reader.GetString(5), // Fix nullability
+                                    Phone = reader.IsDBNull(6) ? string.Empty : reader.GetString(6)  // Fix nullability
                                 };
                                 if (PasswordHasher.VerifyPasswordHash(password, Convert.FromBase64String(user.PasswordHash), Convert.FromBase64String(user.PasswordSalt)))
                                 {
@@ -148,8 +148,8 @@ namespace FASCloset.Services
                                     UserID = reader.GetInt32(0),
                                     Username = reader.GetString(1),
                                     Name = reader.GetString(2),
-                                    Email = reader.IsDBNull(3) ? null : reader.GetString(3),
-                                    Phone = reader.IsDBNull(4) ? null : reader.GetString(4),
+                                    Email = reader.IsDBNull(3) ? string.Empty : reader.GetString(3), // Fix nullability
+                                    Phone = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),  // Fix nullability
                                     PasswordHash = Convert.ToBase64String((byte[])reader["PasswordHash"]),
                                     PasswordSalt = Convert.ToBase64String((byte[])reader["PasswordSalt"])
                                 };
