@@ -72,7 +72,7 @@ namespace FASCloset.Forms
 
             var mainLayout = new TableLayoutPanel();
             mainLayout.ColumnCount = 2;
-            mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 200F));
+            mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 220F)); // Increase width for button panel
             mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             mainLayout.RowCount = 1;
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
@@ -98,39 +98,177 @@ namespace FASCloset.Forms
             this.buttonPanel = new FlowLayoutPanel();
             this.buttonPanel.Dock = DockStyle.Fill;
             this.buttonPanel.FlowDirection = FlowDirection.TopDown;
+            this.buttonPanel.WrapContents = false;
+            this.buttonPanel.AutoScroll = true;
+            this.buttonPanel.Padding = new Padding(10);
             mainLayout.Controls.Add(this.buttonPanel, 0, 0);
 
-            this.btnAdd = new Button();
-            this.btnAdd.Text = "Thêm";
-            this.btnAdd.Size = new System.Drawing.Size(150, 30);
-            this.btnAdd.Click += new EventHandler(this.btnAdd_Click);
-            this.buttonPanel.Controls.Add(this.btnAdd);
-
-            this.btnEdit = new Button();
-            this.btnEdit.Text = "Sửa";
-            this.btnEdit.Size = new System.Drawing.Size(150, 30);
-            this.btnEdit.Click += new EventHandler(this.btnEdit_Click);
-            this.buttonPanel.Controls.Add(this.btnEdit);
-
-            this.btnDelete = new Button();
-            this.btnDelete.Text = "Xóa";
-            this.btnDelete.Size = new System.Drawing.Size(150, 30);
-            this.btnDelete.Click += new EventHandler(this.btnDelete_Click);
-            this.buttonPanel.Controls.Add(this.btnDelete);
-
-            this.btnCategorize = new Button();
-            this.btnCategorize.Text = "Phân loại";
-            this.btnCategorize.Size = new System.Drawing.Size(150, 30);
-            this.buttonPanel.Controls.Add(this.btnCategorize);
-
-            this.btnDataManagement = new Button();
-            this.btnDataManagement.Text = "Quản lý dữ liệu";
-            this.btnDataManagement.Size = new System.Drawing.Size(150, 30);
-            this.buttonPanel.Controls.Add(this.btnDataManagement);
+            ShowProductManagementButtons();
 
             InitializeAddEditPanel();
             LoadCategories();
             LoadProducts();
+        }
+
+        private void CreateStyledButton(ref Button btn, string text, EventHandler? clickHandler)
+        {
+            btn = new Button
+            {
+                Text = text,
+                Size = new Size(180, 40),
+                Margin = new Padding(5),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            if (clickHandler != null)
+                btn.Click += clickHandler;
+        }
+
+        private void ShowProductManagementButtons()
+        {
+            buttonPanel.Controls.Clear();
+            CreateStyledButton(ref btnAdd, "Thêm", btnAdd_Click);
+            CreateStyledButton(ref btnEdit, "Sửa", btnEdit_Click);
+            CreateStyledButton(ref btnDelete, "Xóa", btnDelete_Click);
+            CreateStyledButton(ref btnCategorize, "Phân loại", null);
+            CreateStyledButton(ref btnDataManagement, "Quản lý dữ liệu", null);
+            buttonPanel.Controls.Add(btnAdd);
+            buttonPanel.Controls.Add(btnEdit);
+            buttonPanel.Controls.Add(btnDelete);
+            buttonPanel.Controls.Add(btnCategorize);
+            buttonPanel.Controls.Add(btnDataManagement);
+        }
+
+        private void ShowInventoryButtons()
+        {
+            buttonPanel.Controls.Clear();
+            Button btnUpdateInventory = new Button
+            {
+                Text = "Cập nhật tồn kho",
+                Size = new Size(180, 40),
+                Margin = new Padding(5),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            Button btnAlertStock = new Button
+            {
+                Text = "Cảnh báo hết hàng",
+                Size = new Size(180, 40),
+                Margin = new Padding(5),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            buttonPanel.Controls.Add(btnUpdateInventory);
+            buttonPanel.Controls.Add(btnAlertStock);
+        }
+
+        private void ShowOrderManagementButtons()
+        {
+            buttonPanel.Controls.Clear();
+            Button btnCreateOrder = new Button
+            {
+                Text = "Tạo đơn hàng",
+                Size = new Size(180, 40),
+                Margin = new Padding(5),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            Button btnProcessPayment = new Button
+            {
+                Text = "Xử lý thanh toán",
+                Size = new Size(180, 40),
+                Margin = new Padding(5),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            Button btnPrintInvoice = new Button
+            {
+                Text = "In hóa đơn",
+                Size = new Size(180, 40),
+                Margin = new Padding(5),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            buttonPanel.Controls.Add(btnCreateOrder);
+            buttonPanel.Controls.Add(btnProcessPayment);
+            buttonPanel.Controls.Add(btnPrintInvoice);
+        }
+
+        private void ShowCustomerManagementButtons()
+        {
+            buttonPanel.Controls.Clear();
+            Button btnSaveCustomerInfo = new Button
+            {
+                Text = "Lưu thông tin khách hàng",
+                Size = new Size(180, 40),
+                Margin = new Padding(5),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            Button btnViewPurchaseHistory = new Button
+            {
+                Text = "Lịch sử mua hàng",
+                Size = new Size(180, 40),
+                Margin = new Padding(5),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            Button btnAccumulatePoints = new Button
+            {
+                Text = "Tích điểm",
+                Size = new Size(180, 40),
+                Margin = new Padding(5),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            buttonPanel.Controls.Add(btnSaveCustomerInfo);
+            buttonPanel.Controls.Add(btnViewPurchaseHistory);
+            buttonPanel.Controls.Add(btnAccumulatePoints);
+        }
+
+        private void ShowReportButtons()
+        {
+            buttonPanel.Controls.Clear();
+            Button btnSalesReport = new Button
+            {
+                Text = "Thống kê doanh số",
+                Size = new Size(180, 40),
+                Margin = new Padding(5),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            Button btnDetailedReport = new Button
+            {
+                Text = "Xuất báo cáo chi tiết",
+                Size = new Size(180, 40),
+                Margin = new Padding(5),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            buttonPanel.Controls.Add(btnSalesReport);
+            buttonPanel.Controls.Add(btnDetailedReport);
         }
 
         private void InitializeAddEditPanel()
@@ -203,26 +341,32 @@ namespace FASCloset.Forms
 
         private void productsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            ShowProductManagementButtons();
+            // Update DataGridView and other UI elements for product management
         }
 
         private void inventoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            ShowInventoryButtons();
+            // Update DataGridView and other UI elements for inventory management
         }
 
         private void ordersToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            ShowOrderManagementButtons();
+            // Update DataGridView and other UI elements for order management
         }
 
         private void customersToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            ShowCustomerManagementButtons();
+            // Update DataGridView and other UI elements for customer management
         }
 
         private void reportsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-        }
-
-        private void dashboardToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+            ShowReportButtons();
+            // Update DataGridView and other UI elements for reporting
         }
 
         private void btnAdd_Click(object? sender, EventArgs e) // Fix nullability
