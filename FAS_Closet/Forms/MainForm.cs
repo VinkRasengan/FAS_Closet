@@ -242,8 +242,9 @@ namespace FASCloset.Forms
             addEditPanel = new Panel
             {
                 Visible = false,
-                Dock = DockStyle.Top,
-                Height = 200,
+                Dock = DockStyle.Top, // Đặt Dock=Top để đẩy DataGridView xuống
+                Height = 300, // Tăng chiều cao để chứa toàn bộ nội dung
+                AutoScroll = true, // Thêm thanh cuộn nếu nội dung vượt quá
                 BackColor = Color.FromArgb(245, 245, 245),
                 BorderStyle = BorderStyle.FixedSingle // Thêm đường viền
             };
@@ -419,12 +420,15 @@ namespace FASCloset.Forms
         // ==================
         private void ShowAddEditPanel()
         {
+            filterPanel.Visible = true;
             addEditPanel.Visible = true;
-            addEditPanel.BringToFront(); // Đưa panel lên trên cùng
+            addEditPanel.BringToFront();
+            rightPanel.Controls.SetChildIndex(addEditPanel, 0); // Đảm bảo ở đầu
         }
         private void HideAddEditPanel()
         {
             addEditPanel.Visible = false;
+            filterPanel.Visible = true; // Hiển thị lại filterPanel
             currentMode = Mode.View;
         }
         private void ClearAddEditPanel()
