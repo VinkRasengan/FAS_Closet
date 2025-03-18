@@ -94,7 +94,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "SELECT ProductID, ProductName, CategoryID, Price, Description FROM Product";
+                    string query = "SELECT product_id, name, category_id, price, description FROM Product"; // Fix column names
                     using (var command = new SqliteCommand(query, connection))
                     {
                         using (var reader = command.ExecuteReader())
@@ -239,6 +239,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
+                    EnsureCategoriesTableExists(connection); // Ensure table exists
                     string query = "SELECT CategoryID, CategoryName FROM Categories";
                     using (var command = new SqliteCommand(query, connection))
                     {
@@ -261,6 +262,28 @@ namespace FASCloset.Services
                 throw new InvalidOperationException("Database error occurred while retrieving categories.", ex);
             }
             return categories;
+        }
+
+        private static void EnsureCategoriesTableExists(SqliteConnection connection)
+        {
+            string checkTableQuery = "SELECT name FROM sqlite_master WHERE type='table' AND name='Categories';";
+            using (var command = new SqliteCommand(checkTableQuery, connection))
+            {
+                if (command.ExecuteScalar() == null)
+                {
+                    using (var createCommand = new SqliteCommand(@"
+                        CREATE TABLE Categories (
+                            CategoryID INTEGER PRIMARY KEY AUTOINCREMENT,
+                            CategoryName TEXT NOT NULL,
+                            Description TEXT,
+                            IsActive INTEGER NOT NULL,
+                            CreatedDate DATETIME NOT NULL
+                        );", connection))
+                    {
+                        createCommand.ExecuteNonQuery();
+                    }
+                }
+            }
         }
     }
 }

@@ -24,8 +24,42 @@ namespace FASCloset.Forms
             // Initialize other components and set properties
         }
 
+        private bool ValidateOrderInputs()
+        {
+            if (string.IsNullOrWhiteSpace(txtCustomerId.Text))
+            {
+                MessageBox.Show("Customer ID is required.");
+                return false;
+            }
+            if (!int.TryParse(txtCustomerId.Text, out _))
+            {
+                MessageBox.Show("Customer ID must be a valid number.");
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(txtTotalAmount.Text))
+            {
+                MessageBox.Show("Total Amount is required.");
+                return false;
+            }
+            if (!decimal.TryParse(txtTotalAmount.Text, out _))
+            {
+                MessageBox.Show("Total Amount must be a valid decimal number.");
+                return false;
+            }
+            if (cmbPaymentMethod.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a payment method.");
+                return false;
+            }
+            return true;
+        }
+
         private void btnCreateOrder_Click(object sender, EventArgs e)
         {
+            if (!ValidateOrderInputs())
+            {
+                return;
+            }
             try
             {
                 var order = new Order

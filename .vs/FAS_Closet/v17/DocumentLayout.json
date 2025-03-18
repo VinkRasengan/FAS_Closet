@@ -3,16 +3,16 @@
   "WorkspaceRootPath": "C:\\Project\\FAS_Closet\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\project\\fas_closet\\fas_closet\\forms\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\forms\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\project\\fas_closet\\fas_closet\\forms\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\forms\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
       "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\project\\fas_closet\\fas_closet\\forms\\mainform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\forms\\mainform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\project\\fas_closet\\fas_closet\\forms\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\forms\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|C:\\Project\\FAS_Closet\\fas_closet\\forms\\uc_customermanagement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
@@ -30,11 +30,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "MainForm.cs [Design]",
               "DocumentMoniker": "C:\\Project\\FAS_Closet\\FAS_Closet\\Forms\\MainForm.cs",
               "RelativeDocumentMoniker": "FAS_Closet\\Forms\\MainForm.cs",
@@ -57,15 +57,16 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "MainForm.cs",
               "DocumentMoniker": "C:\\Project\\FAS_Closet\\FAS_Closet\\Forms\\MainForm.cs",
               "RelativeDocumentMoniker": "FAS_Closet\\Forms\\MainForm.cs",
               "ToolTip": "C:\\Project\\FAS_Closet\\FAS_Closet\\Forms\\MainForm.cs",
               "RelativeToolTip": "FAS_Closet\\Forms\\MainForm.cs",
-              "ViewState": "AgIAAM0AAAAAAAAAAAAwwOUAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAuwBQAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-17T20:49:31.576Z"
+              "WhenOpened": "2025-03-17T20:49:31.576Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -81,7 +82,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "MainForm.designer.cs",
               "DocumentMoniker": "C:\\Project\\FAS_Closet\\FAS_Closet\\Forms\\MainForm.designer.cs",
               "RelativeDocumentMoniker": "FAS_Closet\\Forms\\MainForm.designer.cs",

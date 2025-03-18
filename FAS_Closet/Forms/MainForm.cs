@@ -8,6 +8,8 @@ namespace FASCloset.Forms
 {
     public partial class MainForm : Form
     {
+        private UcProductManagement? ucProductManagement = null;
+
         public MainForm(User user)
         {
             InitializeComponent();
@@ -24,7 +26,7 @@ namespace FASCloset.Forms
         private void btnProductManagement_Click(object sender, EventArgs e)
         {
             UpdateFeatureToolbar(new string[] { "Thêm", "Sửa", "Xóa", "Phân loại" });
-            LoadUserControl(new UcProductManagement
+            ucProductManagement = new UcProductManagement
             {
                 ProductDisplay = new DataGridView(),
                 TxtProductName = new TextBox(),
@@ -34,8 +36,10 @@ namespace FASCloset.Forms
                 TxtDescription = new TextBox(),
                 FilterPanel = new Panel(),
                 AddEditPanel = new Panel(),
-                RightPanel = new Panel()
-            });
+                RightPanel = new Panel(),
+                TxtSearch = new TextBox()
+            };
+            LoadUserControl(ucProductManagement);
         }
 
         private void btnInventoryManagement_Click(object sender, EventArgs e)
@@ -45,7 +49,8 @@ namespace FASCloset.Forms
             {
                 txtProductId = new TextBox(),
                 txtStockQuantity = new TextBox(),
-                dataGridViewLowStock = new DataGridView()
+                dataGridViewLowStock = new DataGridView(),
+                TxtSearchProductId = new TextBox()
             });
         }
 
@@ -71,7 +76,8 @@ namespace FASCloset.Forms
                 TxtCustomerAddress = new TextBox(),
                 TxtCustomerId = new TextBox(),
                 TxtLoyaltyPoints = new TextBox(),
-                DataGridViewPurchaseHistory = new DataGridView()
+                DataGridViewPurchaseHistory = new DataGridView(),
+                TxtSearchCustomer = new TextBox()
             });
         }
 
@@ -82,7 +88,8 @@ namespace FASCloset.Forms
             {
                 DateTimePickerStartDate = new DateTimePicker(),
                 DateTimePickerEndDate = new DateTimePicker(),
-                DataGridViewReport = new DataGridView()
+                DataGridViewReport = new DataGridView(),
+                ProgressBarReport = new ProgressBar()
             });
         }
 
@@ -116,8 +123,24 @@ namespace FASCloset.Forms
                     ForeColor = Color.White,
                     FlatStyle = FlatStyle.Flat
                 };
-                // Ví dụ: khi nhấn vào nút tính năng, hiển thị thông báo (bạn có thể gán các sự kiện cụ thể)
-                btn.Click += (s, e) => MessageBox.Show("Chức năng: " + feature);
+                // Liên kết sự kiện Click của nút với các phương thức tương ứng trong UcProductManagement
+                if (feature == "Thêm")
+                {
+                    btn.Click += (s, e) => ucProductManagement?.btnAdd_Click(s ?? this, e);
+                }
+                else if (feature == "Sửa")
+                {
+                    btn.Click += (s, e) => ucProductManagement?.btnEdit_Click(s ?? this, e);
+                }
+                else if (feature == "Xóa")
+                {
+                    btn.Click += (s, e) => ucProductManagement?.btnDelete_Click(s ?? this, e);
+                }
+                else
+                {
+                    // Ví dụ: khi nhấn vào nút tính năng, hiển thị thông báo (bạn có thể gán các sự kiện cụ thể)
+                    btn.Click += (s, e) => MessageBox.Show("Chức năng: " + feature);
+                }
                 featureToolbarPanel.Controls.Add(btn);
             }
         }

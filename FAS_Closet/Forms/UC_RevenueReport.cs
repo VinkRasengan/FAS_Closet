@@ -18,11 +18,17 @@ namespace FASCloset.Forms
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public required DataGridView DataGridViewReport { get; set; }
 
-        private BackgroundWorker backgroundWorker; // Add this line
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public required ProgressBar ProgressBarReport { get; set; }
+
+        private readonly BackgroundWorker backgroundWorker; // Add this line
 
         public UcRevenueReport()
         {
             InitializeComponent();
+            backgroundWorker = new BackgroundWorker(); // Ensure initialization
+            backgroundWorker.DoWork += BackgroundWorker_DoWork;
+            backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
         }
 
         private void InitializeComponent()
@@ -30,9 +36,10 @@ namespace FASCloset.Forms
             DateTimePickerStartDate = new DateTimePicker();
             DateTimePickerEndDate = new DateTimePicker();
             DataGridViewReport = new DataGridView();
-            backgroundWorker = new BackgroundWorker(); // Add this line
-            backgroundWorker.DoWork += BackgroundWorker_DoWork; // Add this line
-            backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted; // Add this line
+            ProgressBarReport = new ProgressBar();
+            ProgressBarReport.Location = new Point(10, 10); // Adjust location as needed
+            ProgressBarReport.Size = new Size(200, 20); // Adjust size as needed
+            this.Controls.Add(ProgressBarReport);
             // Initialize other components and set properties
             this.Controls.Add(DateTimePickerStartDate);
             this.Controls.Add(DateTimePickerEndDate);
@@ -43,6 +50,8 @@ namespace FASCloset.Forms
         {
             if (!backgroundWorker.IsBusy)
             {
+                ProgressBarReport.Style = ProgressBarStyle.Marquee;
+                ProgressBarReport.Visible = true;
                 backgroundWorker.RunWorkerAsync("GenerateSalesReport"); // Modify this line
             }
         }
@@ -51,13 +60,15 @@ namespace FASCloset.Forms
         {
             if (!backgroundWorker.IsBusy)
             {
+                ProgressBarReport.Style = ProgressBarStyle.Marquee;
+                ProgressBarReport.Visible = true;
                 backgroundWorker.RunWorkerAsync("ExportDetailedReport"); // Modify this line
             }
         }
 
         private void BackgroundWorker_DoWork(object? sender, DoWorkEventArgs e) // Update nullability
         {
-            string task = e.Argument as string;
+            string? task = e.Argument as string; // Add nullability
             if (task == "GenerateSalesReport")
             {
                 DateTime startDate = DateTimePickerStartDate.Value;
@@ -98,6 +109,7 @@ namespace FASCloset.Forms
 
         private void BackgroundWorker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e) // Update nullability
         {
+            ProgressBarReport.Visible = false;
             if (e.Error != null)
             {
                 MessageBox.Show("An error occurred: " + e.Error.Message);

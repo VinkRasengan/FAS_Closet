@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using FASCloset.Models;
 using FASCloset.Services;
 using System.ComponentModel;
+using System.Linq;
 
 namespace FASCloset.Forms
 {
@@ -11,61 +12,21 @@ namespace FASCloset.Forms
         private enum Mode { View, Add, Edit }
         private Mode currentMode = Mode.View;
 
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public required DataGridView ProductDisplay { get; set; }
-        
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public required TextBox TxtProductName { get; set; }
-        
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public required ComboBox CmbCategory { get; set; }
-        
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public required TextBox TxtPrice { get; set; }
-        
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public required TextBox TxtStock { get; set; }
-        
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public required TextBox TxtDescription { get; set; }
-        
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public required Panel FilterPanel { get; set; }
-        
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public required Panel AddEditPanel { get; set; }
-        
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public required Panel RightPanel { get; set; }
-
         public UcProductManagement()
         {
             InitializeComponent();
             LoadProducts();
+            LoadCategories();
         }
 
-        private void InitializeComponent()
-        {
-            ProductDisplay = new DataGridView();
-            TxtProductName = new TextBox();
-            CmbCategory = new ComboBox();
-            TxtPrice = new TextBox();
-            TxtStock = new TextBox();
-            TxtDescription = new TextBox();
-            FilterPanel = new Panel();
-            AddEditPanel = new Panel();
-            RightPanel = new Panel();
-            // Initialize other components and set properties
-        }
-
-        private void btnAdd_Click(object sender, EventArgs e)
+        public void btnAdd_Click(object sender, EventArgs e)
         {
             currentMode = Mode.Add;
             ClearAddEditPanel();
             ShowAddEditPanel();
         }
 
-        private void btnEdit_Click(object sender, EventArgs e)
+        public void btnEdit_Click(object sender, EventArgs e)
         {
             if (ProductDisplay.SelectedRows.Count > 0)
             {
@@ -79,16 +40,23 @@ namespace FASCloset.Forms
             }
         }
 
-        private void btnDelete_Click(object sender, EventArgs e)
+        public void btnDelete_Click(object sender, EventArgs e)
         {
             if (ProductDisplay.SelectedRows.Count > 0)
             {
                 var selectedProduct = ProductDisplay.SelectedRows[0].DataBoundItem as Product;
                 if (selectedProduct != null)
                 {
-                    ProductManager.DeleteProduct(selectedProduct.ProductID);
-                    LoadProducts();
+                    if (MessageBox.Show("Bạn có chắc chắn muốn xóa sản phẩm này?", "Xác Nhận", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        ProductManager.DeleteProduct(selectedProduct.ProductID);
+                        LoadProducts();
+                    }
                 }
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng chọn một sản phẩm để xóa.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -96,14 +64,35 @@ namespace FASCloset.Forms
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(TxtProductName.Text) || string.IsNullOrWhiteSpace(TxtDescription.Text))
+                {
+                    MessageBox.Show("Tên sản phẩm và mô tả là bắt buộc.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                TxtProductName.Text = TxtProductName.Text.Trim();
+                TxtDescription.Text = TxtDescription.Text.Trim();
+
+                decimal price;
+                if (!decimal.TryParse(TxtPrice.Text, out price))
+                {
+                    MessageBox.Show("Giá phải là một số hợp lệ.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                int stock;
+                if (!int.TryParse(TxtStock.Text, out stock))
+                {
+                    MessageBox.Show("Số lượng tồn kho phải là một số nguyên hợp lệ.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
                 if (currentMode == Mode.Add)
                 {
                     var product = new Product
                     {
                         ProductName = TxtProductName.Text,
                         CategoryID = (int)CmbCategory.SelectedValue!,
-                        Price = decimal.Parse(TxtPrice.Text),
-                        Stock = int.Parse(TxtStock.Text),
+                        Price = price,
+                        Stock = stock,
                         Description = TxtDescription.Text
                     };
                     ProductManager.AddProduct(product);
@@ -115,18 +104,14 @@ namespace FASCloset.Forms
                     {
                         selectedProduct.ProductName = TxtProductName.Text;
                         selectedProduct.CategoryID = (int)CmbCategory.SelectedValue!;
-                        selectedProduct.Price = decimal.Parse(TxtPrice.Text);
-                        selectedProduct.Stock = int.Parse(TxtStock.Text);
+                        selectedProduct.Price = price;
+                        selectedProduct.Stock = stock;
                         selectedProduct.Description = TxtDescription.Text;
                         ProductManager.UpdateProduct(selectedProduct);
                     }
                 }
                 LoadProducts();
                 HideAddEditPanel();
-            }
-            catch (FormatException ex)
-            {
-                MessageBox.Show("Invalid input format: " + ex.Message);
             }
             catch (Exception ex)
             {
@@ -162,7 +147,6 @@ namespace FASCloset.Forms
             FilterPanel.Visible = true;
             AddEditPanel.Visible = true;
             AddEditPanel.BringToFront();
-            RightPanel.Controls.SetChildIndex(AddEditPanel, 0);
         }
 
         private void HideAddEditPanel()
@@ -188,6 +172,21 @@ namespace FASCloset.Forms
             TxtPrice.Text = product.Price.ToString();
             TxtStock.Text = product.Stock.ToString();
             TxtDescription.Text = product.Description;
+        }
+
+        private void LoadCategories()
+        {
+            var categories = ProductManager.GetCategories();
+            CmbCategory.DisplayMember = "CategoryName";
+            CmbCategory.ValueMember = "CategoryID";
+            CmbCategory.DataSource = categories;
+        }
+
+        private void TxtSearch_TextChanged(object sender, EventArgs e)
+        {
+            var searchText = TxtSearch.Text.ToLower();
+            var filteredProducts = ProductManager.GetProducts().Where(p => p.ProductName.ToLower().Contains(searchText)).ToList();
+            ProductDisplay.DataSource = new BindingSource { DataSource = filteredProducts };
         }
     }
 }

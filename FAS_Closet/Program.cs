@@ -17,13 +17,7 @@ namespace FASCloset
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            InitializeDatabase();
             Application.Run(new AuthForm());
-        }
-
-        private static void InitializeDatabase()
-        {
-            DatabaseConnection.InitializeDatabase();
         }
     }
 }

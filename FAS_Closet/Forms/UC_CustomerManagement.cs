@@ -29,6 +29,9 @@ namespace FASCloset.Forms
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public required DataGridView DataGridViewPurchaseHistory { get; set; }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public required TextBox TxtSearchCustomer { get; set; }
+
         public UcCustomerManagement()
         {
             InitializeComponent();
@@ -43,6 +46,10 @@ namespace FASCloset.Forms
             TxtCustomerId = new TextBox();
             TxtLoyaltyPoints = new TextBox();
             DataGridViewPurchaseHistory = new DataGridView();
+            TxtSearchCustomer = new TextBox();
+            TxtSearchCustomer.Location = new Point(10, 10); // Adjust location as needed
+            TxtSearchCustomer.Size = new Size(200, 20); // Adjust size as needed
+            TxtSearchCustomer.TextChanged += TxtSearchCustomer_TextChanged;
             // Initialize other components and set properties
             this.Controls.Add(TxtCustomerName);
             this.Controls.Add(TxtCustomerEmail);
@@ -51,6 +58,14 @@ namespace FASCloset.Forms
             this.Controls.Add(TxtCustomerId);
             this.Controls.Add(TxtLoyaltyPoints);
             this.Controls.Add(DataGridViewPurchaseHistory);
+            this.Controls.Add(TxtSearchCustomer);
+        }
+
+        private void TxtSearchCustomer_TextChanged(object? sender, EventArgs e) // Update nullability
+        {
+            var searchText = TxtSearchCustomer.Text.ToLower();
+            var filteredCustomers = CustomerManager.GetCustomers().Where(c => c.Name.ToLower().Contains(searchText)).ToList();
+            DataGridViewPurchaseHistory.DataSource = new BindingSource { DataSource = filteredCustomers };
         }
 
         private void btnSaveCustomerInfo_Click(object sender, EventArgs e)
