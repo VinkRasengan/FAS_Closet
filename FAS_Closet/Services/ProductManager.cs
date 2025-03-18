@@ -194,6 +194,43 @@ namespace FASCloset.Services
             return null;
         }
 
+        public static Product? GetProductByName(string productName)
+        {
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = "SELECT ProductID, ProductName, CategoryID, ManufacturerID, Price, Stock, Description FROM Product WHERE ProductName = @ProductName";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@ProductName", productName);
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                return new Product
+                                {
+                                    ProductID = reader.GetInt32(0),
+                                    ProductName = reader.GetString(1),
+                                    CategoryID = reader.GetInt32(2),
+                                    ManufacturerID = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
+                                    Price = reader.GetDecimal(4),
+                                    Stock = reader.GetInt32(5),
+                                    Description = reader.GetString(6)
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while retrieving product by name.", ex);
+            }
+            return null;
+        }
+
         public static List<Category> GetCategories()
         {
             var categories = new List<Category>();

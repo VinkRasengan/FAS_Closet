@@ -11,31 +11,31 @@ namespace FASCloset.Forms
         private enum Mode { View, Add, Edit }
         private Mode currentMode = Mode.View;
 
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public required DataGridView ProductDisplay { get; set; }
         
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public required TextBox TxtProductName { get; set; }
         
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public required ComboBox CmbCategory { get; set; }
         
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public required TextBox TxtPrice { get; set; }
         
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public required TextBox TxtStock { get; set; }
         
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public required TextBox TxtDescription { get; set; }
         
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public required Panel FilterPanel { get; set; }
         
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public required Panel AddEditPanel { get; set; }
         
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public required Panel RightPanel { get; set; }
 
         public UcProductManagement()
@@ -94,33 +94,44 @@ namespace FASCloset.Forms
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            if (currentMode == Mode.Add)
+            try
             {
-                var product = new Product
+                if (currentMode == Mode.Add)
                 {
-                    ProductName = TxtProductName.Text,
-                    CategoryID = (int)CmbCategory.SelectedValue!,
-                    Price = decimal.Parse(TxtPrice.Text),
-                    Stock = int.Parse(TxtStock.Text),
-                    Description = TxtDescription.Text
-                };
-                ProductManager.AddProduct(product);
-            }
-            else if (currentMode == Mode.Edit && ProductDisplay.SelectedRows.Count > 0)
-            {
-                var selectedProduct = ProductDisplay.SelectedRows[0].DataBoundItem as Product;
-                if (selectedProduct != null)
-                {
-                    selectedProduct.ProductName = TxtProductName.Text;
-                    selectedProduct.CategoryID = (int)CmbCategory.SelectedValue!;
-                    selectedProduct.Price = decimal.Parse(TxtPrice.Text);
-                    selectedProduct.Stock = int.Parse(TxtStock.Text);
-                    selectedProduct.Description = TxtDescription.Text;
-                    ProductManager.UpdateProduct(selectedProduct);
+                    var product = new Product
+                    {
+                        ProductName = TxtProductName.Text,
+                        CategoryID = (int)CmbCategory.SelectedValue!,
+                        Price = decimal.Parse(TxtPrice.Text),
+                        Stock = int.Parse(TxtStock.Text),
+                        Description = TxtDescription.Text
+                    };
+                    ProductManager.AddProduct(product);
                 }
+                else if (currentMode == Mode.Edit && ProductDisplay.SelectedRows.Count > 0)
+                {
+                    var selectedProduct = ProductDisplay.SelectedRows[0].DataBoundItem as Product;
+                    if (selectedProduct != null)
+                    {
+                        selectedProduct.ProductName = TxtProductName.Text;
+                        selectedProduct.CategoryID = (int)CmbCategory.SelectedValue!;
+                        selectedProduct.Price = decimal.Parse(TxtPrice.Text);
+                        selectedProduct.Stock = int.Parse(TxtStock.Text);
+                        selectedProduct.Description = TxtDescription.Text;
+                        ProductManager.UpdateProduct(selectedProduct);
+                    }
+                }
+                LoadProducts();
+                HideAddEditPanel();
             }
-            LoadProducts();
-            HideAddEditPanel();
+            catch (FormatException ex)
+            {
+                MessageBox.Show("Invalid input format: " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("An error occurred: " + ex.Message);
+            }
         }
 
         private void btnCancel_Click(object sender, EventArgs e) => HideAddEditPanel();

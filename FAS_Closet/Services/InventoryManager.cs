@@ -91,5 +91,38 @@ namespace FASCloset.Services
             }
             return lowStockProducts;
         }
+
+        public static Inventory? GetInventoryByProductId(int productId)
+        {
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = "SELECT ProductID, StockQuantity, MinimumStockThreshold FROM Inventory WHERE ProductID = @ProductID";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@ProductID", productId);
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                return new Inventory
+                                {
+                                    ProductID = reader.GetInt32(0),
+                                    StockQuantity = reader.GetInt32(1),
+                                    MinimumStockThreshold = reader.GetInt32(2)
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while retrieving inventory.", ex);
+            }
+            return null;
+        }
     }
 }

@@ -127,6 +127,41 @@ namespace FASCloset.Services
             return categories;
         }
 
+        public static Category? GetCategoryById(int categoryId)
+        {
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = "SELECT CategoryID, CategoryName, Description, IsActive, CreatedDate FROM Categories WHERE CategoryID = @CategoryID";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@CategoryID", categoryId);
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                return new Category
+                                {
+                                    CategoryID = reader.GetInt32(0),
+                                    CategoryName = reader.GetString(1),
+                                    Description = reader.IsDBNull(2) ? null : reader.GetString(2),
+                                    IsActive = reader.GetBoolean(3),
+                                    CreatedDate = reader.GetDateTime(4)
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while retrieving category.", ex);
+            }
+            return null;
+        }
+
         private static void EnsureCategoriesTableExists(SqliteConnection connection)
         {
             string checkTableQuery = "SELECT name FROM sqlite_master WHERE type='table' AND name='Categories';";
@@ -134,15 +169,14 @@ namespace FASCloset.Services
             {
                 if (command.ExecuteScalar() == null)
                 {
-                    string createTableQuery = @"
+                    using (var createCommand = new SqliteCommand(@"
                         CREATE TABLE Categories (
                             CategoryID INTEGER PRIMARY KEY AUTOINCREMENT,
                             CategoryName TEXT NOT NULL,
                             Description TEXT,
                             IsActive INTEGER NOT NULL,
                             CreatedDate DATETIME NOT NULL
-                        );";
-                    using (var createCommand = new SqliteCommand(createTableQuery, connection))
+                        );", connection))
                     {
                         createCommand.ExecuteNonQuery();
                     }

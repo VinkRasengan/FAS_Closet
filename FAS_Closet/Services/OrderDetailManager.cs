@@ -120,5 +120,40 @@ namespace FASCloset.Services
             }
             return orderDetails;
         }
+
+        public static OrderDetail? GetOrderDetailById(int orderDetailId)
+        {
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = "SELECT OrderDetailID, OrderID, ProductID, Quantity, UnitPrice FROM OrderDetails WHERE OrderDetailID = @OrderDetailID";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@OrderDetailID", orderDetailId);
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                return new OrderDetail
+                                {
+                                    OrderDetailID = reader.GetInt32(0),
+                                    OrderID = reader.GetInt32(1),
+                                    ProductID = reader.GetInt32(2),
+                                    Quantity = reader.GetInt32(3),
+                                    UnitPrice = reader.GetDecimal(4)
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while retrieving order detail.", ex);
+            }
+            return null;
+        }
     }
 }

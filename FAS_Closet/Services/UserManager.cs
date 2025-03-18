@@ -9,6 +9,8 @@ namespace FASCloset.Services
 {
     public class UserManager
     {
+        private const string UsernameParameter = "@Username";
+
         private static string GetConnectionString()
         {
             return DatabaseConnection.GetConnectionString();
@@ -29,7 +31,7 @@ namespace FASCloset.Services
                     string query = "INSERT INTO Users (Username, PasswordHash, PasswordSalt, Name, Email, Phone) VALUES (@Username, @PasswordHash, @PasswordSalt, @Name, @Email, @Phone)";
                     using (var command = new SqliteCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@Username", user.Username);
+                        command.Parameters.AddWithValue(UsernameParameter, user.Username);
                         command.Parameters.AddWithValue("@PasswordHash", Convert.FromBase64String(user.PasswordHash));
                         command.Parameters.AddWithValue("@PasswordSalt", Convert.FromBase64String(user.PasswordSalt));
                         command.Parameters.AddWithValue("@Name", user.Name);
@@ -65,7 +67,7 @@ namespace FASCloset.Services
                     string query = "SELECT UserID, Username, PasswordHash, PasswordSalt, Name, Email, Phone FROM Users WHERE Username = @Username";
                     using (var command = new SqliteCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@Username", username);
+                        command.Parameters.AddWithValue(UsernameParameter, username);
                         using (var reader = command.ExecuteReader())
                         {
                             if (reader.Read())
@@ -111,7 +113,7 @@ namespace FASCloset.Services
                     string query = "SELECT COUNT(*) FROM Users WHERE Username = @Username";
                     using (var command = new SqliteCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@Username", username);
+                        command.Parameters.AddWithValue(UsernameParameter, username);
                         int count = Convert.ToInt32(command.ExecuteScalar());
                         return count > 0;
                     }
@@ -161,6 +163,48 @@ namespace FASCloset.Services
             catch (SqliteException ex)
             {
                 throw new InvalidOperationException("Database error occurred while retrieving user.", ex);
+            }
+            return null;
+        }
+
+        public User? GetUserByUsername(string username)
+        {
+            if (username == null)
+            {
+                throw new ArgumentNullException(nameof(username));
+            }
+
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = "SELECT UserID, Username, Name, Email, Phone, PasswordHash, PasswordSalt FROM Users WHERE Username = @Username";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue(UsernameParameter, username);
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                return new User
+                                {
+                                    UserID = reader.GetInt32(0),
+                                    Username = reader.GetString(1),
+                                    Name = reader.GetString(2),
+                                    Email = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                                    Phone = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                                    PasswordHash = Convert.ToBase64String((byte[])reader["PasswordHash"]),
+                                    PasswordSalt = Convert.ToBase64String((byte[])reader["PasswordSalt"])
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while retrieving user by username.", ex);
             }
             return null;
         }

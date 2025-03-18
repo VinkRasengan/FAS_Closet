@@ -41,25 +41,49 @@ namespace FASCloset.Forms
         private void btnInventoryManagement_Click(object sender, EventArgs e)
         {
             UpdateFeatureToolbar(new string[] { "Cập nhật tồn kho", "Cảnh báo sắp hết" });
-            LoadUserControl(new UcInventoryManagement());
+            LoadUserControl(new UcInventoryManagement
+            {
+                txtProductId = new TextBox(),
+                txtStockQuantity = new TextBox(),
+                dataGridViewLowStock = new DataGridView()
+            });
         }
 
         private void btnOrderManagement_Click(object sender, EventArgs e)
         {
             UpdateFeatureToolbar(new string[] { "Tạo đơn hàng", "Xử lý thanh toán", "In hóa đơn" });
-            LoadUserControl(new UcOrderManagement());
+            LoadUserControl(new UcOrderManagement
+            {
+                txtCustomerId = new TextBox(),
+                txtTotalAmount = new TextBox(),
+                cmbPaymentMethod = new ComboBox()
+            });
         }
 
         private void btnCustomerManagement_Click(object sender, EventArgs e)
         {
             UpdateFeatureToolbar(new string[] { "Lưu thông tin", "Lịch sử mua hàng", "Tích điểm" });
-            LoadUserControl(new UcCustomerManagement());
+            LoadUserControl(new UcCustomerManagement
+            {
+                TxtCustomerName = new TextBox(),
+                TxtCustomerEmail = new TextBox(),
+                TxtCustomerPhone = new TextBox(),
+                TxtCustomerAddress = new TextBox(),
+                TxtCustomerId = new TextBox(),
+                TxtLoyaltyPoints = new TextBox(),
+                DataGridViewPurchaseHistory = new DataGridView()
+            });
         }
 
         private void btnRevenueReport_Click(object sender, EventArgs e)
         {
             UpdateFeatureToolbar(new string[] { "Thống kê doanh số", "Xuất báo cáo chi tiết" });
-            LoadUserControl(new UcRevenueReport());
+            LoadUserControl(new UcRevenueReport
+            {
+                DateTimePickerStartDate = new DateTimePicker(),
+                DateTimePickerEndDate = new DateTimePicker(),
+                DataGridViewReport = new DataGridView()
+            });
         }
 
         private void btnDashboard_Click(object sender, EventArgs e)

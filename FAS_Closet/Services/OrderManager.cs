@@ -111,6 +111,77 @@ namespace FASCloset.Services
             return orders;
         }
 
+        public static Order? GetOrderById(int orderId)
+        {
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = "SELECT OrderID, CustomerID, OrderDate, TotalAmount, PaymentMethod FROM Orders WHERE OrderID = @OrderID";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@OrderID", orderId);
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                return new Order
+                                {
+                                    OrderID = reader.GetInt32(0),
+                                    CustomerID = reader.GetInt32(1),
+                                    OrderDate = reader.GetDateTime(2),
+                                    TotalAmount = reader.GetDecimal(3),
+                                    PaymentMethod = reader.GetString(4)
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while retrieving order.", ex);
+            }
+            return null;
+        }
+
+        public static List<Order> GetOrdersByCustomerId(int customerId)
+        {
+            var orders = new List<Order>();
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = "SELECT OrderID, CustomerID, OrderDate, TotalAmount, PaymentMethod FROM Orders WHERE CustomerID = @CustomerID";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@CustomerID", customerId);
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                orders.Add(new Order
+                                {
+                                    OrderID = reader.GetInt32(0),
+                                    CustomerID = reader.GetInt32(1),
+                                    OrderDate = reader.GetDateTime(2),
+                                    TotalAmount = reader.GetDecimal(3),
+                                    PaymentMethod = reader.GetString(4)
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while retrieving orders by customer ID.", ex);
+            }
+            return orders;
+        }
+
         private static Order MapOrder(SqliteDataReader reader)
         {
             return new Order
