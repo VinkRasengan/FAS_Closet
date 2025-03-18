@@ -122,7 +122,6 @@ namespace FASCloset.Services
             {
                 Console.WriteLine($"Database error: {ex.Message}");
                 // Optionally, show a user-friendly message
-                // MessageBox.Show("Unable to retrieve categories. Please contact support.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return categories; // Return empty list instead of crashing
             }
             return categories;

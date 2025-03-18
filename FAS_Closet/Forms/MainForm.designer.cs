@@ -5,272 +5,245 @@ namespace FASCloset.Forms
     partial class MainForm
     {
         private System.ComponentModel.IContainer components = null;
+        
+        // Các điều khiển chính
+        private System.Windows.Forms.Panel headerPanel;
+        private System.Windows.Forms.Label lblWelcome;
+        private System.Windows.Forms.Button btnLogout;
+        private System.Windows.Forms.SplitContainer mainSplit;
+        private System.Windows.Forms.FlowLayoutPanel leftPanel;
+        private System.Windows.Forms.Button btnProductManagement;
+        private System.Windows.Forms.Button btnInventoryManagement;
+        private System.Windows.Forms.Button btnOrderManagement;
+        private System.Windows.Forms.Button btnCustomerManagement;
+        private System.Windows.Forms.Button btnRevenueReport;
+        private System.Windows.Forms.Button btnDashboard;
+        private System.Windows.Forms.Panel contentPanel;
+        private System.Windows.Forms.FlowLayoutPanel featureToolbarPanel; // Thêm dòng này
 
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
-            {
                 components.Dispose();
-            }
             base.Dispose(disposing);
         }
 
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.headerPanel = new System.Windows.Forms.Panel();
-            this.lblWelcome = new System.Windows.Forms.Label();
-            this.btnLogout = new System.Windows.Forms.Button();
-            this.mainMenu = new System.Windows.Forms.MenuStrip();
-            this.productsItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.inventoryItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ordersItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.customersItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.reportsItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mainSplit = new System.Windows.Forms.SplitContainer();
-            this.leftPanel = new System.Windows.Forms.FlowLayoutPanel();
-            this.btnAdd = new System.Windows.Forms.Button();
-            this.btnEdit = new System.Windows.Forms.Button();
-            this.btnDelete = new System.Windows.Forms.Button();
-            this.btnCategorize = new System.Windows.Forms.Button();
-            this.btnDataManagement = new System.Windows.Forms.Button();
-            this.rightPanel = new System.Windows.Forms.Panel();
-            this.filterPanel = new System.Windows.Forms.Panel();
-            this.lblFilter = new System.Windows.Forms.Label();
-            this.cmbFilterCategory = new System.Windows.Forms.ComboBox();
-            this.productDisplay = new System.Windows.Forms.DataGridView();
-            this.addEditPanel = new System.Windows.Forms.Panel();
-            this.layout = new System.Windows.Forms.TableLayoutPanel();
-            this.txtProductName = new System.Windows.Forms.TextBox();
-            this.cmbCategory = new System.Windows.Forms.ComboBox();
-            this.txtPrice = new System.Windows.Forms.TextBox();
-            this.txtStock = new System.Windows.Forms.TextBox();
-            this.txtDescription = new System.Windows.Forms.TextBox();
-            this.btnSave = new System.Windows.Forms.Button();
-            this.btnCancel = new System.Windows.Forms.Button();
-
-            // Form
-            this.Text = "MainForm";
-            this.ClientSize = new System.Drawing.Size(1000, 600);
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.BackColor = System.Drawing.Color.WhiteSmoke;
-
-            // Header Panel
-            this.headerPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.headerPanel.Height = 45;
-            this.headerPanel.BackColor = System.Drawing.ColorTranslator.FromHtml("#f8f9fa");
-            this.Controls.Add(this.headerPanel);
-
-            // Welcome Label
-            this.lblWelcome.Dock = System.Windows.Forms.DockStyle.Left;
-            this.lblWelcome.AutoSize = true;
-            this.lblWelcome.Font = new System.Drawing.Font("Segoe UI", 12, System.Drawing.FontStyle.Regular);
-            this.lblWelcome.Padding = new System.Windows.Forms.Padding(10, 10, 0, 0);
-            this.lblWelcome.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.headerPanel.Controls.Add(this.lblWelcome);
-
-            // Logout Button
-            this.btnLogout.Text = "Logout";
-            this.btnLogout.Width = 80;
-            this.btnLogout.Height = 30;
-            this.btnLogout.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnLogout.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnLogout.BackColor = System.Drawing.Color.FromArgb(220, 53, 69);
-            this.btnLogout.ForeColor = System.Drawing.Color.White;
-            this.btnLogout.Margin = new System.Windows.Forms.Padding(10);
-            this.btnLogout.Click += (s, e) => this.Close();
-            this.headerPanel.Controls.Add(this.btnLogout);
-
-            // MenuStrip
-            this.mainMenu.Dock = System.Windows.Forms.DockStyle.Top;
-            this.mainMenu.BackColor = System.Drawing.Color.White;
-            this.mainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-                this.productsItem, this.inventoryItem, this.ordersItem, this.customersItem, this.reportsItem
-            });
-            this.Controls.Add(this.mainMenu);
-
-            // Menu Items
-            this.productsItem.Text = "Products";
-            this.productsItem.Click += productsToolStripMenuItem_Click;
-            this.inventoryItem.Text = "Inventory";
-            this.inventoryItem.Click += inventoryToolStripMenuItem_Click;
-            this.ordersItem.Text = "Orders";
-            this.ordersItem.Click += ordersToolStripMenuItem_Click;
-            this.customersItem.Text = "Customers";
-            this.customersItem.Click += customersToolStripMenuItem_Click;
-            this.reportsItem.Text = "Reports";
-            this.reportsItem.Click += reportsToolStripMenuItem_Click;
-
-            // SplitContainer
-            this.mainSplit.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mainSplit.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.mainSplit.Panel1MinSize = 100;
-            this.mainSplit.IsSplitterFixed = false;
-            this.Controls.Add(this.mainSplit);
-
-            // Left Panel
-            this.leftPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.leftPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.leftPanel.WrapContents = false;
-            this.leftPanel.AutoScroll = true;
-            this.leftPanel.Padding = new System.Windows.Forms.Padding(10, 60, 10, 10);
-            this.leftPanel.BackColor = System.Drawing.Color.FromArgb(250, 250, 250);
-            this.mainSplit.Panel1.Controls.Add(this.leftPanel);
-
-            // Buttons
-            CreateStyledButton(out this.btnAdd, "Thêm", btnAdd_Click);
-            CreateStyledButton(out this.btnEdit, "Sửa", btnEdit_Click);
-            CreateStyledButton(out this.btnDelete, "Xóa", btnDelete_Click);
-            CreateStyledButton(out this.btnCategorize, "Phân loại", null);
-            CreateStyledButton(out this.btnDataManagement, "Quản lý dữ liệu", null);
-            this.leftPanel.Controls.AddRange(new System.Windows.Forms.Control[] {
-                this.btnAdd, this.btnEdit, this.btnDelete, this.btnCategorize, this.btnDataManagement
-            });
-
-            // Right Panel
-            this.rightPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rightPanel.BackColor = System.Drawing.Color.White;
-            this.mainSplit.Panel2.Controls.Add(this.rightPanel);
-
-            // Filter Panel
-            this.filterPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.filterPanel.Height = 40;
-            this.filterPanel.Padding = new System.Windows.Forms.Padding(10, 5, 10, 5);
-            this.filterPanel.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
-            this.rightPanel.Controls.Add(this.filterPanel);
-
-            // Filter Label
-            this.lblFilter.Text = "Filter by Category:";
-            this.lblFilter.AutoSize = true;
-            this.lblFilter.Dock = System.Windows.Forms.DockStyle.Left;
-            this.lblFilter.Font = new System.Drawing.Font("Segoe UI", 10);
-            this.lblFilter.Padding = new System.Windows.Forms.Padding(0, 5, 5, 0);
-            this.filterPanel.Controls.Add(this.lblFilter);
-
-            // Filter ComboBox
-            this.cmbFilterCategory.Dock = System.Windows.Forms.DockStyle.Left;
-            this.cmbFilterCategory.Width = 200;
-            this.cmbFilterCategory.Font = new System.Drawing.Font("Segoe UI", 10);
-            this.cmbFilterCategory.SelectedIndexChanged += cmbFilterCategory_SelectedIndexChanged;
-            this.filterPanel.Controls.Add(this.cmbFilterCategory);
-
-            // DataGridView
-            this.productDisplay.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.productDisplay.ReadOnly = true;
-            this.productDisplay.AllowUserToAddRows = false;
-            this.productDisplay.AllowUserToDeleteRows = false;
-            this.productDisplay.MultiSelect = false;
-            this.productDisplay.AutoGenerateColumns = false;
-            this.productDisplay.BackgroundColor = System.Drawing.Color.White;
-            this.productDisplay.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.productDisplay.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-                new System.Windows.Forms.DataGridViewTextBoxColumn { HeaderText = "ID", DataPropertyName = "ProductID", Width = 50 },
-                new System.Windows.Forms.DataGridViewTextBoxColumn { HeaderText = "Name", DataPropertyName = "ProductName", Width = 150 },
-                new System.Windows.Forms.DataGridViewTextBoxColumn { HeaderText = "Category", DataPropertyName = "CategoryID", Width = 80 },
-                new System.Windows.Forms.DataGridViewTextBoxColumn { HeaderText = "Price", DataPropertyName = "Price", Width = 80 },
-                new System.Windows.Forms.DataGridViewTextBoxColumn { HeaderText = "Stock", DataPropertyName = "Stock", Width = 80 },
-                new System.Windows.Forms.DataGridViewTextBoxColumn { HeaderText = "Description", DataPropertyName = "Description", AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill }
-            });
-            this.rightPanel.Controls.Add(this.productDisplay);
-
-            // Add/Edit Panel
-            this.addEditPanel.Visible = false;
-            this.addEditPanel.Dock = System.Windows.Forms.DockStyle.Right;
-            this.addEditPanel.Width = 300;
-            this.addEditPanel.AutoScroll = true;
-            this.addEditPanel.BackColor = System.Drawing.Color.FromArgb(245, 245, 245);
-            this.addEditPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.rightPanel.Controls.Add(this.addEditPanel);
-            this.rightPanel.Controls.SetChildIndex(this.addEditPanel, 0);
-
-            // Add/Edit Layout
-            this.layout.ColumnCount = 2;
-            this.layout.RowCount = 6;
-            this.layout.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.layout.Padding = new System.Windows.Forms.Padding(20);
-            this.addEditPanel.Controls.Add(this.layout);
-
-            // Add/Edit Controls
-            this.txtProductName.Width = 150;
-            this.cmbCategory.Width = 150;
-            this.txtPrice.Width = 150;
-            this.txtStock.Width = 150;
-            this.txtDescription.Width = 150;
-            this.btnSave.Text = "Save";
-            this.btnSave.Width = 75;
-            this.btnSave.BackColor = System.Drawing.Color.FromArgb(40, 167, 69);
-            this.btnSave.ForeColor = System.Drawing.Color.White;
-            this.btnCancel.Text = "Cancel";
-            this.btnCancel.Width = 75;
-            this.btnCancel.BackColor = System.Drawing.Color.FromArgb(108, 117, 125);
-            this.btnCancel.ForeColor = System.Drawing.Color.White;
-
-            // Add/Edit Layout Controls
-            this.layout.Controls.Add(new System.Windows.Forms.Label { Text = "Product Name:", AutoSize = true, Font = new System.Drawing.Font("Segoe UI", 10) }, 0, 0);
-            this.layout.Controls.Add(this.txtProductName, 1, 0);
-            this.layout.Controls.Add(new System.Windows.Forms.Label { Text = "Category:", AutoSize = true, Font = new System.Drawing.Font("Segoe UI", 10) }, 0, 1);
-            this.layout.Controls.Add(this.cmbCategory, 1, 1);
-            this.layout.Controls.Add(new System.Windows.Forms.Label { Text = "Price:", AutoSize = true, Font = new System.Drawing.Font("Segoe UI", 10) }, 0, 2);
-            this.layout.Controls.Add(this.txtPrice, 1, 2);
-            this.layout.Controls.Add(new System.Windows.Forms.Label { Text = "Stock:", AutoSize = true, Font = new System.Drawing.Font("Segoe UI", 10) }, 0, 3);
-            this.layout.Controls.Add(this.txtStock, 1, 3);
-            this.layout.Controls.Add(new System.Windows.Forms.Label { Text = "Description:", AutoSize = true, Font = new System.Drawing.Font("Segoe UI", 10) }, 0, 4);
-            this.layout.Controls.Add(this.txtDescription, 1, 4);
-            this.layout.Controls.Add(this.btnSave, 0, 5);
-            this.layout.Controls.Add(this.btnCancel, 1, 5);
-
-            // Add/Edit Events
-            this.btnSave.Click += btnSave_Click;
-            this.btnCancel.Click += btnCancel_Click;
+            headerPanel = new Panel();
+            lblWelcome = new Label();
+            btnLogout = new Button();
+            mainSplit = new SplitContainer();
+            leftPanel = new FlowLayoutPanel();
+            btnProductManagement = new Button();
+            btnInventoryManagement = new Button();
+            btnOrderManagement = new Button();
+            btnCustomerManagement = new Button();
+            btnRevenueReport = new Button();
+            btnDashboard = new Button();
+            contentPanel = new Panel();
+            featureToolbarPanel = new FlowLayoutPanel();
+            headerPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)mainSplit).BeginInit();
+            mainSplit.Panel1.SuspendLayout();
+            mainSplit.Panel2.SuspendLayout();
+            mainSplit.SuspendLayout();
+            leftPanel.SuspendLayout();
+            SuspendLayout();
+            // 
+            // headerPanel
+            // 
+            headerPanel.BackColor = Color.FromArgb(248, 249, 250);
+            headerPanel.Controls.Add(lblWelcome);
+            headerPanel.Controls.Add(btnLogout);
+            headerPanel.Dock = DockStyle.Top;
+            headerPanel.Location = new Point(0, 0);
+            headerPanel.Name = "headerPanel";
+            headerPanel.Padding = new Padding(10);
+            headerPanel.Size = new Size(1200, 50);
+            headerPanel.TabIndex = 0;
+            // 
+            // lblWelcome
+            // 
+            lblWelcome.AutoSize = true;
+            lblWelcome.Font = new Font("Segoe UI", 12F);
+            lblWelcome.Location = new Point(0, 0);
+            lblWelcome.Name = "lblWelcome";
+            lblWelcome.Size = new Size(113, 21);
+            lblWelcome.TabIndex = 0;
+            lblWelcome.Text = "Welcome, User";
+            // 
+            // btnLogout
+            // 
+            btnLogout.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnLogout.BackColor = Color.FromArgb(220, 53, 69);
+            btnLogout.FlatStyle = FlatStyle.Flat;
+            btnLogout.ForeColor = Color.White;
+            btnLogout.Location = new Point(1108, 12);
+            btnLogout.Name = "btnLogout";
+            btnLogout.Size = new Size(80, 30);
+            btnLogout.TabIndex = 1;
+            btnLogout.Text = "Logout";
+            btnLogout.UseVisualStyleBackColor = false;
+            btnLogout.Click += btnLogout_Click;
+            // 
+            // mainSplit
+            // 
+            mainSplit.Dock = DockStyle.Fill;
+            mainSplit.Location = new Point(0, 50);
+            mainSplit.Name = "mainSplit";
+            // 
+            // mainSplit.Panel1
+            // 
+            mainSplit.Panel1.Controls.Add(leftPanel);
+            // 
+            // mainSplit.Panel2
+            // 
+            mainSplit.Panel2.Controls.Add(contentPanel);
+            mainSplit.Panel2.Controls.Add(featureToolbarPanel);
+            mainSplit.Size = new Size(1200, 650);
+            mainSplit.SplitterDistance = 300;
+            mainSplit.TabIndex = 1;
+            // 
+            // leftPanel
+            // 
+            leftPanel.AutoScroll = true;
+            leftPanel.BackColor = Color.FromArgb(250, 250, 250);
+            leftPanel.Controls.Add(btnProductManagement);
+            leftPanel.Controls.Add(btnInventoryManagement);
+            leftPanel.Controls.Add(btnOrderManagement);
+            leftPanel.Controls.Add(btnCustomerManagement);
+            leftPanel.Controls.Add(btnRevenueReport);
+            leftPanel.Controls.Add(btnDashboard);
+            leftPanel.Dock = DockStyle.Fill;
+            leftPanel.FlowDirection = FlowDirection.TopDown;
+            leftPanel.Location = new Point(0, 0);
+            leftPanel.Name = "leftPanel";
+            leftPanel.Padding = new Padding(10);
+            leftPanel.Size = new Size(300, 650);
+            leftPanel.TabIndex = 0;
+            leftPanel.WrapContents = false;
+            // 
+            // btnProductManagement
+            // 
+            btnProductManagement.BackColor = Color.FromArgb(0, 123, 255);
+            btnProductManagement.FlatStyle = FlatStyle.Flat;
+            btnProductManagement.ForeColor = Color.White;
+            btnProductManagement.Location = new Point(15, 15);
+            btnProductManagement.Margin = new Padding(5);
+            btnProductManagement.Name = "btnProductManagement";
+            btnProductManagement.Size = new Size(220, 40);
+            btnProductManagement.TabIndex = 0;
+            btnProductManagement.Text = "Quản lý sản phẩm";
+            btnProductManagement.UseVisualStyleBackColor = false;
+            btnProductManagement.Click += btnProductManagement_Click;
+            // 
+            // btnInventoryManagement
+            // 
+            btnInventoryManagement.BackColor = Color.FromArgb(0, 123, 255);
+            btnInventoryManagement.FlatStyle = FlatStyle.Flat;
+            btnInventoryManagement.ForeColor = Color.White;
+            btnInventoryManagement.Location = new Point(15, 65);
+            btnInventoryManagement.Margin = new Padding(5);
+            btnInventoryManagement.Name = "btnInventoryManagement";
+            btnInventoryManagement.Size = new Size(220, 40);
+            btnInventoryManagement.TabIndex = 1;
+            btnInventoryManagement.Text = "Quản lý kho hàng";
+            btnInventoryManagement.UseVisualStyleBackColor = false;
+            btnInventoryManagement.Click += btnInventoryManagement_Click;
+            // 
+            // btnOrderManagement
+            // 
+            btnOrderManagement.BackColor = Color.FromArgb(0, 123, 255);
+            btnOrderManagement.FlatStyle = FlatStyle.Flat;
+            btnOrderManagement.ForeColor = Color.White;
+            btnOrderManagement.Location = new Point(15, 115);
+            btnOrderManagement.Margin = new Padding(5);
+            btnOrderManagement.Name = "btnOrderManagement";
+            btnOrderManagement.Size = new Size(220, 40);
+            btnOrderManagement.TabIndex = 2;
+            btnOrderManagement.Text = "Quản lý đơn hàng";
+            btnOrderManagement.UseVisualStyleBackColor = false;
+            btnOrderManagement.Click += btnOrderManagement_Click;
+            // 
+            // btnCustomerManagement
+            // 
+            btnCustomerManagement.BackColor = Color.FromArgb(0, 123, 255);
+            btnCustomerManagement.FlatStyle = FlatStyle.Flat;
+            btnCustomerManagement.ForeColor = Color.White;
+            btnCustomerManagement.Location = new Point(15, 165);
+            btnCustomerManagement.Margin = new Padding(5);
+            btnCustomerManagement.Name = "btnCustomerManagement";
+            btnCustomerManagement.Size = new Size(220, 40);
+            btnCustomerManagement.TabIndex = 3;
+            btnCustomerManagement.Text = "Quản lý khách hàng";
+            btnCustomerManagement.UseVisualStyleBackColor = false;
+            btnCustomerManagement.Click += btnCustomerManagement_Click;
+            // 
+            // btnRevenueReport
+            // 
+            btnRevenueReport.BackColor = Color.FromArgb(0, 123, 255);
+            btnRevenueReport.FlatStyle = FlatStyle.Flat;
+            btnRevenueReport.ForeColor = Color.White;
+            btnRevenueReport.Location = new Point(15, 215);
+            btnRevenueReport.Margin = new Padding(5);
+            btnRevenueReport.Name = "btnRevenueReport";
+            btnRevenueReport.Size = new Size(220, 40);
+            btnRevenueReport.TabIndex = 4;
+            btnRevenueReport.Text = "Báo cáo doanh thu";
+            btnRevenueReport.UseVisualStyleBackColor = false;
+            btnRevenueReport.Click += btnRevenueReport_Click;
+            // 
+            // btnDashboard
+            // 
+            btnDashboard.BackColor = Color.FromArgb(0, 123, 255);
+            btnDashboard.FlatStyle = FlatStyle.Flat;
+            btnDashboard.ForeColor = Color.White;
+            btnDashboard.Location = new Point(15, 265);
+            btnDashboard.Margin = new Padding(5);
+            btnDashboard.Name = "btnDashboard";
+            btnDashboard.Size = new Size(220, 40);
+            btnDashboard.TabIndex = 5;
+            btnDashboard.Text = "Dashboard";
+            btnDashboard.UseVisualStyleBackColor = false;
+            btnDashboard.Click += btnDashboard_Click;
+            // 
+            // contentPanel
+            // 
+            contentPanel.BackColor = Color.White;
+            contentPanel.Dock = DockStyle.Fill;
+            contentPanel.Location = new Point(0, 50);
+            contentPanel.Name = "contentPanel";
+            contentPanel.Size = new Size(896, 600);
+            contentPanel.TabIndex = 0;
+            // 
+            // featureToolbarPanel
+            // 
+            featureToolbarPanel.BackColor = Color.LightGray;
+            featureToolbarPanel.Dock = DockStyle.Top;
+            featureToolbarPanel.Location = new Point(0, 0);
+            featureToolbarPanel.Name = "featureToolbarPanel";
+            featureToolbarPanel.Padding = new Padding(5);
+            featureToolbarPanel.Size = new Size(896, 50);
+            featureToolbarPanel.TabIndex = 1;
+            // 
+            // MainForm
+            // 
+            BackColor = Color.WhiteSmoke;
+            ClientSize = new Size(1200, 700);
+            Controls.Add(mainSplit);
+            Controls.Add(headerPanel);
+            Name = "MainForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "MainForm";
+            headerPanel.ResumeLayout(false);
+            headerPanel.PerformLayout();
+            mainSplit.Panel1.ResumeLayout(false);
+            mainSplit.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)mainSplit).EndInit();
+            mainSplit.ResumeLayout(false);
+            leftPanel.ResumeLayout(false);
+            ResumeLayout(false);
         }
-
-        private void CreateStyledButton(out System.Windows.Forms.Button button, string text, EventHandler onClick)
-        {
-            button = new System.Windows.Forms.Button
-            {
-                Text = text,
-                Width = 150,
-                Height = 40,
-                Margin = new System.Windows.Forms.Padding(10),
-                FlatStyle = System.Windows.Forms.FlatStyle.Flat,
-                BackColor = System.Drawing.Color.FromArgb(0, 123, 255),
-                ForeColor = System.Drawing.Color.White
-            };
-            if (onClick != null)
-            {
-                button.Click += onClick;
-            }
-        }
-
-        private System.Windows.Forms.Panel headerPanel;
-        private System.Windows.Forms.Label lblWelcome;
-        private System.Windows.Forms.Button btnLogout;
-        private System.Windows.Forms.MenuStrip mainMenu;
-        private System.Windows.Forms.ToolStripMenuItem productsItem;
-        private System.Windows.Forms.ToolStripMenuItem inventoryItem;
-        private System.Windows.Forms.ToolStripMenuItem ordersItem;
-        private System.Windows.Forms.ToolStripMenuItem customersItem;
-        private System.Windows.Forms.ToolStripMenuItem reportsItem;
-        private System.Windows.Forms.SplitContainer mainSplit;
-        private System.Windows.Forms.FlowLayoutPanel leftPanel;
-        private System.Windows.Forms.Button btnAdd;
-        private System.Windows.Forms.Button btnEdit;
-        private System.Windows.Forms.Button btnDelete;
-        private System.Windows.Forms.Button btnCategorize;
-        private System.Windows.Forms.Button btnDataManagement;
-        private System.Windows.Forms.Panel rightPanel;
-        private System.Windows.Forms.Panel filterPanel;
-        private System.Windows.Forms.Label lblFilter;
-        private System.Windows.Forms.ComboBox cmbFilterCategory;
-        private System.Windows.Forms.DataGridView productDisplay;
-        private System.Windows.Forms.Panel addEditPanel;
-        private System.Windows.Forms.TableLayoutPanel layout;
-        private System.Windows.Forms.TextBox txtProductName;
-        private System.Windows.Forms.ComboBox cmbCategory;
-        private System.Windows.Forms.TextBox txtPrice;
-        private System.Windows.Forms.TextBox txtStock;
-        private System.Windows.Forms.TextBox txtDescription;
-        private System.Windows.Forms.Button btnSave;
-        private System.Windows.Forms.Button btnCancel;
     }
 }

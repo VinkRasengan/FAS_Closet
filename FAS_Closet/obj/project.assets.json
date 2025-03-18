@@ -1494,11 +1494,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Project\\FAS_Closet\\FAS_Closet\\FAS_Closet.csproj",
+      "projectUniqueName": "C:\\Project\\FAS_Closet\\FAS_Closet\\FAS_Closet.csproj",
       "projectName": "FAS_Closet",
-      "projectPath": "c:\\Project\\FAS_Closet\\FAS_Closet\\FAS_Closet.csproj",
+      "projectPath": "C:\\Project\\FAS_Closet\\FAS_Closet\\FAS_Closet.csproj",
       "packagesPath": "C:\\Users\\ndvin\\.nuget\\packages\\",
-      "outputPath": "c:\\Project\\FAS_Closet\\FAS_Closet\\obj\\",
+      "outputPath": "C:\\Project\\FAS_Closet\\FAS_Closet\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
