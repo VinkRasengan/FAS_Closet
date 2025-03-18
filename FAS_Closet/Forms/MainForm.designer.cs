@@ -165,6 +165,7 @@ namespace FASCloset.Forms
             btnOrderManagement.Text = "Quản lý đơn hàng";
             btnOrderManagement.UseVisualStyleBackColor = false;
             btnOrderManagement.Click += btnOrderManagement_Click;
+            this.btnOrderManagement.Click += new System.EventHandler(this.btnOrderManagement_Click);
             // 
             // btnCustomerManagement
             // 
@@ -179,6 +180,7 @@ namespace FASCloset.Forms
             btnCustomerManagement.Text = "Quản lý khách hàng";
             btnCustomerManagement.UseVisualStyleBackColor = false;
             btnCustomerManagement.Click += btnCustomerManagement_Click;
+            this.btnCustomerManagement.Click += new System.EventHandler(this.btnCustomerManagement_Click);
             // 
             // btnRevenueReport
             // 
@@ -193,6 +195,7 @@ namespace FASCloset.Forms
             btnRevenueReport.Text = "Báo cáo doanh thu";
             btnRevenueReport.UseVisualStyleBackColor = false;
             btnRevenueReport.Click += btnRevenueReport_Click;
+            this.btnRevenueReport.Click += new System.EventHandler(this.btnRevenueReport_Click);
             // 
             // btnDashboard
             // 
@@ -207,6 +210,7 @@ namespace FASCloset.Forms
             btnDashboard.Text = "Dashboard";
             btnDashboard.UseVisualStyleBackColor = false;
             btnDashboard.Click += btnDashboard_Click;
+            this.btnDashboard.Click += new System.EventHandler(this.btnDashboard_Click);
             // 
             // contentPanel
             // 

@@ -4,108 +4,180 @@ namespace FASCloset.Forms
     {
         private void InitializeComponent()
         {
-            this.ProductDisplay = new System.Windows.Forms.DataGridView();
-            this.TxtProductName = new System.Windows.Forms.TextBox();
-            this.CmbCategory = new System.Windows.Forms.ComboBox();
-            this.TxtPrice = new System.Windows.Forms.TextBox();
-            this.TxtStock = new System.Windows.Forms.TextBox();
-            this.TxtDescription = new System.Windows.Forms.TextBox();
-            this.FilterPanel = new System.Windows.Forms.Panel();
-            this.AddEditPanel = new System.Windows.Forms.Panel();
-            this.RightPanel = new System.Windows.Forms.Panel();
-            this.TxtSearch = new System.Windows.Forms.TextBox();
-            ((System.ComponentModel.ISupportInitialize)(this.ProductDisplay)).BeginInit();
-            this.RightPanel.SuspendLayout();
-            this.SuspendLayout();
+            components = new System.ComponentModel.Container();
+            ProductDisplay = new DataGridView();
+            TxtProductName = new TextBox();
+            CmbCategory = new ComboBox();
+            TxtPrice = new TextBox();
+            TxtStock = new TextBox();
+            TxtDescription = new TextBox();
+            FilterPanel = new Panel();
+            AddEditPanel = new Panel();
+            tableLayoutPanel = new TableLayoutPanel();
+            btnSave = new Button();
+            btnCancel = new Button();
+            btnAddCategory = new Button();
+            RightPanel = new Panel();
+            TxtSearch = new TextBox();
+            toolTip = new ToolTip(components);
+            ((System.ComponentModel.ISupportInitialize)ProductDisplay).BeginInit();
+            AddEditPanel.SuspendLayout();
+            tableLayoutPanel.SuspendLayout();
+            RightPanel.SuspendLayout();
+            SuspendLayout();
             // 
             // ProductDisplay
             // 
-            this.ProductDisplay.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.ProductDisplay.Location = new System.Drawing.Point(10, 50);
-            this.ProductDisplay.Name = "ProductDisplay";
-            this.ProductDisplay.Size = new System.Drawing.Size(600, 200);
-            this.ProductDisplay.TabIndex = 0;
+            ProductDisplay.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            ProductDisplay.Location = new Point(10, 50);
+            ProductDisplay.Name = "ProductDisplay";
+            ProductDisplay.Size = new Size(600, 200);
+            ProductDisplay.TabIndex = 0;
             // 
             // TxtProductName
             // 
-            this.TxtProductName.Location = new System.Drawing.Point(120, 10);
-            this.TxtProductName.Name = "TxtProductName";
-            this.TxtProductName.Size = new System.Drawing.Size(200, 20);
-            this.TxtProductName.TabIndex = 1;
+            TxtProductName.Location = new Point(183, 3);
+            TxtProductName.Name = "TxtProductName";
+            TxtProductName.Size = new Size(200, 23);
+            TxtProductName.TabIndex = 1;
+            toolTip.SetToolTip(TxtProductName, "Nhập tên sản phẩm");
             // 
             // CmbCategory
             // 
-            this.CmbCategory.FormattingEnabled = true;
-            this.CmbCategory.Location = new System.Drawing.Point(120, 40);
-            this.CmbCategory.Name = "CmbCategory";
-            this.CmbCategory.Size = new System.Drawing.Size(200, 21);
-            this.CmbCategory.TabIndex = 2;
+            CmbCategory.FormattingEnabled = true;
+            CmbCategory.Location = new Point(183, 33);
+            CmbCategory.Name = "CmbCategory";
+            CmbCategory.Size = new Size(200, 23);
+            CmbCategory.TabIndex = 2;
+            toolTip.SetToolTip(CmbCategory, "Chọn danh mục sản phẩm");
             // 
             // TxtPrice
             // 
-            this.TxtPrice.Location = new System.Drawing.Point(120, 70);
-            this.TxtPrice.Name = "TxtPrice";
-            this.TxtPrice.Size = new System.Drawing.Size(200, 20);
-            this.TxtPrice.TabIndex = 3;
+            TxtPrice.Location = new Point(183, 63);
+            TxtPrice.Name = "TxtPrice";
+            TxtPrice.Size = new Size(200, 23);
+            TxtPrice.TabIndex = 3;
+            toolTip.SetToolTip(TxtPrice, "Nhập giá sản phẩm (ví dụ: 100.50)");
             // 
             // TxtStock
             // 
-            this.TxtStock.Location = new System.Drawing.Point(120, 100);
-            this.TxtStock.Name = "TxtStock";
-            this.TxtStock.Size = new System.Drawing.Size(200, 20);
-            this.TxtStock.TabIndex = 4;
+            TxtStock.Location = new Point(183, 93);
+            TxtStock.Name = "TxtStock";
+            TxtStock.Size = new Size(200, 23);
+            TxtStock.TabIndex = 4;
+            toolTip.SetToolTip(TxtStock, "Nhập số lượng tồn kho");
             // 
             // TxtDescription
             // 
-            this.TxtDescription.Location = new System.Drawing.Point(120, 130);
-            this.TxtDescription.Multiline = true;
-            this.TxtDescription.Name = "TxtDescription";
-            this.TxtDescription.Size = new System.Drawing.Size(200, 60);
-            this.TxtDescription.TabIndex = 5;
+            TxtDescription.Location = new Point(183, 123);
+            TxtDescription.Multiline = true;
+            TxtDescription.Name = "TxtDescription";
+            TxtDescription.Size = new Size(200, 54);
+            TxtDescription.TabIndex = 5;
+            toolTip.SetToolTip(TxtDescription, "Nhập mô tả sản phẩm");
             // 
             // FilterPanel
             // 
-            this.FilterPanel.Location = new System.Drawing.Point(10, 260);
-            this.FilterPanel.Name = "FilterPanel";
-            this.FilterPanel.Size = new System.Drawing.Size(600, 100);
-            this.FilterPanel.TabIndex = 6;
+            FilterPanel.Location = new Point(10, 260);
+            FilterPanel.Name = "FilterPanel";
+            FilterPanel.Size = new Size(600, 100);
+            FilterPanel.TabIndex = 6;
             // 
             // AddEditPanel
             // 
-            this.AddEditPanel.Location = new System.Drawing.Point(10, 370);
-            this.AddEditPanel.Name = "AddEditPanel";
-            this.AddEditPanel.Size = new System.Drawing.Size(600, 200);
-            this.AddEditPanel.TabIndex = 7;
+            AddEditPanel.Controls.Add(tableLayoutPanel);
+            AddEditPanel.Location = new Point(10, 370);
+            AddEditPanel.Name = "AddEditPanel";
+            AddEditPanel.Size = new Size(600, 250);
+            AddEditPanel.TabIndex = 7;
+            // 
+            // tableLayoutPanel
+            // 
+            tableLayoutPanel.ColumnCount = 2;
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
+            tableLayoutPanel.Controls.Add(TxtProductName, 1, 0);
+            tableLayoutPanel.Controls.Add(CmbCategory, 1, 1);
+            tableLayoutPanel.Controls.Add(TxtPrice, 1, 2);
+            tableLayoutPanel.Controls.Add(TxtStock, 1, 3);
+            tableLayoutPanel.Controls.Add(TxtDescription, 1, 4);
+            tableLayoutPanel.Controls.Add(btnSave, 0, 5);
+            tableLayoutPanel.Controls.Add(btnAddCategory, 1, 6);
+            tableLayoutPanel.Controls.Add(btnCancel, 1, 5);
+            tableLayoutPanel.Dock = DockStyle.Fill;
+            tableLayoutPanel.Location = new Point(0, 0);
+            tableLayoutPanel.Name = "tableLayoutPanel";
+            tableLayoutPanel.RowCount = 7;
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            tableLayoutPanel.Size = new Size(600, 250);
+            tableLayoutPanel.TabIndex = 0;
+            // 
+            // btnSave
+            // 
+            btnSave.Location = new Point(3, 183);
+            btnSave.Name = "btnSave";
+            btnSave.Size = new Size(100, 30);
+            btnSave.TabIndex = 6;
+            btnSave.Text = "Lưu";
+            btnSave.Click += btnSave_Click;
+            // 
+            // btnCancel
+            // 
+            btnCancel.Location = new Point(183, 183);
+            btnCancel.Name = "btnCancel";
+            btnCancel.Size = new Size(100, 30);
+            btnCancel.TabIndex = 7;
+            btnCancel.Text = "Hủy";
+            btnCancel.Click += btnCancel_Click;
+            // 
+            // btnAddCategory
+            // 
+            btnAddCategory.Location = new Point(183, 223);
+            btnAddCategory.Name = "btnAddCategory";
+            btnAddCategory.Size = new Size(100, 30);
+            btnAddCategory.TabIndex = 8;
+            btnAddCategory.Text = "Thêm Danh Mục";
+            btnAddCategory.Click += btnAddCategory_Click;
             // 
             // RightPanel
             // 
-            this.RightPanel.Controls.Add(this.AddEditPanel);
-            this.RightPanel.Controls.Add(this.FilterPanel);
-            this.RightPanel.Controls.Add(this.ProductDisplay);
-            this.RightPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.RightPanel.Location = new System.Drawing.Point(0, 0);
-            this.RightPanel.Name = "RightPanel";
-            this.RightPanel.Size = new System.Drawing.Size(800, 600);
-            this.RightPanel.TabIndex = 8;
+            RightPanel.Controls.Add(AddEditPanel);
+            RightPanel.Controls.Add(FilterPanel);
+            RightPanel.Controls.Add(ProductDisplay);
+            RightPanel.Dock = DockStyle.Fill;
+            RightPanel.Location = new Point(0, 0);
+            RightPanel.Name = "RightPanel";
+            RightPanel.Size = new Size(800, 639);
+            RightPanel.TabIndex = 8;
             // 
             // TxtSearch
             // 
-            this.TxtSearch.Location = new System.Drawing.Point(10, 10);
-            this.TxtSearch.Name = "TxtSearch";
-            this.TxtSearch.Size = new System.Drawing.Size(200, 20);
-            this.TxtSearch.TabIndex = 9;
-            this.TxtSearch.TextChanged += new System.EventHandler(this.TxtSearch_TextChanged);
+            TxtSearch.Location = new Point(10, 10);
+            TxtSearch.Name = "TxtSearch";
+            TxtSearch.Size = new Size(200, 23);
+            TxtSearch.TabIndex = 9;
+            toolTip.SetToolTip(TxtSearch, "Nhập từ khóa để tìm kiếm sản phẩm");
+            TxtSearch.TextChanged += TxtSearch_TextChanged;
             // 
             // UcProductManagement
             // 
-            this.Controls.Add(this.TxtSearch);
-            this.Controls.Add(this.RightPanel);
-            this.Name = "UcProductManagement";
-            this.Size = new System.Drawing.Size(800, 600);
-            ((System.ComponentModel.ISupportInitialize)(this.ProductDisplay)).EndInit();
-            this.RightPanel.ResumeLayout(false);
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            Controls.Add(TxtSearch);
+            Controls.Add(RightPanel);
+            Name = "UcProductManagement";
+            Size = new Size(800, 639);
+            ((System.ComponentModel.ISupportInitialize)ProductDisplay).EndInit();
+            AddEditPanel.ResumeLayout(false);
+            tableLayoutPanel.ResumeLayout(false);
+            tableLayoutPanel.PerformLayout();
+            RightPanel.ResumeLayout(false);
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         public System.Windows.Forms.DataGridView ProductDisplay;
@@ -118,5 +190,11 @@ namespace FASCloset.Forms
         public System.Windows.Forms.Panel AddEditPanel;
         public System.Windows.Forms.Panel RightPanel;
         public System.Windows.Forms.TextBox TxtSearch;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel;
+        private System.Windows.Forms.Button btnSave;
+        private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.ToolTip toolTip;
+        private System.Windows.Forms.Button btnAddCategory; // Add this line
+        private System.ComponentModel.IContainer components;
     }
 }

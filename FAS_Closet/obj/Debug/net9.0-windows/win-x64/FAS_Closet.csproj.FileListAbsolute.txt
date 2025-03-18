@@ -31,3 +31,4 @@ c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\win-x64\refint\FAS_Clo
 c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\win-x64\FAS_Closet.pdb
 c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\win-x64\FAS_Closet.genruntimeconfig.cache
 c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\win-x64\ref\FAS_Closet.dll
+c:\Project\FAS_Closet\FAS_Closet\obj\Debug\net9.0-windows\win-x64\FASCloset.Forms.UcProductManagement.resources

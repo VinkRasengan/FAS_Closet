@@ -264,6 +264,28 @@ namespace FASCloset.Services
             return categories;
         }
 
+        public static void AddCategory(string categoryName)
+        {
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = "INSERT INTO Categories (CategoryName, IsActive, CreatedDate) VALUES (@CategoryName, 1, @CreatedDate)";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@CategoryName", categoryName);
+                        command.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
+                        command.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while adding category.", ex);
+            }
+        }
+
         private static void EnsureCategoriesTableExists(SqliteConnection connection)
         {
             string checkTableQuery = "SELECT name FROM sqlite_master WHERE type='table' AND name='Categories';";

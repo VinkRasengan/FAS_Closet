@@ -26,19 +26,7 @@ namespace FASCloset.Forms
         private void btnProductManagement_Click(object sender, EventArgs e)
         {
             UpdateFeatureToolbar(new string[] { "Thêm", "Sửa", "Xóa", "Phân loại" });
-            ucProductManagement = new UcProductManagement
-            {
-                ProductDisplay = new DataGridView(),
-                TxtProductName = new TextBox(),
-                CmbCategory = new ComboBox(),
-                TxtPrice = new TextBox(),
-                TxtStock = new TextBox(),
-                TxtDescription = new TextBox(),
-                FilterPanel = new Panel(),
-                AddEditPanel = new Panel(),
-                RightPanel = new Panel(),
-                TxtSearch = new TextBox()
-            };
+            ucProductManagement = new UcProductManagement();
             LoadUserControl(ucProductManagement);
         }
 
@@ -95,7 +83,6 @@ namespace FASCloset.Forms
 
         private void btnDashboard_Click(object sender, EventArgs e)
         {
-            // Dashboard có thể có thanh tính năng riêng (ví dụ: "Sản phẩm bán chạy")
             UpdateFeatureToolbar(new string[] { "Sản phẩm bán chạy" });
             LoadUserControl(new UcDashboard());
         }
@@ -121,26 +108,47 @@ namespace FASCloset.Forms
                     Margin = new Padding(5),
                     BackColor = Color.FromArgb(0, 123, 255),
                     ForeColor = Color.White,
-                    FlatStyle = FlatStyle.Flat
+                    FlatStyle = FlatStyle.Flat,
+                    Enabled = ucProductManagement != null // Disable if ucProductManagement is not initialized
                 };
+
                 // Liên kết sự kiện Click của nút với các phương thức tương ứng trong UcProductManagement
                 if (feature == "Thêm")
                 {
-                    btn.Click += (s, e) => ucProductManagement?.btnAdd_Click(s ?? this, e);
+                    btn.Click += (s, e) =>
+                    {
+                        if (ucProductManagement != null)
+                            ucProductManagement.btnAdd_Click(s ?? this, e);
+                        else
+                            MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
+                    };
                 }
                 else if (feature == "Sửa")
                 {
-                    btn.Click += (s, e) => ucProductManagement?.btnEdit_Click(s ?? this, e);
+                    btn.Click += (s, e) =>
+                    {
+                        if (ucProductManagement != null)
+                            ucProductManagement.btnEdit_Click(s ?? this, e);
+                        else
+                            MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
+                    };
                 }
                 else if (feature == "Xóa")
                 {
-                    btn.Click += (s, e) => ucProductManagement?.btnDelete_Click(s ?? this, e);
+                    btn.Click += (s, e) =>
+                    {
+                        if (ucProductManagement != null)
+                            ucProductManagement.btnDelete_Click(s ?? this, e);
+                        else
+                            MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
+                    };
                 }
                 else
                 {
                     // Ví dụ: khi nhấn vào nút tính năng, hiển thị thông báo (bạn có thể gán các sự kiện cụ thể)
                     btn.Click += (s, e) => MessageBox.Show("Chức năng: " + feature);
                 }
+
                 featureToolbarPanel.Controls.Add(btn);
             }
         }
