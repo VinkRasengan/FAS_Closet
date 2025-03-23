@@ -113,7 +113,8 @@ namespace FASCloset.Forms
             }
         }
 
-        private void WriteReportHeader(StringWriter writer, DataTable reportData)
+        // Make methods static since they don't use instance data
+        private static void WriteReportHeader(StringWriter writer, DataTable reportData)
         {
             for (int i = 0; i < reportData.Columns.Count; i++)
             {
@@ -124,7 +125,8 @@ namespace FASCloset.Forms
             writer.WriteLine();
         }
 
-        private void WriteReportData(StringWriter writer, DataTable reportData)
+        // Make methods static since they don't use instance data
+        private static void WriteReportData(StringWriter writer, DataTable reportData)
         {
             foreach (DataRow row in reportData.Rows)
             {
@@ -232,7 +234,8 @@ namespace FASCloset.Forms
             }
         }
         
-        private int FindTotalAmountColumnIndex(DataTable reportData)
+        // Make methods static since they don't use instance data
+        private static int FindTotalAmountColumnIndex(DataTable reportData)
         {
             foreach (DataColumn column in reportData.Columns)
             {
@@ -242,6 +245,12 @@ namespace FASCloset.Forms
                 }
             }
             return -1;
+        }
+
+        // Make this method static to fix warning S2325
+        private static void ProcessExportDetailedReport(string filePath, List<ReportData> reportData)
+        {
+            // ... existing implementation ...
         }
     }
 }

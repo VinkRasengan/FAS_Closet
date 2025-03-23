@@ -10,6 +10,9 @@ namespace FASCloset.Services
 {
     public static class CategoryManager
     {
+        // Define constant for frequently used parameter
+        private const string ParamCategoryId = "@CategoryID";
+
         private static string GetConnectionString()
         {
             return DatabaseConnection.GetConnectionString();
@@ -73,7 +76,7 @@ namespace FASCloset.Services
                     string query = "DELETE FROM Category WHERE CategoryID = @CategoryID";
                     using (var command = new SqliteCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@CategoryID", categoryId);
+                        command.Parameters.AddWithValue(ParamCategoryId, categoryId);
                         command.ExecuteNonQuery();
                     }
                 }
@@ -126,10 +129,10 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "SELECT CategoryID, CategoryName, Description, IsActive, CreatedDate FROM Categories WHERE CategoryID = @CategoryID";
+                    string query = $"SELECT CategoryID, CategoryName, Description, IsActive, CreatedDate FROM Categories WHERE CategoryID = {ParamCategoryId}";
                     using (var command = new SqliteCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@CategoryID", categoryId);
+                        command.Parameters.AddWithValue(ParamCategoryId, categoryId);
                         using (var reader = command.ExecuteReader())
                         {
                             if (reader.Read())
@@ -164,7 +167,7 @@ namespace FASCloset.Services
                     string query = "SELECT COUNT(*) FROM Product WHERE CategoryID = @CategoryID";
                     using (var command = new SqliteCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@CategoryID", categoryId);
+                        command.Parameters.AddWithValue(ParamCategoryId, categoryId);
                         int count = Convert.ToInt32(command.ExecuteScalar());
                         return count > 0;
                     }
@@ -173,28 +176,6 @@ namespace FASCloset.Services
             catch (SqliteException ex)
             {
                 throw new InvalidOperationException("Database error occurred while checking category usage.", ex);
-            }
-        }
-
-        private static void EnsureCategoriesTableExists(SqliteConnection connection)
-        {
-            string checkTableQuery = "SELECT name FROM sqlite_master WHERE type='table' AND name='Categories';";
-            using (var command = new SqliteCommand(checkTableQuery, connection))
-            {
-                if (command.ExecuteScalar() == null)
-                {
-                    using (var createCommand = new SqliteCommand(@"
-                        CREATE TABLE Categories (
-                            CategoryID INTEGER PRIMARY KEY AUTOINCREMENT,
-                            CategoryName TEXT NOT NULL,
-                            Description TEXT,
-                            IsActive INTEGER NOT NULL,
-                            CreatedDate DATETIME NOT NULL
-                        );", connection))
-                    {
-                        createCommand.ExecuteNonQuery();
-                    }
-                }
             }
         }
     }

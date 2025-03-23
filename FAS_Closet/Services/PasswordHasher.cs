@@ -6,15 +6,6 @@ namespace FASCloset.Services
 {
     public static class PasswordHasher
     {
-        // Size of salt in bytes
-        private const int SaltSize = 128;
-        
-        // Number of iterations for PBKDF2
-        private const int Iterations = 10000;
-        
-        // Size of hash in bytes
-        private const int HashSize = 64;
-
         /// <summary>
         /// Creates a hash and salt from a password
         /// </summary>

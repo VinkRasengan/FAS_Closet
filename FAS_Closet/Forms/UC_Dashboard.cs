@@ -17,8 +17,8 @@ namespace FASCloset.Forms
         {
             try
             {
-                // Load best selling products
-                var bestSellingProducts = ReportManager.GetBestSellingProducts();
+                // Load best selling products - explicitly use the overload with DateTime parameters
+                var bestSellingProducts = ReportManager.GetBestSellingProducts(null, null);
                 dgvBestSellers.DataSource = bestSellingProducts;
                 
                 // Load metrics
@@ -26,7 +26,8 @@ namespace FASCloset.Forms
                 lblTotalCustomers.Text = CustomerManager.GetCustomers().Count.ToString();
                 lblTotalOrders.Text = OrderManager.GetOrders().Count.ToString();
                 
-                var lowStockItems = InventoryManager.GetLowStockProducts();
+                // Use the default parameter (0) to get low stock across all warehouses
+                var lowStockItems = InventoryManager.GetLowStockProducts(0);
                 lblLowStockWarning.Text = lowStockItems.Count.ToString();
                 
                 if (lowStockItems.Count > 5)

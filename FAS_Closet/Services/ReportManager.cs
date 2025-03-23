@@ -103,47 +103,6 @@ namespace FASCloset.Services
             return reportTable;
         }
 
-        // New method to get best selling products for dashboard
-        public static DataTable GetBestSellingProducts(int top = 5)
-        {
-            DataTable reportTable = new DataTable();
-            
-            try
-            {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = @"
-                        SELECT 
-                            p.ProductName,
-                            SUM(od.Quantity) AS TotalSold,
-                            SUM(od.Quantity * od.UnitPrice) AS TotalRevenue
-                        FROM OrderDetails od
-                        JOIN Product p ON od.ProductID = p.ProductID
-                        GROUP BY p.ProductID
-                        ORDER BY TotalSold DESC
-                        LIMIT @Top";
-                    
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@Top", top);
-                        
-                        using (var reader = command.ExecuteReader())
-                        {
-                            // Load schema
-                            reportTable.Load(reader);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Error getting best selling products: " + ex.Message, ex);
-            }
-            
-            return reportTable;
-        }
-
         public static DataTable GetRevenueByCategory(DateTime startDate, DateTime endDate)
         {
             DataTable reportData = new DataTable();
@@ -195,62 +154,58 @@ namespace FASCloset.Services
             return reportData;
         }
 
-        // New method to get best selling products for dashboard
-        public static DataTable GetBestSellingProducts()
+        /// <summary>
+        /// Gets the best-selling products, either for all time or for a specific date range if provided
+        /// </summary>
+        public static List<Product> GetBestSellingProducts(DateTime? startDate = null, DateTime? endDate = null)
         {
-            var result = new DataTable();
-            result.Columns.Add("ProductID", typeof(int));
-            result.Columns.Add("ProductName", typeof(string));
-            result.Columns.Add("TotalSold", typeof(int));
-            result.Columns.Add("Revenue", typeof(decimal));
+            string query;
+            var parameters = new Dictionary<string, object>();
             
-            try
+            if (startDate.HasValue && endDate.HasValue)
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = @"
-                        SELECT 
-                            p.ProductID,
-                            p.ProductName,
-                            SUM(od.Quantity) as TotalSold,
-                            SUM(od.Quantity * od.UnitPrice) as Revenue
-                        FROM 
-                            Product p
-                            INNER JOIN OrderDetails od ON p.ProductID = od.ProductID
-                            INNER JOIN Orders o ON od.OrderID = o.OrderID
-                        WHERE 
-                            o.OrderDate >= date('now', '-30 day')
-                        GROUP BY 
-                            p.ProductID, p.ProductName
-                        ORDER BY 
-                            TotalSold DESC
-                        LIMIT 10";
+                query = @"
+                    SELECT p.*, c.CategoryName, COUNT(od.ProductID) as SalesCount,
+                           SUM(od.Quantity) as TotalQuantity, SUM(od.Quantity * od.UnitPrice) as Revenue
+                    FROM Product p
+                    JOIN OrderDetails od ON p.ProductID = od.ProductID
+                    JOIN Orders o ON od.OrderID = o.OrderID
+                    LEFT JOIN Category c ON p.CategoryID = c.CategoryID
+                    WHERE o.OrderDate BETWEEN @StartDate AND @EndDate
+                    GROUP BY p.ProductID
+                    ORDER BY SalesCount DESC
+                    LIMIT 10";
                     
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        using (var reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                result.Rows.Add(
-                                    reader.GetInt32(0),                  // ProductID
-                                    reader.GetString(1),                 // ProductName
-                                    reader.GetInt32(2),                  // TotalSold
-                                    reader.GetDecimal(3)                 // Revenue
-                                );
-                            }
-                        }
-                    }
-                }
+                parameters.Add("@StartDate", startDate.Value.ToString("yyyy-MM-dd"));
+                parameters.Add("@EndDate", endDate.Value.ToString("yyyy-MM-dd"));
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"Error getting best selling products: {ex.Message}");
-                // If an error occurs, return an empty result
+                query = @"
+                    SELECT p.*, c.CategoryName, COUNT(od.ProductID) as SalesCount,
+                           SUM(od.Quantity) as TotalQuantity, SUM(od.Quantity * od.UnitPrice) as Revenue
+                    FROM Product p
+                    JOIN OrderDetails od ON p.ProductID = od.ProductID
+                    JOIN Orders o ON od.OrderID = o.OrderID
+                    LEFT JOIN Category c ON p.CategoryID = c.CategoryID
+                    GROUP BY p.ProductID
+                    ORDER BY SalesCount DESC
+                    LIMIT 10";
             }
             
-            return result;
+            return DataAccessHelper.ExecuteReader(query, reader => new Product
+            {
+                ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
+                ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
+                CategoryID = reader.GetInt32(reader.GetOrdinal("CategoryID")),
+                Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                Description = reader.GetString(reader.GetOrdinal("Description")),
+                Stock = reader.GetInt32(reader.GetOrdinal("Stock")),
+                CategoryName = reader.IsDBNull(reader.GetOrdinal("CategoryName")) ? string.Empty : reader.GetString(reader.GetOrdinal("CategoryName")),
+                SalesCount = reader.GetInt32(reader.GetOrdinal("SalesCount")),
+                TotalQuantity = reader.GetInt32(reader.GetOrdinal("TotalQuantity")),
+                Revenue = reader.GetDecimal(reader.GetOrdinal("Revenue"))
+            }, parameters);
         }
     }
 }

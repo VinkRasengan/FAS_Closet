@@ -176,5 +176,21 @@ namespace FASCloset.Services
                 return false;
             }
         }
+
+        // Add this method to retrieve all users for the warehouse management
+        public static List<User> GetUsers()
+        {
+            string query = "SELECT * FROM User ORDER BY Name";
+            
+            return DataAccessHelper.ExecuteReader(query, reader => new User
+            {
+                UserID = reader.GetInt32(reader.GetOrdinal("UserID")),
+                Username = reader.GetString(reader.GetOrdinal("Username")),
+                Name = reader.GetString(reader.GetOrdinal("Name")),
+                Email = reader.GetString(reader.GetOrdinal("Email")),
+                Phone = reader.GetString(reader.GetOrdinal("Phone"))
+                // We don't include password information for security
+            });
+        }
     }
 }

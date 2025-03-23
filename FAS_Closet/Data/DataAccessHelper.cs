@@ -19,6 +19,7 @@ namespace FASCloset.Data
         {
             return DatabaseConnection.ExecuteDbOperation(connection => 
             {
+                Console.WriteLine($"Executing query: {query}");
                 var results = new List<T>();
                 using (var command = new SqliteCommand(query, connection))
                 {
@@ -28,17 +29,37 @@ namespace FASCloset.Data
                         foreach (var param in parameters)
                         {
                             command.Parameters.AddWithValue(param.Key, param.Value);
+                            Console.WriteLine($"Parameter: {param.Key} = {param.Value}");
                         }
                     }
                     
-                    using (var reader = command.ExecuteReader())
+                    try
                     {
-                        while (reader.Read())
+                        using (var reader = command.ExecuteReader())
                         {
-                            results.Add(mapper(reader));
+                            Console.WriteLine("Reader executed successfully");
+                            int rowCount = 0;
+                            
+                            while (reader.Read())
+                            {
+                                T item = mapper(reader);
+                                if (item != null)
+                                {
+                                    results.Add(item);
+                                    rowCount++;
+                                }
+                            }
+                            
+                            Console.WriteLine($"Mapped {rowCount} rows");
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error in ExecuteReader: {ex.Message}");
+                        throw;
+                    }
                 }
+                
                 return results;
             });
         }

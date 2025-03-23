@@ -80,9 +80,14 @@ namespace FASCloset.Services
         {
             try
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
+                string connectionString = GetConnectionString();
+                Console.WriteLine($"Connection string: {connectionString}");
+                
+                using (var connection = new SqliteConnection(connectionString))
                 {
+                    Console.WriteLine("Opening database connection...");
                     connection.Open();
+                    Console.WriteLine("Connection opened successfully");
                     return databaseOperation(connection);
                 }
             }
@@ -113,6 +118,25 @@ namespace FASCloset.Services
                 string message = $"Database operation failed: {ex.Message}";
                 Console.WriteLine(message);
                 throw new InvalidOperationException(message, ex);
+            }
+        }
+
+        // Execute database operations within a transaction
+        public static void ExecuteWithTransaction(Action<SqliteConnection, SqliteTransaction> operations)
+        {
+            using var connection = new SqliteConnection(GetConnectionString());
+            connection.Open();
+            
+            using var transaction = connection.BeginTransaction();
+            try
+            {
+                operations(connection, transaction);
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
             }
         }
     }

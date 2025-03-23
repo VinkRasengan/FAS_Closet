@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.Sqlite;
 using FASCloset.Models;
+using FASCloset.Data;
 
 namespace FASCloset.Services
 {
@@ -17,339 +18,369 @@ namespace FASCloset.Services
             return DatabaseConnection.GetConnectionString();
         }
 
+        // Get all products with category and manufacturer names
+        public static List<Product> GetProducts(bool includeInactive = false)
+        {
+            // Define SQL parameter name constants
+            const string includeInactiveParam = "@IncludeInactive";
+
+            string query = @"
+                SELECT p.*, 
+                       c.CategoryName, 
+                       m.ManufacturerName,
+                       CASE WHEN p.Stock <= COALESCE(i.MinimumStockThreshold, 10) THEN 1 ELSE 0 END as IsLowStock
+                FROM Product p
+                LEFT JOIN Category c ON p.CategoryID = c.CategoryID
+                LEFT JOIN Manufacturer m ON p.ManufacturerID = m.ManufacturerID
+                LEFT JOIN Inventory i ON p.ProductID = i.ProductID
+                WHERE (p.IsActive = 1 OR @IncludeInactive = 1)
+                ORDER BY p.ProductID";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { includeInactiveParam, includeInactive ? 1 : 0 }
+            };
+
+            try
+            {
+                var products = DataAccessHelper.ExecuteReader(query, reader => MapProductWithDetails(reader), parameters);
+                Console.WriteLine($"Retrieved {products.Count} products from database.");
+                return products;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving products: {ex.Message}");
+                // Return empty list instead of throwing to avoid crashing UI
+                return new List<Product>();
+            }
+        }
+
+        // Get products by category with additional details
+        public static List<Product> GetProductsByCategory(int categoryId, bool includeInactive = false)
+        {
+            string query = @"
+                SELECT p.*, 
+                       c.CategoryName, 
+                       m.ManufacturerName,
+                       CASE WHEN p.Stock <= COALESCE(i.MinimumStockThreshold, 10) THEN 1 ELSE 0 END as IsLowStock
+                FROM Product p
+                LEFT JOIN Category c ON p.CategoryID = c.CategoryID
+                LEFT JOIN Manufacturer m ON p.ManufacturerID = m.ManufacturerID
+                LEFT JOIN Inventory i ON p.ProductID = i.ProductID
+                WHERE p.CategoryID = @CategoryID AND (p.IsActive = 1 OR @IncludeInactive = 1)
+                ORDER BY p.ProductID";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@CategoryID", categoryId },
+                { "@IncludeInactive", includeInactive ? 1 : 0 }
+            };
+
+            return DataAccessHelper.ExecuteReader(query, reader => MapProductWithDetails(reader), parameters);
+        }
+
+        // Get product by name
+        public static Product? GetProductByName(string name)
+        {
+            string query = "SELECT * FROM Product WHERE ProductName = @Name";
+            var parameters = new Dictionary<string, object> { { "@Name", name } };
+
+            return DataAccessHelper.ExecuteReaderSingle(query, reader => MapProduct(reader), parameters);
+        }
+
+        // Get product by ID with related information
+        public static Product? GetProductById(int productId)
+        {
+            string query = @"
+                SELECT p.*, 
+                       c.CategoryName, 
+                       m.ManufacturerName,
+                       CASE WHEN p.Stock <= COALESCE(i.MinimumStockThreshold, 10) THEN 1 ELSE 0 END as IsLowStock
+                FROM Product p
+                LEFT JOIN Category c ON p.CategoryID = c.CategoryID
+                LEFT JOIN Manufacturer m ON p.ManufacturerID = m.ManufacturerID
+                LEFT JOIN Inventory i ON p.ProductID = i.ProductID
+                WHERE p.ProductID = @ProductID";
+
+            var parameters = new Dictionary<string, object> { { "@ProductID", productId } };
+
+            return DataAccessHelper.ExecuteReaderSingle(query, reader => MapProductWithDetails(reader), parameters);
+        }
+
+        // Add a new product
         public static void AddProduct(Product product)
         {
-            try
+            string query = @"
+                INSERT INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description, IsActive) 
+                VALUES (@ProductName, @CategoryID, @ManufacturerID, @Price, @Stock, @Description, @IsActive);
+                SELECT last_insert_rowid();";
+
+            var parameters = new Dictionary<string, object>
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "INSERT INTO Product (ProductName, CategoryID, Price, Stock, Description) VALUES (@ProductName, @CategoryID, @Price, @Stock, @Description)";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@ProductName", product.ProductName);
-                        command.Parameters.AddWithValue("@CategoryID", product.CategoryID);
-                        command.Parameters.AddWithValue("@Price", product.Price);
-                        command.Parameters.AddWithValue("@Stock", product.Stock); // Include Stock
-                        command.Parameters.AddWithValue("@Description", product.Description);
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (SqliteException ex)
+                { "@ProductName", product.ProductName },
+                { "@CategoryID", product.CategoryID },
+                { "@ManufacturerID", product.ManufacturerID ?? (object)DBNull.Value },
+                { "@Price", product.Price },
+                { "@Stock", product.Stock },
+                { "@Description", product.Description },
+                { "@IsActive", product.IsActive ? 1 : 0 }
+            };
+
+            int productId = DataAccessHelper.ExecuteScalar<int>(query, parameters);
+            
+            // Add default inventory record
+            string inventoryQuery = @"
+                INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) 
+                VALUES (@ProductID, @StockQuantity, @MinimumStockThreshold)";
+
+            var inventoryParams = new Dictionary<string, object>
             {
-                throw new InvalidOperationException("Database error occurred while adding product.", ex);
-            }
+                { "@ProductID", productId },
+                { "@StockQuantity", product.Stock },
+                { "@MinimumStockThreshold", 10 } // Default threshold
+            };
+
+            DataAccessHelper.ExecuteNonQuery(inventoryQuery, inventoryParams);
         }
 
+        // Update an existing product
         public static void UpdateProduct(Product product)
         {
-            try
+            // Get the current product to check if stock changed
+            Product? currentProduct = GetProductById(product.ProductID);
+            bool stockChanged = currentProduct != null && currentProduct.Stock != product.Stock;
+
+            string query = @"
+                UPDATE Product 
+                SET ProductName = @ProductName, 
+                    CategoryID = @CategoryID, 
+                    ManufacturerID = @ManufacturerID, 
+                    Price = @Price, 
+                    Stock = @Stock, 
+                    Description = @Description,
+                    IsActive = @IsActive
+                WHERE ProductID = @ProductID";
+
+            var parameters = new Dictionary<string, object>
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "UPDATE Product SET ProductName = @ProductName, CategoryID = @CategoryID, Price = @Price, Description = @Description WHERE ProductID = @ProductID";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@ProductName", product.ProductName);
-                        command.Parameters.AddWithValue("@CategoryID", product.CategoryID);
-                        command.Parameters.AddWithValue("@Price", product.Price);
-                        command.Parameters.AddWithValue("@Description", product.Description);
-                        command.Parameters.AddWithValue("@ProductID", product.ProductID);
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (SqliteException ex)
+                { "@ProductID", product.ProductID },
+                { "@ProductName", product.ProductName },
+                { "@CategoryID", product.CategoryID },
+                { "@ManufacturerID", product.ManufacturerID ?? (object)DBNull.Value },
+                { "@Price", product.Price },
+                { "@Stock", product.Stock },
+                { "@Description", product.Description },
+                { "@IsActive", product.IsActive ? 1 : 0 }
+            };
+
+            DataAccessHelper.ExecuteNonQuery(query, parameters);
+
+            // If stock changed, update the inventory table as well
+            if (stockChanged)
             {
-                throw new InvalidOperationException("Database error occurred while updating product.", ex);
+                InventoryManager.UpdateStock(product.ProductID, product.Stock);
             }
         }
 
+        // Delete a product (or mark as inactive)
         public static void DeleteProduct(int productId)
         {
-            try
-            {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "DELETE FROM Product WHERE ProductID = @ProductID";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@ProductID", productId);
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while deleting product.", ex);
-            }
+            // Instead of deleting, mark as inactive
+            string query = "UPDATE Product SET IsActive = 0 WHERE ProductID = @ProductID";
+            var parameters = new Dictionary<string, object> { { "@ProductID", productId } };
+            DataAccessHelper.ExecuteNonQuery(query, parameters);
         }
 
-        public static List<Product> GetProducts()
+        // Permanently delete a product (only for admin use)
+        public static void PermanentlyDeleteProduct(int productId)
         {
-            var products = new List<Product>();
-            try
-            {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "SELECT ProductID, ProductName, CategoryID, ManufacturerID, Price, Stock, Description FROM Product"; // Adjust column names
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        using (var reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                products.Add(new Product
-                                {
-                                    ProductID = reader.GetInt32(0),
-                                    ProductName = reader.GetString(1),
-                                    CategoryID = reader.GetInt32(2),
-                                    ManufacturerID = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
-                                    Price = reader.GetDecimal(4),
-                                    Stock = reader.GetInt32(5),
-                                    Description = reader.GetString(6)
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while retrieving products.", ex);
-            }
-            return products;
+            string query = "DELETE FROM Product WHERE ProductID = @ProductID";
+            var parameters = new Dictionary<string, object> { { "@ProductID", productId } };
+            DataAccessHelper.ExecuteNonQuery(query, parameters);
         }
 
-        public static List<Product> GetProductsByCategory(int categoryId)
-        {
-            var products = new List<Product>();
-            try
-            {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "SELECT ProductID, ProductName, CategoryID, ManufacturerID, Price, Stock, Description FROM Product WHERE CategoryID = @CategoryID"; // Adjust column names
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@CategoryID", categoryId);
-                        using (var reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                products.Add(new Product
-                                {
-                                    ProductID = reader.GetInt32(0),
-                                    ProductName = reader.GetString(1),
-                                    CategoryID = reader.GetInt32(2),
-                                    ManufacturerID = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
-                                    Price = reader.GetDecimal(4),
-                                    Stock = reader.GetInt32(5),
-                                    Description = reader.GetString(6)
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while retrieving products by category.", ex);
-            }
-            return products;
-        }
-
-        public static Product? GetProductById(int id) // Allow null return
-        {
-            try
-            {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "SELECT ProductID, ProductName, CategoryID, ManufacturerID, Price, Stock, Description FROM Product WHERE ProductID = @ProductID";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@ProductID", id);
-                        using (var reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                return new Product
-                                {
-                                    ProductID = reader.GetInt32(0),
-                                    ProductName = reader.GetString(1),
-                                    CategoryID = reader.GetInt32(2),
-                                    ManufacturerID = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
-                                    Price = reader.GetDecimal(4),
-                                    Stock = reader.GetInt32(5),
-                                    Description = reader.GetString(6)
-                                };
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while retrieving product by ID.", ex);
-            }
-            return null;
-        }
-
-        public static Product? GetProductByName(string productName)
-        {
-            try
-            {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "SELECT ProductID, ProductName, CategoryID, ManufacturerID, Price, Stock, Description FROM Product WHERE ProductName = @ProductName";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@ProductName", productName);
-                        using (var reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                return new Product
-                                {
-                                    ProductID = reader.GetInt32(0),
-                                    ProductName = reader.GetString(1),
-                                    CategoryID = reader.GetInt32(2),
-                                    ManufacturerID = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
-                                    Price = reader.GetDecimal(4),
-                                    Stock = reader.GetInt32(5),
-                                    Description = reader.GetString(6)
-                                };
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while retrieving product by name.", ex);
-            }
-            return null;
-        }
-
+        // Get all categories
         public static List<Category> GetCategories()
         {
-            var categories = new List<Category>();
-            try
+            string query = "SELECT * FROM Category WHERE IsActive = 1 ORDER BY CategoryName";
+            return DataAccessHelper.ExecuteReader(query, reader => new Category
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    EnsureCategoriesTableExists(connection); // Ensure table exists
-                    string query = "SELECT CategoryID, CategoryName, Description, IsActive, CreatedDate FROM Category";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        using (var reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                categories.Add(new Category
-                                {
-                                    CategoryID = reader.GetInt32(0),
-                                    CategoryName = reader.GetString(1),
-                                    Description = reader.IsDBNull(2) ? null : reader.GetString(2),
-                                    IsActive = reader.GetBoolean(3),
-                                    CreatedDate = reader.GetDateTime(4)
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while retrieving categories.", ex);
-            }
-            return categories;
+                CategoryID = reader.GetInt32(reader.GetOrdinal("CategoryID")),
+                CategoryName = reader.GetString(reader.GetOrdinal("CategoryName")),
+                Description = reader.IsDBNull(reader.GetOrdinal("Description")) ? null : reader.GetString(reader.GetOrdinal("Description")),
+                IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+                CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate"))
+            });
         }
 
-        public static void AddCategory(Category category)
-        {
-            try
-            {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "INSERT INTO Category (CategoryName, Description, IsActive, CreatedDate) VALUES (@CategoryName, @Description, @IsActive, @CreatedDate)";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@CategoryName", category.CategoryName);
-                        command.Parameters.AddWithValue("@Description", category.Description);
-                        command.Parameters.AddWithValue("@IsActive", category.IsActive);
-                        command.Parameters.AddWithValue("@CreatedDate", category.CreatedDate);
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while adding category.", ex);
-            }
-        }
-
-        public static void AddManufacturer(Manufacturer manufacturer)
-        {
-            try
-            {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "INSERT INTO Manufacturer (ManufacturerName, Description) VALUES (@ManufacturerName, @Description)";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@ManufacturerName", manufacturer.ManufacturerName);
-                        command.Parameters.AddWithValue("@Description", manufacturer.Description);
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while adding manufacturer.", ex);
-            }
-        }
-
+        // Get all manufacturers
         public static List<Manufacturer> GetManufacturers()
         {
-            var manufacturers = new List<Manufacturer>();
+            string query = "SELECT * FROM Manufacturer ORDER BY ManufacturerName";
+            return DataAccessHelper.ExecuteReader(query, reader => new Manufacturer
+            {
+                ManufacturerID = reader.GetInt32(reader.GetOrdinal("ManufacturerID")),
+                ManufacturerName = reader.GetString(reader.GetOrdinal("ManufacturerName")),
+                Description = reader.IsDBNull(reader.GetOrdinal("Description")) ? null : reader.GetString(reader.GetOrdinal("Description"))
+            });
+        }
+
+        // Add a category
+        public static void AddCategory(Category category)
+        {
+            string query = "INSERT INTO Category (CategoryName, Description, IsActive) VALUES (@CategoryName, @Description, @IsActive)";
+            var parameters = new Dictionary<string, object>
+            {
+                { "@CategoryName", category.CategoryName },
+                { "@Description", category.Description ?? (object)DBNull.Value },
+                { "@IsActive", category.IsActive }
+            };
+            DataAccessHelper.ExecuteNonQuery(query, parameters);
+        }
+
+        // Add a manufacturer
+        public static void AddManufacturer(Manufacturer manufacturer)
+        {
+            string query = "INSERT INTO Manufacturer (ManufacturerName, Description) VALUES (@ManufacturerName, @Description)";
+            var parameters = new Dictionary<string, object>
+            {
+                { "@ManufacturerName", manufacturer.ManufacturerName },
+                { "@Description", manufacturer.Description ?? (object)DBNull.Value }
+            };
+            DataAccessHelper.ExecuteNonQuery(query, parameters);
+        }
+
+        // Search products by name or description
+        public static List<Product> SearchProducts(string searchText, bool includeInactive = false)
+        {
+            string query = @"
+                SELECT p.*, 
+                       c.CategoryName, 
+                       m.ManufacturerName,
+                       CASE WHEN p.Stock <= COALESCE(i.MinimumStockThreshold, 10) THEN 1 ELSE 0 END as IsLowStock
+                FROM Product p
+                LEFT JOIN Category c ON p.CategoryID = c.CategoryID
+                LEFT JOIN Manufacturer m ON p.ManufacturerID = m.ManufacturerID
+                LEFT JOIN Inventory i ON p.ProductID = i.ProductID
+                WHERE (p.ProductName LIKE @SearchText OR p.Description LIKE @SearchText) 
+                AND (p.IsActive = 1 OR @IncludeInactive = 1)
+                ORDER BY p.ProductName";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@SearchText", "%" + searchText + "%" },
+                { "@IncludeInactive", includeInactive ? 1 : 0 }
+            };
+
+            return DataAccessHelper.ExecuteReader(query, reader => MapProductWithDetails(reader), parameters);
+        }
+
+        /// <summary>
+        /// Get all products with warehouse-specific stock information
+        /// </summary>
+        public static List<Product> GetProductsForWarehouse(int warehouseId, bool includeInactive = false)
+        {
+            // Define SQL parameter name constants
+            const string warehouseIdParam = "@WarehouseID";
+            const string includeInactiveParam = "@IncludeInactive";
+
+            string query = @"
+                SELECT p.*, 
+                       c.CategoryName, 
+                       m.ManufacturerName,
+                       i.StockQuantity as WarehouseStock,
+                       CASE WHEN i.StockQuantity <= COALESCE(i.MinimumStockThreshold, 10) THEN 1 ELSE 0 END as IsLowStock
+                FROM Product p
+                LEFT JOIN Category c ON p.CategoryID = c.CategoryID
+                LEFT JOIN Manufacturer m ON p.ManufacturerID = m.ManufacturerID
+                LEFT JOIN Inventory i ON p.ProductID = i.ProductID AND i.WarehouseID = @WarehouseID
+                WHERE (p.IsActive = 1 OR @IncludeInactive = 1)
+                ORDER BY p.ProductName";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { warehouseIdParam, warehouseId },
+                { includeInactiveParam, includeInactive ? 1 : 0 }
+            };
+
             try
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
+                var products = DataAccessHelper.ExecuteReader(query, reader =>
                 {
-                    connection.Open();
-                    string query = "SELECT ManufacturerID, ManufacturerName, Description FROM Manufacturer";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        using (var reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                manufacturers.Add(new Manufacturer
-                                {
-                                    ManufacturerID = reader.GetInt32(0),
-                                    ManufacturerName = reader.GetString(1),
-                                    Description = reader.IsDBNull(2) ? null : reader.GetString(2)
-                                });
-                            }
-                        }
-                    }
-                }
+                    var product = MapProductWithDetails(reader);
+                    
+                    // Get warehouse-specific stock if available
+                    if (!reader.IsDBNull(reader.GetOrdinal("WarehouseStock")))
+                        product.Stock = reader.GetInt32(reader.GetOrdinal("WarehouseStock"));
+
+                    return product;
+                }, parameters);
+                    
+                Console.WriteLine($"Retrieved {products.Count} products for warehouse {warehouseId}");
+                return products;
             }
-            catch (SqliteException ex)
+            catch (Exception ex)
             {
-                throw new InvalidOperationException("Database error occurred while retrieving manufacturers.", ex);
+                Console.WriteLine($"Error retrieving products for warehouse {warehouseId}: {ex.Message}");
+                return new List<Product>();
             }
-            return manufacturers;
+        }
+
+        // Helper method to map reader to product
+        private static Product MapProduct(IDataReader reader)
+        {
+            return new Product
+            {
+                ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
+                ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
+                CategoryID = reader.GetInt32(reader.GetOrdinal("CategoryID")),
+                ManufacturerID = reader.IsDBNull(reader.GetOrdinal("ManufacturerID")) ? null : reader.GetInt32(reader.GetOrdinal("ManufacturerID")),
+                Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                Stock = reader.GetInt32(reader.GetOrdinal("Stock")),
+                Description = reader.GetString(reader.GetOrdinal("Description")),
+                IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
+            };
+        }
+
+        // Helper method to map reader to product with additional details
+        private static Product MapProductWithDetails(IDataReader reader)
+        {
+            if (reader == null) 
+                throw new ArgumentNullException(nameof(reader));
+                
+            var product = MapProduct(reader);
+
+            // Add related information - safely check for column existence first
+            DataTable schemaTable = reader.GetSchemaTable();
+            
+            if (schemaTable != null)
+            {
+                bool hasCategory = SchemaContainsColumn(schemaTable, "CategoryName");
+                bool hasManufacturer = SchemaContainsColumn(schemaTable, "ManufacturerName");
+                bool hasLowStock = SchemaContainsColumn(schemaTable, "IsLowStock");
+                
+                if (hasCategory && !reader.IsDBNull(reader.GetOrdinal("CategoryName")))
+                    product.CategoryName = reader.GetString(reader.GetOrdinal("CategoryName"));
+
+                if (hasManufacturer && !reader.IsDBNull(reader.GetOrdinal("ManufacturerName")))
+                    product.ManufacturerName = reader.GetString(reader.GetOrdinal("ManufacturerName"));
+
+                if (hasLowStock)
+                    product.IsLowStock = reader.GetBoolean(reader.GetOrdinal("IsLowStock"));
+            }
+
+            return product;
+        }
+
+        // Helper method to check if a column exists in schema
+        private static bool SchemaContainsColumn(DataTable schema, string columnName)
+        {
+            foreach (DataRow row in schema.Rows)
+            {
+                if (string.Equals(row["ColumnName"].ToString(), columnName, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
         }
 
         private static void EnsureCategoriesTableExists(SqliteConnection connection)

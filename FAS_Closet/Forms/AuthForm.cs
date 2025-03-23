@@ -548,7 +548,7 @@ namespace FASCloset.Forms
         }
 
         // Password strength calculation
-        private int CalculatePasswordStrength(string password)
+        private static int CalculatePasswordStrength(string password)
         {
             if (string.IsNullOrEmpty(password)) 
                 return 0;

@@ -80,11 +80,28 @@ namespace FASCloset.Data
                     FOREIGN KEY (ManufacturerID) REFERENCES Manufacturer(ManufacturerID) ON DELETE SET NULL
                 );",
                 
+                // Create Warehouse table BEFORE Inventory table
+                @"CREATE TABLE IF NOT EXISTS Warehouse (
+                    WarehouseID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Name TEXT NOT NULL,
+                    Address TEXT,
+                    ManagerUserID INTEGER NOT NULL,
+                    CreatedDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    IsActive BOOLEAN NOT NULL DEFAULT 1,
+                    Description TEXT,
+                    FOREIGN KEY (ManagerUserID) REFERENCES User(UserID)
+                );",
+                
+                // Now create Inventory table which references Warehouse
                 @"CREATE TABLE IF NOT EXISTS Inventory (
-                    ProductID INTEGER PRIMARY KEY,
-                    StockQuantity INTEGER NOT NULL,
-                    MinimumStockThreshold INTEGER NOT NULL,
-                    FOREIGN KEY (ProductID) REFERENCES Product(ProductID) ON DELETE CASCADE
+                    InventoryID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ProductID INTEGER NOT NULL,
+                    WarehouseID INTEGER NOT NULL DEFAULT 1,
+                    StockQuantity INTEGER NOT NULL DEFAULT 0,
+                    MinimumStockThreshold INTEGER NOT NULL DEFAULT 10,
+                    FOREIGN KEY (ProductID) REFERENCES Product(ProductID) ON DELETE CASCADE,
+                    FOREIGN KEY (WarehouseID) REFERENCES Warehouse(WarehouseID) ON DELETE CASCADE,
+                    UNIQUE(ProductID, WarehouseID)
                 );",
                 
                 @"CREATE TABLE IF NOT EXISTS Orders (
@@ -102,8 +119,18 @@ namespace FASCloset.Data
                     ProductID INTEGER NOT NULL,
                     Quantity INTEGER NOT NULL,
                     UnitPrice DECIMAL(10, 2) NOT NULL,
+                    WarehouseID INTEGER DEFAULT 1,
                     FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE,
-                    FOREIGN KEY (ProductID) REFERENCES Product(ProductID) ON DELETE CASCADE
+                    FOREIGN KEY (ProductID) REFERENCES Product(ProductID) ON DELETE CASCADE,
+                    FOREIGN KEY (WarehouseID) REFERENCES Warehouse(WarehouseID) ON DELETE SET DEFAULT
+                );",
+                
+                @"CREATE TABLE IF NOT EXISTS NotificationLog (
+                    LogID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Type TEXT NOT NULL,
+                    Subject TEXT NOT NULL,
+                    Message TEXT NOT NULL,
+                    Timestamp DATETIME NOT NULL
                 );"
             };
             
@@ -112,6 +139,28 @@ namespace FASCloset.Data
                 using (var cmd = new SqliteCommand(command, connection))
                 {
                     cmd.ExecuteNonQuery();
+                }
+            }
+            
+            // Check if we need to migrate old Inventory data
+            using (var cmd = new SqliteCommand("SELECT name FROM sqlite_master WHERE type='table' AND name='OldInventory'", connection))
+            {
+                if (cmd.ExecuteScalar() == null)
+                {
+                    // No migration needed, continue
+                }
+                else
+                {
+                    // Migration needed
+                    string migrateQuery = @"
+                        INSERT INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold)
+                        SELECT ProductID, 1, StockQuantity, MinimumStockThreshold
+                        FROM OldInventory;
+                        DROP TABLE OldInventory;";
+                    using (var migrateCmd = new SqliteCommand(migrateQuery, connection))
+                    {
+                        migrateCmd.ExecuteNonQuery();
+                    }
                 }
             }
         }
@@ -214,18 +263,39 @@ namespace FASCloset.Data
         
         private static void CreateDemoInventory(SqliteConnection connection)
         {
+            // First create the warehouses
+            CreateDemoWarehouses(connection);
+            
             string[] insertCommands = {
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (1, 50, 10)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (2, 30, 8)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (3, 25, 5)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (4, 20, 5)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (5, 40, 10)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (6, 35, 10)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (7, 45, 10)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (8, 15, 3)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (9, 30, 8)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (10, 25, 5)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (11, 5, 10)" // This will appear in low stock warnings
+                // Main Warehouse (WarehouseID = 1) inventory
+                "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (1, 1, 50, 10)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (2, 1, 30, 8)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (3, 1, 25, 5)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (4, 1, 20, 5)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (5, 1, 40, 10)",
+                
+                // North Branch (WarehouseID = 2) inventory
+                "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (1, 2, 25, 8)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (2, 2, 15, 5)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (6, 2, 35, 10)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (7, 2, 45, 10)",
+                
+                // South Branch (WarehouseID = 3) inventory
+                "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (8, 3, 15, 3)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (9, 3, 30, 8)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (10, 3, 25, 5)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (11, 1, 5, 10)" // This will appear in low stock warnings
+            };
+            
+            ExecuteCommands(connection, insertCommands);
+        }
+        
+        private static void CreateDemoWarehouses(SqliteConnection connection)
+        {
+            string[] insertCommands = {
+                "INSERT OR IGNORE INTO Warehouse (WarehouseID, Name, Address, ManagerUserID, Description) VALUES (1, 'Main Warehouse', '123 Main Street, City', 1, 'The main central warehouse')",
+                "INSERT OR IGNORE INTO Warehouse (Name, Address, ManagerUserID, Description) VALUES ('North Branch', '456 North Ave, Town', 2, 'Northern distribution center')",
+                "INSERT OR IGNORE INTO Warehouse (Name, Address, ManagerUserID, Description) VALUES ('South Branch', '789 South Blvd, Village', 3, 'Southern distribution center')"
             };
             
             ExecuteCommands(connection, insertCommands);
@@ -258,21 +328,32 @@ namespace FASCloset.Data
             ExecuteCommands(connection, orderCommands);
             
             // Insert order details
+            CreateDemoOrderDetails(connection);
+        }
+        
+        private static void CreateDemoOrderDetails(SqliteConnection connection)
+        {
+            // Insert order details with warehouse information
             string[] orderDetailCommands = {
-                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice) VALUES (1, 1, 1, 29.99)",
-                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice) VALUES (1, 5, 1, 19.99)",
-                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice) VALUES (1, 6, 1, 24.99)",
+                // Order 1 details - from Warehouse 1
+                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice, WarehouseID) VALUES (1, 1, 1, 29.99, 1)",
+                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice, WarehouseID) VALUES (1, 5, 1, 19.99, 1)",
+                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice, WarehouseID) VALUES (1, 6, 1, 24.99, 1)",
                 
-                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice) VALUES (2, 7, 1, 59.99)",
-                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice) VALUES (2, 8, 1, 129.99)",
+                // Order 2 details - from Warehouse 2
+                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice, WarehouseID) VALUES (2, 7, 1, 59.99, 2)",
+                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice, WarehouseID) VALUES (2, 8, 1, 129.99, 2)",
                 
-                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice) VALUES (3, 3, 1, 49.99)",
+                // Order 3 details - from Warehouse 3
+                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice, WarehouseID) VALUES (3, 3, 1, 49.99, 3)",
                 
-                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice) VALUES (4, 4, 1, 89.99)",
-                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice) VALUES (4, 9, 2, 34.99)",
+                // Order 4 details - mixed warehouses
+                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice, WarehouseID) VALUES (4, 4, 1, 89.99, 1)",
+                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice, WarehouseID) VALUES (4, 9, 2, 34.99, 3)",
                 
-                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice) VALUES (5, 2, 1, 39.99)",
-                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice) VALUES (5, 10, 1, 69.99)"
+                // Order 5 details - from Warehouse 1
+                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice, WarehouseID) VALUES (5, 2, 1, 39.99, 1)",
+                "INSERT OR IGNORE INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice, WarehouseID) VALUES (5, 10, 1, 69.99, 1)"
             };
             
             ExecuteCommands(connection, orderDetailCommands);

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.Sqlite;
 using FASCloset.Models;
+using FASCloset.Data;
 
 namespace FASCloset.Services
 {
@@ -12,170 +13,126 @@ namespace FASCloset.Services
     {
         private const string CustomerIdParameter = "@CustomerID";
 
-        private static string GetConnectionString()
-        {
-            return DatabaseConnection.GetConnectionString();
-        }
-
         public static void AddCustomer(Customer customer)
         {
-            try
+            DatabaseConnection.ExecuteDbOperation(connection => 
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
+                string query = "INSERT INTO Customers (Name, Email, Phone, Address) VALUES (@Name, @Email, @Phone, @Address)";
+                using (var command = new SqliteCommand(query, connection))
                 {
-                    connection.Open();
-                    string query = "INSERT INTO Customers (Name, Email, Phone, Address) VALUES (@Name, @Email, @Phone, @Address)";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@Name", customer.Name);
-                        command.Parameters.AddWithValue("@Email", customer.Email);
-                        command.Parameters.AddWithValue("@Phone", customer.Phone);
-                        command.Parameters.AddWithValue("@Address", customer.Address);
-                        command.ExecuteNonQuery();
-                    }
+                    command.Parameters.AddWithValue("@Name", customer.Name);
+                    command.Parameters.AddWithValue("@Email", customer.Email);
+                    command.Parameters.AddWithValue("@Phone", customer.Phone);
+                    command.Parameters.AddWithValue("@Address", customer.Address);
+                    command.ExecuteNonQuery();
                 }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while adding customer.", ex);
-            }
+                return true;
+            });
         }
 
         public static void UpdateCustomer(Customer customer)
         {
-            try
+            DatabaseConnection.ExecuteDbOperation(connection => 
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
+                string query = "UPDATE Customers SET Name = @Name, Email = @Email, Phone = @Phone, Address = @Address WHERE CustomerID = @CustomerID";
+                using (var command = new SqliteCommand(query, connection))
                 {
-                    connection.Open();
-                    string query = "UPDATE Customers SET Name = @Name, Email = @Email, Phone = @Phone, Address = @Address WHERE CustomerID = @CustomerID";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@Name", customer.Name);
-                        command.Parameters.AddWithValue("@Email", customer.Email);
-                        command.Parameters.AddWithValue("@Phone", customer.Phone);
-                        command.Parameters.AddWithValue("@Address", customer.Address);
-                        command.Parameters.AddWithValue(CustomerIdParameter, customer.CustomerID);
-                        command.ExecuteNonQuery();
-                    }
+                    command.Parameters.AddWithValue("@Name", customer.Name);
+                    command.Parameters.AddWithValue("@Email", customer.Email);
+                    command.Parameters.AddWithValue("@Phone", customer.Phone);
+                    command.Parameters.AddWithValue("@Address", customer.Address);
+                    command.Parameters.AddWithValue(CustomerIdParameter, customer.CustomerID);
+                    command.ExecuteNonQuery();
                 }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while updating customer.", ex);
-            }
+                return true;
+            });
         }
 
         public static void DeleteCustomer(int customerId)
         {
-            try
+            DatabaseConnection.ExecuteDbOperation(connection => 
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
+                string query = "DELETE FROM Customers WHERE CustomerID = @CustomerID";
+                using (var command = new SqliteCommand(query, connection))
                 {
-                    connection.Open();
-                    string query = "DELETE FROM Customers WHERE CustomerID = @CustomerID";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue(CustomerIdParameter, customerId);
-                        command.ExecuteNonQuery();
-                    }
+                    command.Parameters.AddWithValue(CustomerIdParameter, customerId);
+                    command.ExecuteNonQuery();
                 }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while deleting customer.", ex);
-            }
+                return true;
+            });
         }
 
         public static List<Customer> GetCustomers()
         {
             var customers = new List<Customer>();
-            try
+            DatabaseConnection.ExecuteDbOperation(connection => 
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
+                string query = "SELECT CustomerID, Name, Email, Phone, Address FROM Customers";
+                using (var command = new SqliteCommand(query, connection))
                 {
-                    connection.Open();
-                    string query = "SELECT CustomerID, Name, Email, Phone, Address FROM Customers";
-                    using (var command = new SqliteCommand(query, connection))
+                    using (var reader = command.ExecuteReader())
                     {
-                        using (var reader = command.ExecuteReader())
+                        while (reader.Read())
                         {
-                            while (reader.Read())
+                            customers.Add(new Customer
                             {
-                                customers.Add(new Customer
-                                {
-                                    CustomerID = reader.GetInt32(0),
-                                    Name = reader.GetString(1),
-                                    Email = reader.GetString(2),
-                                    Phone = reader.GetString(3),
-                                    Address = reader.GetString(4)
-                                });
-                            }
+                                CustomerID = reader.GetInt32(0),
+                                Name = reader.GetString(1),
+                                Email = reader.GetString(2),
+                                Phone = reader.GetString(3),
+                                Address = reader.GetString(4)
+                            });
                         }
                     }
                 }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while retrieving customers.", ex);
-            }
+                return true;
+            });
             return customers;
         }
 
         public static Customer? GetCustomerById(int customerId)
         {
-            try
+            Customer? customer = null;
+            DatabaseConnection.ExecuteDbOperation(connection => 
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
+                string query = "SELECT CustomerID, Name, Email, Phone, Address FROM Customers WHERE CustomerID = @CustomerID";
+                using (var command = new SqliteCommand(query, connection))
                 {
-                    connection.Open();
-                    string query = "SELECT CustomerID, Name, Email, Phone, Address FROM Customers WHERE CustomerID = @CustomerID";
-                    using (var command = new SqliteCommand(query, connection))
+                    command.Parameters.AddWithValue(CustomerIdParameter, customerId);
+                    using (var reader = command.ExecuteReader())
                     {
-                        command.Parameters.AddWithValue(CustomerIdParameter, customerId);
-                        using (var reader = command.ExecuteReader())
+                        if (reader.Read())
                         {
-                            if (reader.Read())
+                            customer = new Customer
                             {
-                                return new Customer
-                                {
-                                    CustomerID = reader.GetInt32(0),
-                                    Name = reader.GetString(1),
-                                    Email = reader.GetString(2),
-                                    Phone = reader.GetString(3),
-                                    Address = reader.GetString(4)
-                                };
-                            }
+                                CustomerID = reader.GetInt32(0),
+                                Name = reader.GetString(1),
+                                Email = reader.GetString(2),
+                                Phone = reader.GetString(3),
+                                Address = reader.GetString(4)
+                            };
                         }
                     }
                 }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while retrieving customer by ID.", ex);
-            }
-            return null;
+                return true;
+            });
+            return customer;
         }
 
         public static int GetLoyaltyPointsByCustomerId(int customerId)
         {
-            try
+            int loyaltyPoints = 0;
+            DatabaseConnection.ExecuteDbOperation(connection => 
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
+                string query = "SELECT LoyaltyPoints FROM Customers WHERE CustomerID = @CustomerID";
+                using (var command = new SqliteCommand(query, connection))
                 {
-                    connection.Open();
-                    string query = "SELECT LoyaltyPoints FROM Customers WHERE CustomerID = @CustomerID";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue(CustomerIdParameter, customerId);
-                        return Convert.ToInt32(command.ExecuteScalar());
-                    }
+                    command.Parameters.AddWithValue(CustomerIdParameter, customerId);
+                    loyaltyPoints = Convert.ToInt32(command.ExecuteScalar());
                 }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while retrieving loyalty points.", ex);
-            }
+                return true;
+            });
+            return loyaltyPoints;
         }
     }
 }

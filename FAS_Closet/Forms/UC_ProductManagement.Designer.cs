@@ -5,6 +5,17 @@ namespace FASCloset.Forms
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            
+            // Error Provider for validation
+            errorProvider = new ErrorProvider(components);
+            errorProvider.BlinkStyle = ErrorBlinkStyle.NeverBlink;
+            
+            // Tooltips for user guidance
+            toolTip = new ToolTip(components);
+            toolTip.AutoPopDelay = 5000;
+            toolTip.InitialDelay = 1000;
+            toolTip.ReshowDelay = 500;
+            
             ProductDisplay = new DataGridView();
             TxtProductName = new TextBox();
             CmbCategory = new ComboBox();
@@ -20,112 +31,167 @@ namespace FASCloset.Forms
             btnCancel = new Button();
             btnAddCategory = new Button();
             btnAddManufacturer = new Button();
+            btnDuplicate = new Button(); // New duplicate button
             RightPanel = new Panel();
             TxtSearch = new TextBox();
-            toolTip = new ToolTip(components);
+            ChkShowInactive = new CheckBox(); // New checkbox for showing inactive products
+            ChkIsActive = new CheckBox(); // New checkbox for product active status
+            
+            // Filter Panel Components
+            FilterPanel.BackColor = Color.WhiteSmoke;
+            Label lblFilter = new Label();
+            lblFilter.Text = "Filter by Category:";
+            lblFilter.AutoSize = true;
+            lblFilter.Location = new Point(10, 15);
+            
+            CmbFilterCategory = new ComboBox();
+            CmbFilterCategory.Location = new Point(120, 12);
+            CmbFilterCategory.Size = new Size(200, 23);
+            CmbFilterCategory.DropDownStyle = ComboBoxStyle.DropDownList;
+            CmbFilterCategory.SelectedIndexChanged += cmbFilterCategory_SelectedIndexChanged;
+            
+            btnShowLowStock = new Button();
+            btnShowLowStock.Text = "Show Low Stock";
+            btnShowLowStock.Location = new Point(340, 10);
+            btnShowLowStock.Size = new Size(120, 25);
+            btnShowLowStock.Click += btnShowLowStock_Click;
+            
+            FilterPanel.Controls.Add(lblFilter);
+            FilterPanel.Controls.Add(CmbFilterCategory);
+            FilterPanel.Controls.Add(btnShowLowStock);
+            
+            // Add toolbar for actions
+            FlowLayoutPanel actionsPanel = new FlowLayoutPanel();
+            actionsPanel.Dock = DockStyle.Top;
+            actionsPanel.Height = 40;
+            actionsPanel.Padding = new Padding(5);
+            actionsPanel.BackColor = Color.LightGray;
+            
+            btnAdd = new Button();
+            btnAdd.Text = "Add Product";
+            btnAdd.Size = new Size(100, 30);
+            btnAdd.Click += btnAdd_Click;
+            
+            btnEdit = new Button();
+            btnEdit.Text = "Edit Product";
+            btnEdit.Size = new Size(100, 30);
+            btnEdit.Click += btnEdit_Click;
+            
+            btnDelete = new Button();
+            btnDelete.Text = "Delete Product";
+            btnDelete.Size = new Size(100, 30);
+            btnDelete.Click += btnDelete_Click;
+            
+            actionsPanel.Controls.Add(btnAdd);
+            actionsPanel.Controls.Add(btnEdit);
+            actionsPanel.Controls.Add(btnDelete);
+            
+            // Check for inactive products
+            ChkShowInactive.Text = "Show Inactive Products";
+            ChkShowInactive.AutoSize = true;
+            ChkShowInactive.Location = new Point(470, 15);
+            ChkShowInactive.CheckedChanged += ChkShowInactive_CheckedChanged;
+            FilterPanel.Controls.Add(ChkShowInactive);
+
+            // Initialize DataGridView
             ((System.ComponentModel.ISupportInitialize)ProductDisplay).BeginInit();
-            AddEditPanel.SuspendLayout();
-            tableLayoutPanel.SuspendLayout();
-            flowButtons.SuspendLayout();
-            RightPanel.SuspendLayout();
-            SuspendLayout();
-            // 
-            // ProductDisplay
-            // 
             ProductDisplay.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             ProductDisplay.Location = new Point(10, 50);
-            ProductDisplay.Name = "ProductDisplay";
             ProductDisplay.Size = new Size(600, 200);
             ProductDisplay.TabIndex = 0;
-            // 
-            // TxtProductName
-            // 
+            ProductDisplay.AllowUserToAddRows = false;
+            ProductDisplay.MultiSelect = false;
+            ProductDisplay.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            ProductDisplay.ReadOnly = true;
+            ProductDisplay.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            ProductDisplay.RowsDefaultCellStyle.BackColor = Color.White;
+            ProductDisplay.AlternatingRowsDefaultCellStyle.BackColor = Color.AliceBlue;
+            ProductDisplay.CellFormatting += ProductDisplay_CellFormatting;
+
+            // Setup Input Fields
             TxtProductName.Location = new Point(124, 3);
-            TxtProductName.Name = "TxtProductName";
             TxtProductName.Size = new Size(253, 23);
             TxtProductName.TabIndex = 1;
-            toolTip.SetToolTip(TxtProductName, "Nhập tên sản phẩm");
-            // 
-            // CmbCategory
-            // 
+            TxtProductName.Validating += TxtProductName_Validating;
+            toolTip.SetToolTip(TxtProductName, "Enter product name");
+
             CmbCategory.FormattingEnabled = true;
             CmbCategory.Location = new Point(124, 32);
-            CmbCategory.Name = "CmbCategory";
             CmbCategory.Size = new Size(253, 23);
             CmbCategory.TabIndex = 2;
-            toolTip.SetToolTip(CmbCategory, "Chọn danh mục sản phẩm");
-            // 
-            // TxtPrice
-            // 
+            CmbCategory.Validating += CmbCategory_Validating;
+            toolTip.SetToolTip(CmbCategory, "Select product category");
+
             TxtPrice.Location = new Point(124, 61);
-            TxtPrice.Name = "TxtPrice";
             TxtPrice.Size = new Size(253, 23);
             TxtPrice.TabIndex = 3;
-            toolTip.SetToolTip(TxtPrice, "Nhập giá sản phẩm (ví dụ: 100.50)");
-            // 
-            // TxtStock
-            // 
+            TxtPrice.KeyPress += TxtPrice_KeyPress;
+            TxtPrice.Validating += TxtPrice_Validating;
+            toolTip.SetToolTip(TxtPrice, "Enter price (e.g., 100.50)");
+
             TxtStock.Location = new Point(124, 90);
-            TxtStock.Name = "TxtStock";
             TxtStock.Size = new Size(253, 23);
             TxtStock.TabIndex = 4;
-            toolTip.SetToolTip(TxtStock, "Nhập số lượng tồn kho");
-            // 
-            // TxtDescription
-            // 
+            TxtStock.KeyPress += TxtStock_KeyPress;
+            TxtStock.Validating += TxtStock_Validating;
+            toolTip.SetToolTip(TxtStock, "Enter stock quantity");
+
             TxtDescription.Location = new Point(124, 119);
             TxtDescription.Multiline = true;
-            TxtDescription.Name = "TxtDescription";
             TxtDescription.Size = new Size(253, 54);
             TxtDescription.TabIndex = 5;
-            toolTip.SetToolTip(TxtDescription, "Nhập mô tả sản phẩm");
-            // 
-            // CmbManufacturer
-            // 
+            TxtDescription.Validating += TxtDescription_Validating;
+            toolTip.SetToolTip(TxtDescription, "Enter product description");
+
             CmbManufacturer.FormattingEnabled = true;
-            CmbManufacturer.Location = new Point(124, 148);
-            CmbManufacturer.Name = "CmbManufacturer";
+            CmbManufacturer.Location = new Point(124, 179);
             CmbManufacturer.Size = new Size(253, 23);
             CmbManufacturer.TabIndex = 6;
-            toolTip.SetToolTip(CmbManufacturer, "Chọn nhà sản xuất sản phẩm");
-            // 
-            // FilterPanel
-            // 
+            toolTip.SetToolTip(CmbManufacturer, "Select manufacturer");
+
+            // Add Active Status Checkbox
+            ChkIsActive.Text = "Active";
+            ChkIsActive.Location = new Point(124, 208);
+            ChkIsActive.Size = new Size(100, 24);
+            ChkIsActive.Checked = true;
+            ChkIsActive.TabIndex = 7;
+            toolTip.SetToolTip(ChkIsActive, "Check to keep product active, uncheck to archive");
+
+            // Filter Panel
             FilterPanel.Location = new Point(10, 260);
-            FilterPanel.Name = "FilterPanel";
-            FilterPanel.Size = new Size(600, 100);
+            FilterPanel.Size = new Size(600, 40);
             FilterPanel.TabIndex = 6;
-            // 
-            // AddEditPanel
-            // 
+
+            // Add/Edit Panel
             AddEditPanel.AutoScroll = true;
             AddEditPanel.Controls.Add(tableLayoutPanel);
-            AddEditPanel.Location = new Point(10, 355);
-            AddEditPanel.Name = "AddEditPanel";
-            AddEditPanel.Size = new Size(600, 265);
+            AddEditPanel.Location = new Point(10, 310);
+            AddEditPanel.Size = new Size(600, 300);
             AddEditPanel.TabIndex = 7;
-            // 
-            // tableLayoutPanel
-            // 
+            AddEditPanel.Visible = false;
+
+            // Table Layout Panel
             tableLayoutPanel.ColumnCount = 2;
             tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
             tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
-            tableLayoutPanel.Controls.Add(new Label() { Text = "Tên sản phẩm:", Dock = DockStyle.Fill }, 0, 0);
+            tableLayoutPanel.Controls.Add(new Label() { Text = "Product Name:", Dock = DockStyle.Fill }, 0, 0);
             tableLayoutPanel.Controls.Add(TxtProductName, 1, 0);
-            tableLayoutPanel.Controls.Add(new Label() { Text = "Danh mục:", Dock = DockStyle.Fill }, 0, 1);
+            tableLayoutPanel.Controls.Add(new Label() { Text = "Category:", Dock = DockStyle.Fill }, 0, 1);
             tableLayoutPanel.Controls.Add(CmbCategory, 1, 1);
-            tableLayoutPanel.Controls.Add(new Label() { Text = "Giá:", Dock = DockStyle.Fill }, 0, 2);
+            tableLayoutPanel.Controls.Add(new Label() { Text = "Price:", Dock = DockStyle.Fill }, 0, 2);
             tableLayoutPanel.Controls.Add(TxtPrice, 1, 2);
-            tableLayoutPanel.Controls.Add(new Label() { Text = "Tồn kho:", Dock = DockStyle.Fill }, 0, 3);
+            tableLayoutPanel.Controls.Add(new Label() { Text = "Stock:", Dock = DockStyle.Fill }, 0, 3);
             tableLayoutPanel.Controls.Add(TxtStock, 1, 3);
-            tableLayoutPanel.Controls.Add(new Label() { Text = "Mô tả:", Dock = DockStyle.Fill }, 0, 4);
+            tableLayoutPanel.Controls.Add(new Label() { Text = "Description:", Dock = DockStyle.Fill }, 0, 4);
             tableLayoutPanel.Controls.Add(TxtDescription, 1, 4);
-            tableLayoutPanel.Controls.Add(new Label() { Text = "Nhà sản xuất:", Dock = DockStyle.Fill }, 0, 5);
+            tableLayoutPanel.Controls.Add(new Label() { Text = "Manufacturer:", Dock = DockStyle.Fill }, 0, 5);
             tableLayoutPanel.Controls.Add(CmbManufacturer, 1, 5);
-            tableLayoutPanel.Controls.Add(flowButtons, 0, 6);
-            tableLayoutPanel.Location = new Point(191, 3);
+            tableLayoutPanel.Controls.Add(new Label() { Text = "Status:", Dock = DockStyle.Fill }, 0, 6);
+            tableLayoutPanel.Controls.Add(ChkIsActive, 1, 6);
+            tableLayoutPanel.Controls.Add(flowButtons, 0, 7);
+            tableLayoutPanel.Location = new Point(20, 3);
             tableLayoutPanel.Name = "tableLayoutPanel";
-            tableLayoutPanel.RowCount = 7;
+            tableLayoutPanel.RowCount = 8;
             tableLayoutPanel.RowStyles.Add(new RowStyle());
             tableLayoutPanel.RowStyles.Add(new RowStyle());
             tableLayoutPanel.RowStyles.Add(new RowStyle());
@@ -133,85 +199,92 @@ namespace FASCloset.Forms
             tableLayoutPanel.RowStyles.Add(new RowStyle());
             tableLayoutPanel.RowStyles.Add(new RowStyle());
             tableLayoutPanel.RowStyles.Add(new RowStyle());
-            tableLayoutPanel.Size = new Size(406, 262);
+            tableLayoutPanel.RowStyles.Add(new RowStyle());
+            tableLayoutPanel.Size = new Size(406, 290);
             tableLayoutPanel.TabIndex = 0;
-            tableLayoutPanel.Paint += OnTableLayoutPanelPaint; // Changed to unique method name
-            // 
-            // flowButtons
-            // 
+            tableLayoutPanel.Paint += OnTableLayoutPanelPaint;
+
+            // Button Panel
             tableLayoutPanel.SetColumnSpan(flowButtons, 2);
             flowButtons.Controls.Add(btnSave);
             flowButtons.Controls.Add(btnCancel);
+            flowButtons.Controls.Add(btnDuplicate);
             flowButtons.Controls.Add(btnAddCategory);
             flowButtons.Controls.Add(btnAddManufacturer);
-            flowButtons.Location = new Point(3, 179);
+            flowButtons.Location = new Point(3, 235);
             flowButtons.Name = "flowButtons";
-            flowButtons.Size = new Size(400, 100);
-            flowButtons.TabIndex = 6;
-            // 
-            // btnSave
-            // 
+            flowButtons.Size = new Size(400, 40);
+            flowButtons.TabIndex = 8;
+
+            // Save Button
             btnSave.Location = new Point(3, 3);
             btnSave.Name = "btnSave";
-            btnSave.Size = new Size(100, 30);
-            btnSave.TabIndex = 6;
-            btnSave.Text = "Lưu";
+            btnSave.Size = new Size(80, 30);
+            btnSave.TabIndex = 9;
+            btnSave.Text = "Save";
+            btnSave.UseVisualStyleBackColor = true;
             btnSave.Click += btnSave_Click;
-            // 
-            // btnCancel
-            // 
-            btnCancel.Location = new Point(109, 3);
+
+            // Cancel Button
+            btnCancel.Location = new Point(89, 3);
             btnCancel.Name = "btnCancel";
-            btnCancel.Size = new Size(100, 30);
-            btnCancel.TabIndex = 7;
-            btnCancel.Text = "Hủy";
+            btnCancel.Size = new Size(80, 30);
+            btnCancel.TabIndex = 10;
+            btnCancel.Text = "Cancel";
+            btnCancel.UseVisualStyleBackColor = true;
             btnCancel.Click += btnCancel_Click;
-            // 
-            // btnAddCategory
-            // 
-            btnAddCategory.Location = new Point(215, 3);
+            
+            // Duplicate Button
+            btnDuplicate.Location = new Point(175, 3);
+            btnDuplicate.Name = "btnDuplicate";
+            btnDuplicate.Size = new Size(80, 30);
+            btnDuplicate.TabIndex = 11;
+            btnDuplicate.Text = "Duplicate";
+            btnDuplicate.UseVisualStyleBackColor = true;
+            btnDuplicate.Click += btnDuplicate_Click;
+            btnDuplicate.Visible = false; // Initially hidden, will be shown in edit mode
+
+            // Add Category Button
+            btnAddCategory.Location = new Point(261, 3);
             btnAddCategory.Name = "btnAddCategory";
             btnAddCategory.Size = new Size(100, 30);
-            btnAddCategory.TabIndex = 8;
-            btnAddCategory.Text = "Thêm Danh Mục";
+            btnAddCategory.TabIndex = 12;
+            btnAddCategory.Text = "Add Category";
+            btnAddCategory.UseVisualStyleBackColor = true;
             btnAddCategory.Click += btnAddCategory_Click;
-            // 
-            // btnAddManufacturer
-            // 
-            btnAddManufacturer.Location = new Point(321, 3);
+
+            // Add Manufacturer Button
+            btnAddManufacturer.Location = new Point(3, 39);
             btnAddManufacturer.Name = "btnAddManufacturer";
-            btnAddManufacturer.Size = new Size(100, 30);
-            btnAddManufacturer.TabIndex = 9;
-            btnAddManufacturer.Text = "Thêm Nhà Sản Xuất";
+            btnAddManufacturer.Size = new Size(120, 30);
+            btnAddManufacturer.TabIndex = 13;
+            btnAddManufacturer.Text = "Add Manufacturer";
+            btnAddManufacturer.UseVisualStyleBackColor = true;
             btnAddManufacturer.Click += btnAddManufacturer_Click;
-            // 
-            // RightPanel
-            // 
+
+            // Right Panel
             RightPanel.Controls.Add(TxtSearch);
             RightPanel.Dock = DockStyle.Right;
             RightPanel.Location = new Point(620, 0);
             RightPanel.Name = "RightPanel";
             RightPanel.Size = new Size(200, 620);
             RightPanel.TabIndex = 8;
-            // 
-            // TxtSearch
-            // 
+
+            // Search Box
             TxtSearch.Location = new Point(10, 10);
             TxtSearch.Name = "TxtSearch";
             TxtSearch.Size = new Size(180, 23);
             TxtSearch.TabIndex = 0;
+            TxtSearch.PlaceholderText = "Search products...";
             TxtSearch.TextChanged += TxtSearch_TextChanged;
-            // 
-            // UcProductManagement
-            // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
-            Controls.Add(ProductDisplay);
-            Controls.Add(FilterPanel);
-            Controls.Add(AddEditPanel);
-            Controls.Add(RightPanel);
-            Name = "UcProductManagement";
-            Size = new Size(820, 620);
+
+            // Add controls to the user control
+            this.Controls.Add(actionsPanel);
+            this.Controls.Add(ProductDisplay);
+            this.Controls.Add(FilterPanel);
+            this.Controls.Add(AddEditPanel);
+            this.Controls.Add(RightPanel);
+
             ((System.ComponentModel.ISupportInitialize)ProductDisplay).EndInit();
             AddEditPanel.ResumeLayout(false);
             tableLayoutPanel.ResumeLayout(false);
@@ -219,7 +292,7 @@ namespace FASCloset.Forms
             flowButtons.ResumeLayout(false);
             RightPanel.ResumeLayout(false);
             RightPanel.PerformLayout();
-            ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)errorProvider).EndInit();
         }
 
         public System.Windows.Forms.DataGridView ProductDisplay;
@@ -236,11 +309,20 @@ namespace FASCloset.Forms
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Button btnDuplicate;
         private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.Button btnAddCategory;
         private System.Windows.Forms.Button btnAddManufacturer;
         private System.ComponentModel.IContainer components;
         private FlowLayoutPanel flowButtons;
+        private ComboBox CmbFilterCategory;
+        private CheckBox ChkShowInactive;
+        private CheckBox ChkIsActive;
+        private Button btnShowLowStock;
+        private ErrorProvider errorProvider;
+        private Button btnAdd;
+        private Button btnEdit;
+        private Button btnDelete;
 
         // Renamed method to avoid ambiguity
         private void OnTableLayoutPanelPaint(object sender, PaintEventArgs e)
