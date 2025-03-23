@@ -388,10 +388,12 @@ namespace FASCloset.Forms
                     Credentials = new System.Net.NetworkCredential(txtSmtpUsername.Text, txtSmtpPassword.Text)
                 };
                 
+                var subject = "Test Email from FAS Closet";
+                
                 System.Net.Mail.MailMessage message = new System.Net.Mail.MailMessage(
                     txtEmailFrom.Text,
                     txtEmailTo.Text,
-                    "FAS Closet - Test Email",
+                    subject,
                     "This is a test email from FAS Closet inventory notification system."
                 );
                 

@@ -2,8 +2,21 @@ namespace FASCloset.Forms
 {
     partial class UcOrderManagement
     {
+        /// <summary> 
+        /// Required designer variable.
+        /// </summary>
         private System.ComponentModel.IContainer components = null;
-
+        
+        // UI Controls
+        public TextBox txtCustomerId;
+        public TextBox txtTotalAmount;
+        public ComboBox cmbPaymentMethod;
+        private DataGridView dgvOrders;
+        
+        /// <summary> 
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -13,93 +26,104 @@ namespace FASCloset.Forms
             base.Dispose(disposing);
         }
 
+        #region Component Designer generated code
+
+        /// <summary> 
+        /// Required method for Designer support - do not modify 
+        /// the contents of this method with the code editor.
+        /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
+            this.components = new System.ComponentModel.Container();
             
-            // Initialize customer ID controls
-            Label lblCustomerId = new Label();
-            lblCustomerId.Text = "Customer ID:";
-            lblCustomerId.Location = new Point(20, 20);
-            lblCustomerId.Size = new Size(100, 25);
-            lblCustomerId.TextAlign = ContentAlignment.MiddleRight;
+            // Customer ID
+            this.txtCustomerId = new TextBox();
+            this.txtCustomerId.Location = new System.Drawing.Point(120, 20);
+            this.txtCustomerId.Name = "txtCustomerId";
+            this.txtCustomerId.Size = new System.Drawing.Size(150, 23);
             
-            txtCustomerId = new TextBox();
-            txtCustomerId.Location = new Point(130, 20);
-            txtCustomerId.Size = new Size(200, 25);
-            txtCustomerId.PlaceholderText = "Enter Customer ID";
+            // Total Amount
+            this.txtTotalAmount = new TextBox();
+            this.txtTotalAmount.Location = new System.Drawing.Point(120, 50);
+            this.txtTotalAmount.Name = "txtTotalAmount";
+            this.txtTotalAmount.Size = new System.Drawing.Size(150, 23);
             
-            // Initialize total amount controls
-            Label lblTotalAmount = new Label();
-            lblTotalAmount.Text = "Total Amount:";
-            lblTotalAmount.Location = new Point(20, 60);
-            lblTotalAmount.Size = new Size(100, 25);
-            lblTotalAmount.TextAlign = ContentAlignment.MiddleRight;
+            // Payment Method
+            this.cmbPaymentMethod = new ComboBox();
+            this.cmbPaymentMethod.Location = new System.Drawing.Point(120, 80);
+            this.cmbPaymentMethod.Name = "cmbPaymentMethod";
+            this.cmbPaymentMethod.Size = new System.Drawing.Size(150, 23);
+            this.cmbPaymentMethod.DropDownStyle = ComboBoxStyle.DropDownList;
             
-            txtTotalAmount = new TextBox();
-            txtTotalAmount.Location = new Point(130, 60);
-            txtTotalAmount.Size = new Size(200, 25);
-            txtTotalAmount.PlaceholderText = "Enter Total Amount";
-            
-            // Initialize payment method controls
-            Label lblPaymentMethod = new Label();
-            lblPaymentMethod.Text = "Payment Method:";
-            lblPaymentMethod.Location = new Point(20, 100);
-            lblPaymentMethod.Size = new Size(100, 25);
-            lblPaymentMethod.TextAlign = ContentAlignment.MiddleRight;
-            
-            cmbPaymentMethod = new ComboBox();
-            cmbPaymentMethod.Location = new Point(130, 100);
-            cmbPaymentMethod.Size = new Size(200, 25);
-            cmbPaymentMethod.DropDownStyle = ComboBoxStyle.DropDownList;
-            
-            // Initialize buttons
+            // Create Order Button
             Button btnCreateOrder = new Button();
+            btnCreateOrder.Location = new System.Drawing.Point(120, 110);
+            btnCreateOrder.Name = "btnCreateOrder";
+            btnCreateOrder.Size = new System.Drawing.Size(150, 30);
             btnCreateOrder.Text = "Create Order";
-            btnCreateOrder.Location = new Point(130, 140);
-            btnCreateOrder.Size = new Size(120, 30);
-            btnCreateOrder.Click += btnCreateOrder_Click;
+            btnCreateOrder.UseVisualStyleBackColor = true;
+            btnCreateOrder.Click += new System.EventHandler(this.btnCreateOrder_Click);
             
+            // Orders Grid
+            this.dgvOrders = new DataGridView();
+            this.dgvOrders.Location = new System.Drawing.Point(20, 150);
+            this.dgvOrders.Name = "dgvOrders";
+            this.dgvOrders.Size = new System.Drawing.Size(500, 200);
+            this.dgvOrders.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvOrders.AllowUserToAddRows = false;
+            this.dgvOrders.ReadOnly = true;
+            this.dgvOrders.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            
+            // Process Payment Button
             Button btnProcessPayment = new Button();
+            btnProcessPayment.Location = new System.Drawing.Point(20, 360);
+            btnProcessPayment.Name = "btnProcessPayment";
+            btnProcessPayment.Size = new System.Drawing.Size(150, 30);
             btnProcessPayment.Text = "Process Payment";
-            btnProcessPayment.Location = new Point(260, 140);
-            btnProcessPayment.Size = new Size(120, 30);
-            btnProcessPayment.Click += btnProcessPayment_Click;
+            btnProcessPayment.UseVisualStyleBackColor = true;
+            btnProcessPayment.Click += new System.EventHandler(this.btnProcessPayment_Click);
             
+            // Print Invoice Button
             Button btnPrintInvoice = new Button();
+            btnPrintInvoice.Location = new System.Drawing.Point(180, 360);
+            btnPrintInvoice.Name = "btnPrintInvoice";
+            btnPrintInvoice.Size = new System.Drawing.Size(150, 30);
             btnPrintInvoice.Text = "Print Invoice";
-            btnPrintInvoice.Location = new Point(130, 180);
-            btnPrintInvoice.Size = new Size(120, 30);
-            btnPrintInvoice.Click += btnPrintInvoice_Click;
+            btnPrintInvoice.UseVisualStyleBackColor = true;
+            btnPrintInvoice.Click += new System.EventHandler(this.btnPrintInvoice_Click);
             
-            // Initialize orders grid
-            DataGridView dgvOrders = new DataGridView();
-            dgvOrders.Location = new Point(20, 220);
-            dgvOrders.Size = new Size(600, 300);
-            dgvOrders.AllowUserToAddRows = false;
-            dgvOrders.ReadOnly = true;
-            dgvOrders.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dgvOrders.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            // Labels
+            Label lblCustomerId = new Label();
+            lblCustomerId.Location = new System.Drawing.Point(20, 23);
+            lblCustomerId.Size = new System.Drawing.Size(100, 23);
+            lblCustomerId.Text = "Customer ID:";
             
-            // Add all controls to the form
+            Label lblTotalAmount = new Label();
+            lblTotalAmount.Location = new System.Drawing.Point(20, 53);
+            lblTotalAmount.Size = new System.Drawing.Size(100, 23);
+            lblTotalAmount.Text = "Total Amount:";
+            
+            Label lblPaymentMethod = new Label();
+            lblPaymentMethod.Location = new System.Drawing.Point(20, 83);
+            lblPaymentMethod.Size = new System.Drawing.Size(100, 23);
+            lblPaymentMethod.Text = "Payment Method:";
+            
+            // Add controls
             this.Controls.Add(lblCustomerId);
-            this.Controls.Add(txtCustomerId);
+            this.Controls.Add(this.txtCustomerId);
             this.Controls.Add(lblTotalAmount);
-            this.Controls.Add(txtTotalAmount);
+            this.Controls.Add(this.txtTotalAmount);
             this.Controls.Add(lblPaymentMethod);
-            this.Controls.Add(cmbPaymentMethod);
+            this.Controls.Add(this.cmbPaymentMethod);
             this.Controls.Add(btnCreateOrder);
+            this.Controls.Add(this.dgvOrders);
             this.Controls.Add(btnProcessPayment);
             this.Controls.Add(btnPrintInvoice);
-            this.Controls.Add(dgvOrders);
+            
+            this.Name = "UcOrderManagement";
+            this.Size = new System.Drawing.Size(550, 400);
         }
 
-        public TextBox txtCustomerId;
-        public TextBox txtTotalAmount;
-        public ComboBox cmbPaymentMethod;
-        private Button btnCreateOrder;
-        private Button btnProcessPayment;
-        private Button btnPrintInvoice;
-        private DataGridView dgvOrders;
+        #endregion
     }
 }

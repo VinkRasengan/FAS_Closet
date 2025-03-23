@@ -17,14 +17,17 @@ namespace FASCloset.Data
                 {
                     fs.Close(); // Ensure file handle is released
                 }
+            }
+            
+            // Always initialize schema to ensure all required tables exist
+            using (var connection = new SqliteConnection($"Data Source={dbPath}"))
+            {
+                connection.Open();
+                InitializeDatabaseSchema(connection);
                 
-                // Initialize schema
-                using (var connection = new SqliteConnection($"Data Source={dbPath}"))
+                // Create demo data only for a new database
+                if (newDatabase)
                 {
-                    connection.Open();
-                    InitializeDatabaseSchema(connection);
-                    
-                    // Create demo data for a new database
                     CreateDemoData(connection);
                 }
             }
@@ -76,6 +79,7 @@ namespace FASCloset.Data
                     Price DECIMAL(10, 2) NOT NULL,
                     Stock INTEGER NOT NULL,
                     Description TEXT NOT NULL,
+                    IsActive BOOLEAN NOT NULL DEFAULT 1,
                     FOREIGN KEY (CategoryID) REFERENCES Category(CategoryID) ON DELETE CASCADE,
                     FOREIGN KEY (ManufacturerID) REFERENCES Manufacturer(ManufacturerID) ON DELETE SET NULL
                 );",
@@ -139,6 +143,41 @@ namespace FASCloset.Data
                 using (var cmd = new SqliteCommand(command, connection))
                 {
                     cmd.ExecuteNonQuery();
+                }
+            }
+            
+            // Check for existing Product table that needs to be updated with IsActive column
+            using (var cmd = new SqliteCommand("PRAGMA table_info(Product);", connection))
+            {
+                bool hasIsActiveColumn = false;
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string columnName = reader.GetString(1);
+                        if (columnName.Equals("IsActive", StringComparison.OrdinalIgnoreCase))
+                        {
+                            hasIsActiveColumn = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // If IsActive column doesn't exist, add it
+                if (!hasIsActiveColumn)
+                {
+                    try
+                    {
+                        using (var alterCmd = new SqliteCommand("ALTER TABLE Product ADD COLUMN IsActive BOOLEAN NOT NULL DEFAULT 1;", connection))
+                        {
+                            alterCmd.ExecuteNonQuery();
+                            Console.WriteLine("Added IsActive column to existing Product table.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error adding IsActive column: {ex.Message}");
+                    }
                 }
             }
             

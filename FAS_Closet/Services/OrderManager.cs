@@ -4,194 +4,137 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.Sqlite;
+using FASCloset.Data;
 using FASCloset.Models;
 
 namespace FASCloset.Services
 {
-    public static class OrderManager
+    public class OrderManager
     {
         private static string GetConnectionString()
         {
             return DatabaseConnection.GetConnectionString();
         }
 
-        public static void AddOrder(Order order)
-        {
-            try
-            {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "INSERT INTO Orders (CustomerID, OrderDate, TotalAmount) VALUES (@CustomerID, @OrderDate, @TotalAmount)";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@CustomerID", order.CustomerID);
-                        command.Parameters.AddWithValue("@OrderDate", order.OrderDate);
-                        command.Parameters.AddWithValue("@TotalAmount", order.TotalAmount);
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while adding order.", ex);
-            }
-        }
-
-        public static void UpdateOrder(Order order)
-        {
-            try
-            {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "UPDATE Orders SET CustomerID = @CustomerID, OrderDate = @OrderDate, TotalAmount = @TotalAmount WHERE OrderID = @OrderID";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@CustomerID", order.CustomerID);
-                        command.Parameters.AddWithValue("@OrderDate", order.OrderDate);
-                        command.Parameters.AddWithValue("@TotalAmount", order.TotalAmount);
-                        command.Parameters.AddWithValue("@OrderID", order.OrderID);
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while updating order.", ex);
-            }
-        }
-
-        public static void DeleteOrder(int orderId)
-        {
-            try
-            {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "DELETE FROM Orders WHERE OrderID = @OrderID";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@OrderID", orderId);
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while deleting order.", ex);
-            }
-        }
-
         public static List<Order> GetOrders()
         {
-            var orders = new List<Order>();
-            try
+            string query = @"
+                SELECT o.*, c.Name as CustomerName
+                FROM Orders o
+                JOIN Customer c ON o.CustomerID = c.CustomerID
+                ORDER BY o.OrderDate DESC";
+                
+            return DataAccessHelper.ExecuteReader(query, reader => new Order
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "SELECT OrderID, CustomerID, OrderDate, TotalAmount FROM Orders";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        using (var reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                orders.Add(MapOrder(reader));
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while retrieving orders.", ex);
-            }
-            return orders;
+                OrderID = Convert.ToInt32(reader["OrderID"]),
+                CustomerID = Convert.ToInt32(reader["CustomerID"]),
+                CustomerName = reader["CustomerName"].ToString(),
+                OrderDate = Convert.ToDateTime(reader["OrderDate"]),
+                TotalAmount = Convert.ToDecimal(reader["TotalAmount"]),
+                PaymentMethod = reader["PaymentMethod"].ToString()
+            });
         }
-
-        public static Order? GetOrderById(int orderId)
+        
+        public static Order GetOrderById(int orderId)
         {
-            try
+            string query = @"
+                SELECT o.*, c.Name as CustomerName
+                FROM Orders o
+                JOIN Customer c ON o.CustomerID = c.CustomerID
+                WHERE o.OrderID = @OrderID";
+                
+            var parameters = new Dictionary<string, object>
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "SELECT OrderID, CustomerID, OrderDate, TotalAmount, PaymentMethod FROM Orders WHERE OrderID = @OrderID";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@OrderID", orderId);
-                        using (var reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                return new Order
-                                {
-                                    OrderID = reader.GetInt32(0),
-                                    CustomerID = reader.GetInt32(1),
-                                    OrderDate = reader.GetDateTime(2),
-                                    TotalAmount = reader.GetDecimal(3),
-                                    PaymentMethod = reader.GetString(4)
-                                };
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SqliteException ex)
+                { "@OrderID", orderId }
+            };
+            
+            return DataAccessHelper.ExecuteReaderSingle(query, reader => new Order
             {
-                throw new InvalidOperationException("Database error occurred while retrieving order.", ex);
-            }
-            return null;
+                OrderID = Convert.ToInt32(reader["OrderID"]),
+                CustomerID = Convert.ToInt32(reader["CustomerID"]),
+                CustomerName = reader["CustomerName"].ToString(),
+                OrderDate = Convert.ToDateTime(reader["OrderDate"]),
+                TotalAmount = Convert.ToDecimal(reader["TotalAmount"]),
+                PaymentMethod = reader["PaymentMethod"].ToString()
+            }, parameters);
         }
-
+        
         public static List<Order> GetOrdersByCustomerId(int customerId)
         {
-            var orders = new List<Order>();
-            try
+            string query = @"
+                SELECT o.*, c.Name as CustomerName
+                FROM Orders o
+                JOIN Customer c ON o.CustomerID = c.CustomerID
+                WHERE o.CustomerID = @CustomerID
+                ORDER BY o.OrderDate DESC";
+                
+            var parameters = new Dictionary<string, object>
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "SELECT OrderID, CustomerID, OrderDate, TotalAmount, PaymentMethod FROM Orders WHERE CustomerID = @CustomerID";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@CustomerID", customerId);
-                        using (var reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                orders.Add(new Order
-                                {
-                                    OrderID = reader.GetInt32(0),
-                                    CustomerID = reader.GetInt32(1),
-                                    OrderDate = reader.GetDateTime(2),
-                                    TotalAmount = reader.GetDecimal(3),
-                                    PaymentMethod = reader.GetString(4)
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while retrieving orders by customer ID.", ex);
-            }
-            return orders;
-        }
-
-        private static Order MapOrder(SqliteDataReader reader)
-        {
-            return new Order
-            {
-                OrderID = reader.GetInt32(0),
-                CustomerID = reader.GetInt32(1),
-                OrderDate = reader.GetDateTime(2),
-                TotalAmount = reader.GetDecimal(3),
-                PaymentMethod = reader.GetString(4)
+                { "@CustomerID", customerId }
             };
+            
+            return DataAccessHelper.ExecuteReader(query, reader => new Order
+            {
+                OrderID = Convert.ToInt32(reader["OrderID"]),
+                CustomerID = Convert.ToInt32(reader["CustomerID"]),
+                CustomerName = reader["CustomerName"].ToString(),
+                OrderDate = Convert.ToDateTime(reader["OrderDate"]),
+                TotalAmount = Convert.ToDecimal(reader["TotalAmount"]),
+                PaymentMethod = reader["PaymentMethod"].ToString()
+            }, parameters);
+        }
+        
+        public static void AddOrder(Order order)
+        {
+            string query = @"
+                INSERT INTO Orders (CustomerID, OrderDate, TotalAmount, PaymentMethod)
+                VALUES (@CustomerID, @OrderDate, @TotalAmount, @PaymentMethod);
+                SELECT last_insert_rowid();";
+                
+            var parameters = new Dictionary<string, object>
+            {
+                { "@CustomerID", order.CustomerID },
+                { "@OrderDate", order.OrderDate },
+                { "@TotalAmount", order.TotalAmount },
+                { "@PaymentMethod", order.PaymentMethod }
+            };
+            
+            int orderId = DataAccessHelper.ExecuteScalar<int>(query, parameters);
+            order.OrderID = orderId;
+        }
+        
+        public static void UpdateOrder(Order order)
+        {
+            string query = @"
+                UPDATE Orders 
+                SET CustomerID = @CustomerID, 
+                    OrderDate = @OrderDate, 
+                    TotalAmount = @TotalAmount, 
+                    PaymentMethod = @PaymentMethod
+                WHERE OrderID = @OrderID";
+                
+            var parameters = new Dictionary<string, object>
+            {
+                { "@OrderID", order.OrderID },
+                { "@CustomerID", order.CustomerID },
+                { "@OrderDate", order.OrderDate },
+                { "@TotalAmount", order.TotalAmount },
+                { "@PaymentMethod", order.PaymentMethod }
+            };
+            
+            DataAccessHelper.ExecuteNonQuery(query, parameters);
+        }
+        
+        public static void DeleteOrder(int orderId)
+        {
+            string query = "DELETE FROM Orders WHERE OrderID = @OrderID";
+            
+            var parameters = new Dictionary<string, object>
+            {
+                { "@OrderID", orderId }
+            };
+            
+            DataAccessHelper.ExecuteNonQuery(query, parameters);
         }
 
         /// <summary>

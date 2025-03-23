@@ -16,9 +16,7 @@ namespace FASCloset.Forms
         private List<Product> products = new List<Product>();
         private bool showInactiveProducts = false;
         private bool showOnlyLowStock = false;
-
-        // For keyboard shortcuts
-        private Keys lastKeyPressed = Keys.None;
+        private Product? selectedProduct = null; // Add this line to track selected product
         
         // Use a BindingSource to manage the data binding
         private BindingSource productsBindingSource = new BindingSource();
@@ -212,6 +210,15 @@ namespace FASCloset.Forms
                 {
                     // Get products filtered by warehouse
                     resultProducts = ProductManager.GetProductsForWarehouse(warehouseId, showInactiveProducts);
+                    Console.WriteLine($"Loaded {resultProducts.Count} products for warehouse {warehouseId}");
+                    
+                    // If resulting collection is empty, try loading all products as fallback
+                    if (resultProducts.Count == 0)
+                    {
+                        Console.WriteLine("No products found for current warehouse, trying to load all products");
+                        resultProducts = ProductManager.GetProducts(showInactiveProducts);
+                        Console.WriteLine($"Loaded {resultProducts.Count} products in total");
+                    }
                 }
                 
                 // Debug information
@@ -313,7 +320,7 @@ namespace FASCloset.Forms
             if (ProductDisplay.SelectedRows.Count > 0)
             {
                 currentMode = Mode.Edit;
-                var selectedProduct = ProductDisplay.SelectedRows[0].DataBoundItem as Product;
+                selectedProduct = ProductDisplay.SelectedRows[0].DataBoundItem as Product; // Store selected product
                 if (selectedProduct != null)
                 {
                     FillAddEditPanel(selectedProduct);
@@ -389,18 +396,63 @@ namespace FASCloset.Forms
 
         private void cmbFilterCategory_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (CmbFilterCategory.SelectedItem is Category selectedCategory)
+            try
             {
-                if (selectedCategory.CategoryID == 0) 
+                if (CmbFilterCategory.SelectedItem is Category selectedCategory)
                 {
-                    // All Categories selected
-                    LoadProducts(); 
-                }
-                else 
-                {
-                    LoadProductsByCategory(selectedCategory.CategoryID);
+                    Console.WriteLine($"Category selected: {selectedCategory.CategoryName} (ID: {selectedCategory.CategoryID})");
+                    
+                    if (selectedCategory.CategoryID == 0) 
+                    {
+                        // All Categories selected - get current warehouse ID if available from MainForm
+                        int warehouseId = GetCurrentWarehouseId();
+                        Console.WriteLine($"Loading all products for warehouse ID: {warehouseId}");
+                        LoadProducts(warehouseId); 
+                    }
+                    else 
+                    {
+                        Console.WriteLine($"Loading products for category ID: {selectedCategory.CategoryID}");
+                        LoadProductsByCategory(selectedCategory.CategoryID);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in category change: {ex.Message}");
+                MessageBox.Show($"Error loading products by category: {ex.Message}", "Error", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Helper method to get current warehouse ID from parent form
+        private int GetCurrentWarehouseId()
+        {
+            // Default to warehouse ID 1
+            int warehouseId = 1;
+            
+            try
+            {
+                // Try to get the current warehouse ID from MainForm if this control is hosted in it
+                if (ParentForm is MainForm mainForm && mainForm.GetType().GetProperty("CurrentWarehouseID") != null)
+                {
+                    // Get warehouse ID using reflection to avoid direct dependency
+                    var property = mainForm.GetType().GetProperty("CurrentWarehouseID");
+                    if (property != null)
+                    {
+                        var value = property.GetValue(mainForm);
+                        if (value != null)
+                        {
+                            warehouseId = (int)value;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting current warehouse ID: {ex.Message}");
+            }
+            
+            return warehouseId;
         }
 
         private void ChkShowInactive_CheckedChanged(object sender, EventArgs e)
@@ -689,97 +741,114 @@ namespace FASCloset.Forms
         {
             try
             {
-                if (!decimal.TryParse(TxtPrice.Text, out decimal price))
+                Product product = new Product
                 {
-                    errorProvider.SetError(TxtPrice, "Invalid price format");
-                    return;
+                    ProductName = TxtProductName.Text,
+                    CategoryID = ((Category)CmbCategory.SelectedItem).CategoryID,
+                    Price = decimal.Parse(TxtPrice.Text),
+                    Stock = int.Parse(TxtStock.Text),
+                    Description = TxtDescription.Text,
+                    IsActive = ChkIsActive.Checked
+                };
+
+                // Set manufacturer if selected
+                if (CmbManufacturer.SelectedItem != null && CmbManufacturer.SelectedIndex > 0)
+                {
+                    product.ManufacturerID = ((Manufacturer)CmbManufacturer.SelectedItem).ManufacturerID;
                 }
-                
-                if (!int.TryParse(TxtStock.Text, out int stock))
+
+                int? productIdToSelect = null;
+
+                if (currentMode == Mode.Add)
                 {
-                    errorProvider.SetError(TxtStock, "Invalid stock quantity");
-                    return;
+                    // Add new product
+                    ProductManager.AddProduct(product);
+                    MessageBox.Show("Product added successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    
+                    // We'll need to search for the product after reloading
+                    productIdToSelect = null; // Will select by name later
                 }
-                
-                // Validate uniqueness for new products
-                if (currentMode == Mode.Add || currentMode == Mode.Duplicate)
+                else if (currentMode == Mode.Edit || currentMode == Mode.Duplicate)
                 {
-                    var existingProduct = ProductManager.GetProductByName(TxtProductName.Text.Trim());
-                    if (existingProduct != null)
+                    if (currentMode == Mode.Edit && selectedProduct != null)
                     {
-                        errorProvider.SetError(TxtProductName, "A product with this name already exists");
-                        MessageBox.Show("A product with this name already exists.", "Duplicate Name", 
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return;
+                        // Update existing product
+                        product.ProductID = selectedProduct.ProductID;
+                        ProductManager.UpdateProduct(product);
+                        productIdToSelect = selectedProduct.ProductID;
+                        MessageBox.Show("Product updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        // Duplicate product (save as new)
+                        ProductManager.AddProduct(product);
+                        MessageBox.Show("Product duplicated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        
+                        // We'll need to search for the product after reloading
+                        productIdToSelect = null; // Will select by name later
                     }
                 }
                 
-                // Safely get the category and manufacturer IDs
-                int categoryId;
-                if (CmbCategory.SelectedValue != null && int.TryParse(CmbCategory.SelectedValue.ToString(), out categoryId))
+                // Store name for finding the product after reload
+                string addedProductName = product.ProductName;
+                
+                // Clear the UI and return to view mode
+                HideAddEditPanel();
+                currentMode = Mode.View;
+                
+                // Important: Reload products to refresh the UI
+                LoadProducts();
+                
+                // Explicitly refresh the binding source and grid
+                productsBindingSource.ResetBindings(false);
+                ProductDisplay.Refresh();
+                
+                // Try to find and select the product we just added/edited
+                if (productIdToSelect.HasValue)
                 {
-                    // Good, we have a valid category ID
+                    // We know the ID, so select by ID
+                    SelectProductInGrid(productIdToSelect.Value);
                 }
                 else
                 {
-                    errorProvider.SetError(CmbCategory, "Please select a valid category");
-                    return;
+                    // Try to find by name (for newly added products)
+                    SelectProductInGridByName(addedProductName);
                 }
-                
-                // Manufacturer can be null
-                int? manufacturerId = null;
-                if (CmbManufacturer.SelectedValue != null)
-                {
-                    if (int.TryParse(CmbManufacturer.SelectedValue.ToString(), out int mId))
-                        manufacturerId = mId;
-                }
-                
-                if (currentMode == Mode.Add || currentMode == Mode.Duplicate)
-                {
-                    // Create a new product
-                    var product = new Product
-                    {
-                        ProductName = TxtProductName.Text.Trim(),
-                        CategoryID = categoryId,
-                        ManufacturerID = manufacturerId,
-                        Price = price,
-                        Stock = stock,
-                        Description = TxtDescription.Text.Trim(),
-                        IsActive = ChkIsActive.Checked
-                    };
-                    
-                    ProductManager.AddProduct(product);
-                    MessageBox.Show("Product added successfully.", "Success", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else if (currentMode == Mode.Edit && ProductDisplay.SelectedRows.Count > 0)
-                {
-                    // Update existing product
-                    var selectedProduct = ProductDisplay.SelectedRows[0].DataBoundItem as Product;
-                    if (selectedProduct != null)
-                    {
-                        selectedProduct.ProductName = TxtProductName.Text.Trim();
-                        selectedProduct.CategoryID = categoryId;
-                        selectedProduct.ManufacturerID = manufacturerId;
-                        selectedProduct.Price = price;
-                        selectedProduct.Stock = stock;
-                        selectedProduct.Description = TxtDescription.Text.Trim();
-                        selectedProduct.IsActive = ChkIsActive.Checked;
-                        
-                        ProductManager.UpdateProduct(selectedProduct);
-                        MessageBox.Show("Product updated successfully.", "Success", 
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                }
-                
-                // Refresh the data and hide the panel
-                LoadProducts();
-                HideAddEditPanel();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving product: {ex.Message}", "Error", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error saving product: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Helper method to select a specific product in the grid
+        private void SelectProductInGrid(int productId)
+        {
+            foreach (DataGridViewRow row in ProductDisplay.Rows)
+            {
+                if (row.DataBoundItem is Product product && product.ProductID == productId)
+                {
+                    ProductDisplay.ClearSelection();
+                    row.Selected = true;
+                    ProductDisplay.FirstDisplayedScrollingRowIndex = row.Index;
+                    break;
+                }
+            }
+        }
+
+        // Helper method to select a specific product in the grid by name
+        private void SelectProductInGridByName(string productName)
+        {
+            foreach (DataGridViewRow row in ProductDisplay.Rows)
+            {
+                if (row.DataBoundItem is Product product && 
+                    product.ProductName.Equals(productName, StringComparison.OrdinalIgnoreCase))
+                {
+                    ProductDisplay.ClearSelection();
+                    row.Selected = true;
+                    ProductDisplay.FirstDisplayedScrollingRowIndex = row.Index;
+                    break;
+                }
             }
         }
 

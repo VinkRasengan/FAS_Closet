@@ -36,6 +36,7 @@ namespace FASCloset.Forms
             }
         }
 
+        // Revert to original method naming to fix missing method errors
         public void btnCreateOrder_Click(object sender, EventArgs e)
         {
             if (!ValidateOrderInputs())
@@ -70,6 +71,7 @@ namespace FASCloset.Forms
             }
         }
 
+        // Revert to original method naming
         private void btnProcessPayment_Click(object sender, EventArgs e)
         {
             if (dgvOrders.SelectedRows.Count == 0)
@@ -82,6 +84,7 @@ namespace FASCloset.Forms
             MessageBox.Show("Payment processed successfully.");
         }
 
+        // Revert to original method naming
         private void btnPrintInvoice_Click(object sender, EventArgs e)
         {
             if (dgvOrders.SelectedRows.Count == 0)

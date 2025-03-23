@@ -252,5 +252,23 @@ namespace FASCloset.Forms
         {
             // ... existing implementation ...
         }
+
+        private void btnGenerateReport_Click(object sender, EventArgs e)
+        {
+            DateTime? startDate = DateTimePickerStartDate.Value;
+            DateTime? endDate = DateTimePickerEndDate.Value;
+
+            DataTable salesReport = ReportManager.GenerateSalesReport(startDate, endDate);
+            DataGridViewReport.DataSource = salesReport;
+        }
+
+        private void btnGenerateDetailedReport_Click(object sender, EventArgs e)
+        {
+            DateTime? startDate = DateTimePickerStartDate.Value;
+            DateTime? endDate = DateTimePickerEndDate.Value;
+
+            DataTable detailedReport = ReportManager.GenerateDetailedSalesReport(startDate, endDate);
+            DataGridViewReport.DataSource = detailedReport;
+        }
     }
 }

@@ -3,136 +3,121 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using Microsoft.Data.Sqlite;
-using FASCloset.Models;
 using FASCloset.Data;
+using FASCloset.Models;
 
 namespace FASCloset.Services
 {
-    public static class CustomerManager
+    public class CustomerManager
     {
-        private const string CustomerIdParameter = "@CustomerID";
-
-        public static void AddCustomer(Customer customer)
-        {
-            DatabaseConnection.ExecuteDbOperation(connection => 
-            {
-                string query = "INSERT INTO Customers (Name, Email, Phone, Address) VALUES (@Name, @Email, @Phone, @Address)";
-                using (var command = new SqliteCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@Name", customer.Name);
-                    command.Parameters.AddWithValue("@Email", customer.Email);
-                    command.Parameters.AddWithValue("@Phone", customer.Phone);
-                    command.Parameters.AddWithValue("@Address", customer.Address);
-                    command.ExecuteNonQuery();
-                }
-                return true;
-            });
-        }
-
-        public static void UpdateCustomer(Customer customer)
-        {
-            DatabaseConnection.ExecuteDbOperation(connection => 
-            {
-                string query = "UPDATE Customers SET Name = @Name, Email = @Email, Phone = @Phone, Address = @Address WHERE CustomerID = @CustomerID";
-                using (var command = new SqliteCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@Name", customer.Name);
-                    command.Parameters.AddWithValue("@Email", customer.Email);
-                    command.Parameters.AddWithValue("@Phone", customer.Phone);
-                    command.Parameters.AddWithValue("@Address", customer.Address);
-                    command.Parameters.AddWithValue(CustomerIdParameter, customer.CustomerID);
-                    command.ExecuteNonQuery();
-                }
-                return true;
-            });
-        }
-
-        public static void DeleteCustomer(int customerId)
-        {
-            DatabaseConnection.ExecuteDbOperation(connection => 
-            {
-                string query = "DELETE FROM Customers WHERE CustomerID = @CustomerID";
-                using (var command = new SqliteCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue(CustomerIdParameter, customerId);
-                    command.ExecuteNonQuery();
-                }
-                return true;
-            });
-        }
-
         public static List<Customer> GetCustomers()
         {
-            var customers = new List<Customer>();
-            DatabaseConnection.ExecuteDbOperation(connection => 
+            string query = "SELECT * FROM Customer ORDER BY Name";
+            
+            return DataAccessHelper.ExecuteReader(query, reader => new Customer
             {
-                string query = "SELECT CustomerID, Name, Email, Phone, Address FROM Customers";
-                using (var command = new SqliteCommand(query, connection))
-                {
-                    using (var reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            customers.Add(new Customer
-                            {
-                                CustomerID = reader.GetInt32(0),
-                                Name = reader.GetString(1),
-                                Email = reader.GetString(2),
-                                Phone = reader.GetString(3),
-                                Address = reader.GetString(4)
-                            });
-                        }
-                    }
-                }
-                return true;
+                CustomerID = Convert.ToInt32(reader["CustomerID"]),
+                Name = reader["Name"].ToString() ?? string.Empty,
+                Email = reader["Email"].ToString() ?? string.Empty,
+                Phone = reader["Phone"].ToString() ?? string.Empty,
+                Address = reader["Address"].ToString() ?? string.Empty
             });
-            return customers;
         }
-
-        public static Customer? GetCustomerById(int customerId)
+        
+        public static Customer GetCustomerById(int customerId)
         {
-            Customer? customer = null;
-            DatabaseConnection.ExecuteDbOperation(connection => 
+            string query = "SELECT * FROM Customer WHERE CustomerID = @CustomerId";
+            var parameters = new Dictionary<string, object>
             {
-                string query = "SELECT CustomerID, Name, Email, Phone, Address FROM Customers WHERE CustomerID = @CustomerID";
-                using (var command = new SqliteCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue(CustomerIdParameter, customerId);
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            customer = new Customer
-                            {
-                                CustomerID = reader.GetInt32(0),
-                                Name = reader.GetString(1),
-                                Email = reader.GetString(2),
-                                Phone = reader.GetString(3),
-                                Address = reader.GetString(4)
-                            };
-                        }
-                    }
-                }
-                return true;
-            });
-            return customer;
+                { "@CustomerId", customerId }
+            };
+            
+            return DataAccessHelper.ExecuteReaderSingle(query, reader => new Customer
+            {
+                CustomerID = Convert.ToInt32(reader["CustomerID"]),
+                Name = reader["Name"].ToString() ?? string.Empty,
+                Email = reader["Email"].ToString() ?? string.Empty,
+                Phone = reader["Phone"].ToString() ?? string.Empty,
+                Address = reader["Address"].ToString() ?? string.Empty
+            }, parameters);
         }
-
+        
+        public static void AddCustomer(Customer customer)
+        {
+            string query = @"
+                INSERT INTO Customer (Name, Email, Phone, Address)
+                VALUES (@Name, @Email, @Phone, @Address);
+                SELECT last_insert_rowid();";
+                
+            var parameters = new Dictionary<string, object>
+            {
+                { "@Name", customer.Name },
+                { "@Email", customer.Email },
+                { "@Phone", customer.Phone },
+                { "@Address", customer.Address }
+            };
+            
+            int customerId = DataAccessHelper.ExecuteScalar<int>(query, parameters);
+            customer.CustomerID = customerId;
+        }
+        
+        public static void UpdateCustomer(Customer customer)
+        {
+            string query = @"
+                UPDATE Customer 
+                SET Name = @Name, 
+                    Email = @Email, 
+                    Phone = @Phone, 
+                    Address = @Address
+                WHERE CustomerID = @CustomerID";
+                
+            var parameters = new Dictionary<string, object>
+            {
+                { "@CustomerID", customer.CustomerID },
+                { "@Name", customer.Name },
+                { "@Email", customer.Email },
+                { "@Phone", customer.Phone },
+                { "@Address", customer.Address }
+            };
+            
+            DataAccessHelper.ExecuteNonQuery(query, parameters);
+        }
+        
+        public static void DeleteCustomer(int customerId)
+        {
+            string query = "DELETE FROM Customer WHERE CustomerID = @CustomerID";
+            
+            var parameters = new Dictionary<string, object>
+            {
+                { "@CustomerID", customerId }
+            };
+            
+            DataAccessHelper.ExecuteNonQuery(query, parameters);
+        }
+        
         public static int GetLoyaltyPointsByCustomerId(int customerId)
         {
-            int loyaltyPoints = 0;
-            DatabaseConnection.ExecuteDbOperation(connection => 
+            string query = "SELECT LoyaltyPoints FROM Customer WHERE CustomerID = @CustomerID";
+            
+            var parameters = new Dictionary<string, object>
             {
-                string query = "SELECT LoyaltyPoints FROM Customers WHERE CustomerID = @CustomerID";
-                using (var command = new SqliteCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue(CustomerIdParameter, customerId);
-                    loyaltyPoints = Convert.ToInt32(command.ExecuteScalar());
-                }
-                return true;
-            });
-            return loyaltyPoints;
+                { "@CustomerID", customerId }
+            };
+            
+            return DataAccessHelper.ExecuteScalar<int>(query, parameters);
+        }
+        
+        public static void UpdateLoyaltyPoints(int customerId, int points)
+        {
+            string query = @"UPDATE Customer SET LoyaltyPoints = @Points WHERE CustomerID = @CustomerID";
+            
+            var parameters = new Dictionary<string, object>
+            {
+                { "@CustomerID", customerId },
+                { "@Points", points }
+            };
+            
+            DataAccessHelper.ExecuteNonQuery(query, parameters);
         }
     }
 }

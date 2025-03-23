@@ -171,9 +171,42 @@ namespace FASCloset.Forms
             if (ucProductManagement == null)
             {
                 ucProductManagement = new UcProductManagement();
+                
+                // Create the action buttons here for the toolbar rather than in the user control
+                ucProductManagement.btnAdd = new Button();
+                ucProductManagement.btnAdd.Text = "Thêm";
+                ucProductManagement.btnEdit = new Button();
+                ucProductManagement.btnEdit.Text = "Sửa";
+                ucProductManagement.btnDelete = new Button(); 
+                ucProductManagement.btnDelete.Text = "Xóa";
             }
             
             LoadUserControl(ucProductManagement);
+        }
+        
+        // Make sure these handlers correctly call the product management methods
+        private void HandleProductAdd(object? sender, EventArgs e)
+        {
+            if (ucProductManagement != null)
+                ucProductManagement.btnAdd_Click(sender ?? this, e);
+            else
+                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
+        }
+
+        private void HandleProductEdit(object? sender, EventArgs e)
+        {
+            if (ucProductManagement != null)
+                ucProductManagement.btnEdit_Click(sender ?? this, e);
+            else
+                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
+        }
+
+        private void HandleProductDelete(object? sender, EventArgs e)
+        {
+            if (ucProductManagement != null)
+                ucProductManagement.btnDelete_Click(sender ?? this, e);
+            else
+                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
         }
 
         private void btnInventoryManagement_Click(object sender, EventArgs e)
@@ -331,30 +364,6 @@ namespace FASCloset.Forms
                     btn.Click += (s, e) => MessageBox.Show("Chức năng: " + feature);
                     break;
             }
-        }
-
-        private void HandleProductAdd(object? sender, EventArgs e)
-        {
-            if (ucProductManagement != null)
-                ucProductManagement.btnAdd_Click(sender ?? this, e);
-            else
-                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
-        }
-
-        private void HandleProductEdit(object? sender, EventArgs e)
-        {
-            if (ucProductManagement != null)
-                ucProductManagement.btnEdit_Click(sender ?? this, e);
-            else
-                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
-        }
-
-        private void HandleProductDelete(object? sender, EventArgs e)
-        {
-            if (ucProductManagement != null)
-                ucProductManagement.btnDelete_Click(sender ?? this, e);
-            else
-                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
         }
 
         private void HandleOrderCreate(object? sender, EventArgs e)

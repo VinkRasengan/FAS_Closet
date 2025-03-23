@@ -31,11 +31,11 @@ namespace FASCloset.Forms
             btnCancel = new Button();
             btnAddCategory = new Button();
             btnAddManufacturer = new Button();
-            btnDuplicate = new Button(); // New duplicate button
+            btnDuplicate = new Button(); // Duplicate button for Add/Edit panel
             RightPanel = new Panel();
             TxtSearch = new TextBox();
-            ChkShowInactive = new CheckBox(); // New checkbox for showing inactive products
-            ChkIsActive = new CheckBox(); // New checkbox for product active status
+            ChkShowInactive = new CheckBox(); // Checkbox for showing inactive products
+            ChkIsActive = new CheckBox(); // Checkbox for product active status
             
             // Filter Panel Components
             FilterPanel.BackColor = Color.WhiteSmoke;
@@ -59,32 +59,6 @@ namespace FASCloset.Forms
             FilterPanel.Controls.Add(lblFilter);
             FilterPanel.Controls.Add(CmbFilterCategory);
             FilterPanel.Controls.Add(btnShowLowStock);
-            
-            // Add toolbar for actions
-            FlowLayoutPanel actionsPanel = new FlowLayoutPanel();
-            actionsPanel.Dock = DockStyle.Top;
-            actionsPanel.Height = 40;
-            actionsPanel.Padding = new Padding(5);
-            actionsPanel.BackColor = Color.LightGray;
-            
-            btnAdd = new Button();
-            btnAdd.Text = "Add Product";
-            btnAdd.Size = new Size(100, 30);
-            btnAdd.Click += btnAdd_Click;
-            
-            btnEdit = new Button();
-            btnEdit.Text = "Edit Product";
-            btnEdit.Size = new Size(100, 30);
-            btnEdit.Click += btnEdit_Click;
-            
-            btnDelete = new Button();
-            btnDelete.Text = "Delete Product";
-            btnDelete.Size = new Size(100, 30);
-            btnDelete.Click += btnDelete_Click;
-            
-            actionsPanel.Controls.Add(btnAdd);
-            actionsPanel.Controls.Add(btnEdit);
-            actionsPanel.Controls.Add(btnDelete);
             
             // Check for inactive products
             ChkShowInactive.Text = "Show Inactive Products";
@@ -279,7 +253,6 @@ namespace FASCloset.Forms
             TxtSearch.TextChanged += TxtSearch_TextChanged;
 
             // Add controls to the user control
-            this.Controls.Add(actionsPanel);
             this.Controls.Add(ProductDisplay);
             this.Controls.Add(FilterPanel);
             this.Controls.Add(AddEditPanel);
@@ -320,9 +293,12 @@ namespace FASCloset.Forms
         private CheckBox ChkIsActive;
         private Button btnShowLowStock;
         private ErrorProvider errorProvider;
-        private Button btnAdd;
-        private Button btnEdit;
-        private Button btnDelete;
+        
+        // Keep these field declarations but don't initialize them in InitializeComponent
+        // They'll be initialized in MainForm and referenced through public methods
+        public Button btnAdd;
+        public Button btnEdit; 
+        public Button btnDelete;
 
         // Renamed method to avoid ambiguity
         private void OnTableLayoutPanelPaint(object sender, PaintEventArgs e)

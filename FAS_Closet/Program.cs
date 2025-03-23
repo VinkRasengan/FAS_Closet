@@ -28,8 +28,21 @@ namespace FASCloset
                     Directory.CreateDirectory(dbDirectory);
                 }
 
-                // Initialize database
-                DatabaseInitializer.Initialize(AppSettings.DatabasePath);
+                Console.WriteLine($"Database path: {AppSettings.DatabasePath}");
+
+                // Initialize database with proper error handling
+                try {
+                    DatabaseInitializer.Initialize(AppSettings.DatabasePath);
+                    Console.WriteLine("Database initialized successfully.");
+                }
+                catch (Exception dbEx)
+                {
+                    MessageBox.Show($"Database initialization failed: {dbEx.Message}\n\nDetails: {dbEx.StackTrace}\n\nThe application will now exit.", 
+                        "Database Error", 
+                        MessageBoxButtons.OK, 
+                        MessageBoxIcon.Error);
+                    return;
+                }
                 
                 // Start with authentication form
                 Application.Run(new AuthForm());
