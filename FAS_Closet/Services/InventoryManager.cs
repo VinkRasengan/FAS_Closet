@@ -25,8 +25,8 @@ namespace FASCloset.Services
                     string query = "UPDATE Inventory SET StockQuantity = @StockQuantity WHERE ProductID = @ProductID";
                     using (var command = new SqliteCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@StockQuantity", stockQuantity);
                         command.Parameters.AddWithValue("@ProductID", productId);
+                        command.Parameters.AddWithValue("@StockQuantity", stockQuantity);
                         command.ExecuteNonQuery();
                     }
                 }
@@ -47,8 +47,8 @@ namespace FASCloset.Services
                     string query = "UPDATE Inventory SET MinimumStockThreshold = @MinimumStockThreshold WHERE ProductID = @ProductID";
                     using (var command = new SqliteCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@MinimumStockThreshold", minimumStockThreshold);
                         command.Parameters.AddWithValue("@ProductID", productId);
+                        command.Parameters.AddWithValue("@MinimumStockThreshold", minimumStockThreshold);
                         command.ExecuteNonQuery();
                     }
                 }
@@ -61,7 +61,7 @@ namespace FASCloset.Services
 
         public static List<Inventory> GetLowStockProducts()
         {
-            var lowStockProducts = new List<Inventory>();
+            var inventories = new List<Inventory>();
             try
             {
                 using (var connection = new SqliteConnection(GetConnectionString()))
@@ -74,7 +74,7 @@ namespace FASCloset.Services
                         {
                             while (reader.Read())
                             {
-                                lowStockProducts.Add(new Inventory
+                                inventories.Add(new Inventory
                                 {
                                     ProductID = reader.GetInt32(0),
                                     StockQuantity = reader.GetInt32(1),
@@ -89,7 +89,7 @@ namespace FASCloset.Services
             {
                 throw new InvalidOperationException("Database error occurred while retrieving low stock products.", ex);
             }
-            return lowStockProducts;
+            return inventories;
         }
 
         public static Inventory? GetInventoryByProductId(int productId)
@@ -120,7 +120,7 @@ namespace FASCloset.Services
             }
             catch (SqliteException ex)
             {
-                throw new InvalidOperationException("Database error occurred while retrieving inventory.", ex);
+                throw new InvalidOperationException("Database error occurred while retrieving inventory by product ID.", ex);
             }
             return null;
         }

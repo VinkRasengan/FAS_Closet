@@ -19,12 +19,14 @@ namespace FASCloset.Forms
             InitializeComponent();
             LoadProducts();
             LoadCategories();
+            LoadManufacturers(); // Make sure manufacturers are loaded
         }
 
         private void InitializeAddProductUI()
         {
             TxtProductName.Text = "";
             CmbCategory.SelectedIndex = -1;
+            CmbManufacturer.SelectedIndex = -1;
             TxtPrice.Text = "";
             TxtStock.Text = "";
             TxtDescription.Text = "";
@@ -62,6 +64,7 @@ namespace FASCloset.Forms
                     {
                         ProductManager.DeleteProduct(selectedProduct.ProductID);
                         LoadProducts();
+                        ProductDisplay.Refresh();
                     }
                 }
             }
@@ -84,6 +87,11 @@ namespace FASCloset.Forms
             if (CmbCategory.SelectedValue == null)
             {
                 MessageBox.Show("Vui lòng chọn danh mục.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            if (CmbManufacturer.SelectedValue == null)
+            {
+                MessageBox.Show("Vui lòng chọn nhà sản xuất.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
             // Kiểm tra giá
@@ -123,7 +131,19 @@ namespace FASCloset.Forms
                 // Trim dữ liệu
                 string productName = TxtProductName.Text.Trim();
                 string description = TxtDescription.Text.Trim();
-                int categoryId = Convert.ToInt32(CmbCategory.SelectedValue ?? 0);
+                
+                // Fix nullable warnings by providing safe default values
+                int categoryId = 0;
+                if (CmbCategory.SelectedValue != null)
+                {
+                    categoryId = Convert.ToInt32(CmbCategory.SelectedValue);
+                }
+                
+                int manufacturerId = 0;
+                if (CmbManufacturer.SelectedValue != null)
+                {
+                    manufacturerId = Convert.ToInt32(CmbManufacturer.SelectedValue);
+                }
 
                 // Kiểm tra tên sản phẩm duy nhất
                 if (currentMode == Mode.Add)
@@ -155,6 +175,7 @@ namespace FASCloset.Forms
                     {
                         ProductName = productName,
                         CategoryID = categoryId,
+                        ManufacturerID = manufacturerId,
                         Price = price,
                         Stock = stock,
                         Description = description
@@ -166,6 +187,7 @@ namespace FASCloset.Forms
                     var selectedProduct = (Product)ProductDisplay.SelectedRows[0].DataBoundItem;
                     selectedProduct.ProductName = productName;
                     selectedProduct.CategoryID = categoryId;
+                    selectedProduct.ManufacturerID = manufacturerId;
                     selectedProduct.Price = price;
                     selectedProduct.Stock = stock;
                     selectedProduct.Description = description;
@@ -173,7 +195,9 @@ namespace FASCloset.Forms
                 }
 
                 LoadProducts();
+                ProductDisplay.Refresh();
                 HideAddEditPanel();
+                ClearAddEditPanel();
                 MessageBox.Show("Sản phẩm đã được lưu thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
@@ -225,6 +249,7 @@ namespace FASCloset.Forms
         {
             TxtProductName.Clear();
             CmbCategory.SelectedIndex = -1;
+            CmbManufacturer.SelectedIndex = -1;
             TxtPrice.Clear();
             TxtStock.Clear();
             TxtDescription.Clear();
@@ -234,6 +259,7 @@ namespace FASCloset.Forms
         {
             TxtProductName.Text = product.ProductName;
             CmbCategory.SelectedValue = product.CategoryID;
+            CmbManufacturer.SelectedValue = product.ManufacturerID;
             TxtPrice.Text = product.Price.ToString();
             TxtStock.Text = product.Stock.ToString();
             TxtDescription.Text = product.Description;
@@ -244,7 +270,15 @@ namespace FASCloset.Forms
             var categories = ProductManager.GetCategories();
             CmbCategory.DisplayMember = "CategoryName";
             CmbCategory.ValueMember = "CategoryID";
-            CmbCategory.DataSource = categories;
+            CmbCategory.DataSource = new BindingSource { DataSource = categories };
+        }
+
+        private void LoadManufacturers()
+        {
+            var manufacturers = ProductManager.GetManufacturers();
+            CmbManufacturer.DisplayMember = "ManufacturerName";
+            CmbManufacturer.ValueMember = "ManufacturerID";
+            CmbManufacturer.DataSource = new BindingSource { DataSource = manufacturers };
         }
 
         private void TxtSearch_TextChanged(object sender, EventArgs e)
@@ -278,11 +312,18 @@ namespace FASCloset.Forms
                 return;
             }
 
-            // Tạo đối tượng sản phẩm mới (giả sử bạn có class Product)
+            // Fix nullable warning by providing a safe default value
+            int categoryId = 0;
+            if (CmbCategory.SelectedValue != null)
+            {
+                categoryId = Convert.ToInt32(CmbCategory.SelectedValue);
+            }
+
+            // Tạo đối tượng sản phẩm mới
             Product newProduct = new Product
             {
                 ProductName = productName,
-                CategoryID = (int)CmbCategory.SelectedValue!,
+                CategoryID = categoryId,
                 Price = price,
                 Stock = stock,
                 Description = description
@@ -328,9 +369,39 @@ namespace FASCloset.Forms
                 }
 
                 // Thêm danh mục mới
-                ProductManager.AddCategory(categoryName);
+                var category = new Category
+                {
+                    CategoryName = categoryName,
+                    Description = "",
+                    IsActive = true,
+                    CreatedDate = DateTime.Now
+                };
+                ProductManager.AddCategory(category);
                 LoadCategories(); // Cập nhật danh sách danh mục trong ComboBox
                 MessageBox.Show("Danh mục đã được thêm thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void btnAddManufacturer_Click(object sender, EventArgs e)
+        {
+            string manufacturerName = Prompt.ShowDialog("Nhập tên nhà sản xuất:", "Thêm Nhà Sản Xuất");
+            if (!string.IsNullOrEmpty(manufacturerName))
+            {
+                var existingManufacturers = ProductManager.GetManufacturers();
+                if (existingManufacturers.Any(m => m.ManufacturerName.Equals(manufacturerName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    MessageBox.Show("Nhà sản xuất này đã tồn tại.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                var manufacturer = new Manufacturer
+                {
+                    ManufacturerName = manufacturerName,
+                    Description = ""
+                };
+                ProductManager.AddManufacturer(manufacturer);
+                LoadManufacturers();
+                MessageBox.Show("Nhà sản xuất đã được thêm thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -355,8 +426,15 @@ namespace FASCloset.Forms
                 prompt.Controls.Add(confirmation);
                 prompt.AcceptButton = confirmation;
 
-                return prompt.ShowDialog() == DialogResult.OK ? inputBox.Text : "";
+                return prompt.ShowDialog() == DialogResult.OK ? inputBox.Text : string.Empty;
             }
         }
+
+        private void TableLayoutPanel_Paint(object sender, PaintEventArgs e)
+        {
+            // Add your paint logic here
+        }
+
+        // Remove duplicate TableLayoutPanel_Paint method - we're using OnTableLayoutPanelPaint now
     }
 }

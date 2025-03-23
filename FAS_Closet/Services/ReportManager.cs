@@ -88,11 +88,12 @@ namespace FASCloset.Services
                 {
                     connection.Open();
                     string query = @"
-                        SELECT Products.ProductID, Products.ProductName, SUM(OrderDetails.Quantity) AS TotalSold
+                        SELECT Products.ProductID, Products.ProductName, SUM(OrderDetails.Quantity) AS TotalQuantity
                         FROM OrderDetails
                         JOIN Products ON OrderDetails.ProductID = Products.ProductID
                         GROUP BY Products.ProductID, Products.ProductName
-                        ORDER BY TotalSold DESC";
+                        ORDER BY TotalQuantity DESC
+                        LIMIT 10";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         using (var reader = command.ExecuteReader())
@@ -103,7 +104,8 @@ namespace FASCloset.Services
                                 {
                                     ProductID = reader.GetInt32(0),
                                     ProductName = reader.GetString(1),
-                                    Description = string.Empty // Provide a default value for Description
+                                    Stock = reader.GetInt32(2),
+                                    Description = string.Empty // Ensure Description is set
                                 });
                             }
                         }

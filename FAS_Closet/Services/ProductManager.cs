@@ -94,7 +94,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "SELECT product_id, name, category_id, price, description FROM Product"; // Fix column names
+                    string query = "SELECT ProductID, ProductName, CategoryID, ManufacturerID, Price, Stock, Description FROM Product"; // Adjust column names
                     using (var command = new SqliteCommand(query, connection))
                     {
                         using (var reader = command.ExecuteReader())
@@ -106,8 +106,10 @@ namespace FASCloset.Services
                                     ProductID = reader.GetInt32(0),
                                     ProductName = reader.GetString(1),
                                     CategoryID = reader.GetInt32(2),
-                                    Price = reader.GetDecimal(3),
-                                    Description = reader.GetString(4)
+                                    ManufacturerID = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
+                                    Price = reader.GetDecimal(4),
+                                    Stock = reader.GetInt32(5),
+                                    Description = reader.GetString(6)
                                 });
                             }
                         }
@@ -129,7 +131,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "SELECT ProductID, ProductName, CategoryID, Price, Description FROM Product WHERE CategoryID = @CategoryID";
+                    string query = "SELECT ProductID, ProductName, CategoryID, ManufacturerID, Price, Stock, Description FROM Product WHERE CategoryID = @CategoryID"; // Adjust column names
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@CategoryID", categoryId);
@@ -142,8 +144,10 @@ namespace FASCloset.Services
                                     ProductID = reader.GetInt32(0),
                                     ProductName = reader.GetString(1),
                                     CategoryID = reader.GetInt32(2),
-                                    Price = reader.GetDecimal(3),
-                                    Description = reader.GetString(4)
+                                    ManufacturerID = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
+                                    Price = reader.GetDecimal(4),
+                                    Stock = reader.GetInt32(5),
+                                    Description = reader.GetString(6)
                                 });
                             }
                         }
@@ -240,7 +244,7 @@ namespace FASCloset.Services
                 {
                     connection.Open();
                     EnsureCategoriesTableExists(connection); // Ensure table exists
-                    string query = "SELECT CategoryID, CategoryName FROM Categories";
+                    string query = "SELECT CategoryID, CategoryName, Description, IsActive, CreatedDate FROM Category";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         using (var reader = command.ExecuteReader())
@@ -250,7 +254,10 @@ namespace FASCloset.Services
                                 categories.Add(new Category
                                 {
                                     CategoryID = reader.GetInt32(0),
-                                    CategoryName = reader.GetString(1)
+                                    CategoryName = reader.GetString(1),
+                                    Description = reader.IsDBNull(2) ? null : reader.GetString(2),
+                                    IsActive = reader.GetBoolean(3),
+                                    CreatedDate = reader.GetDateTime(4)
                                 });
                             }
                         }
@@ -264,18 +271,20 @@ namespace FASCloset.Services
             return categories;
         }
 
-        public static void AddCategory(string categoryName)
+        public static void AddCategory(Category category)
         {
             try
             {
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "INSERT INTO Categories (CategoryName, IsActive, CreatedDate) VALUES (@CategoryName, 1, @CreatedDate)";
+                    string query = "INSERT INTO Category (CategoryName, Description, IsActive, CreatedDate) VALUES (@CategoryName, @Description, @IsActive, @CreatedDate)";
                     using (var command = new SqliteCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@CategoryName", categoryName);
-                        command.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
+                        command.Parameters.AddWithValue("@CategoryName", category.CategoryName);
+                        command.Parameters.AddWithValue("@Description", category.Description);
+                        command.Parameters.AddWithValue("@IsActive", category.IsActive);
+                        command.Parameters.AddWithValue("@CreatedDate", category.CreatedDate);
                         command.ExecuteNonQuery();
                     }
                 }
@@ -284,6 +293,61 @@ namespace FASCloset.Services
             {
                 throw new InvalidOperationException("Database error occurred while adding category.", ex);
             }
+        }
+
+        public static void AddManufacturer(Manufacturer manufacturer)
+        {
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = "INSERT INTO Manufacturer (ManufacturerName, Description) VALUES (@ManufacturerName, @Description)";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@ManufacturerName", manufacturer.ManufacturerName);
+                        command.Parameters.AddWithValue("@Description", manufacturer.Description);
+                        command.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while adding manufacturer.", ex);
+            }
+        }
+
+        public static List<Manufacturer> GetManufacturers()
+        {
+            var manufacturers = new List<Manufacturer>();
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = "SELECT ManufacturerID, ManufacturerName, Description FROM Manufacturer";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                manufacturers.Add(new Manufacturer
+                                {
+                                    ManufacturerID = reader.GetInt32(0),
+                                    ManufacturerName = reader.GetString(1),
+                                    Description = reader.IsDBNull(2) ? null : reader.GetString(2)
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while retrieving manufacturers.", ex);
+            }
+            return manufacturers;
         }
 
         private static void EnsureCategoriesTableExists(SqliteConnection connection)

@@ -152,7 +152,7 @@ namespace FASCloset.Services
             }
             catch (SqliteException ex)
             {
-                throw new InvalidOperationException("Database error occurred while retrieving customer.", ex);
+                throw new InvalidOperationException("Database error occurred while retrieving customer by ID.", ex);
             }
             return null;
         }

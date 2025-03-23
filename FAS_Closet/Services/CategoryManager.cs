@@ -22,25 +22,20 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    ExecuteAddCategoryCommand(connection, category);
+                    string query = "INSERT INTO Category (CategoryName, Description, IsActive, CreatedDate) VALUES (@CategoryName, @Description, @IsActive, @CreatedDate)";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@CategoryName", category.CategoryName);
+                        command.Parameters.AddWithValue("@Description", category.Description);
+                        command.Parameters.AddWithValue("@IsActive", category.IsActive);
+                        command.Parameters.AddWithValue("@CreatedDate", category.CreatedDate);
+                        command.ExecuteNonQuery();
+                    }
                 }
             }
             catch (SqliteException ex)
             {
                 throw new InvalidOperationException("Database error occurred while adding category.", ex);
-            }
-        }
-
-        private static void ExecuteAddCategoryCommand(SqliteConnection connection, Category category)
-        {
-            string query = "INSERT INTO Categories (CategoryName, Description, IsActive, CreatedDate) VALUES (@CategoryName, @Description, @IsActive, @CreatedDate)";
-            using (var command = new SqliteCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@CategoryName", category.CategoryName);
-                command.Parameters.AddWithValue("@Description", category.Description);
-                command.Parameters.AddWithValue("@IsActive", category.IsActive);
-                command.Parameters.AddWithValue("@CreatedDate", category.CreatedDate);
-                command.ExecuteNonQuery();
             }
         }
 
@@ -51,7 +46,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "UPDATE Categories SET CategoryName = @CategoryName, Description = @Description, IsActive = @IsActive WHERE CategoryID = @CategoryID";
+                    string query = "UPDATE Category SET CategoryName = @CategoryName, Description = @Description, IsActive = @IsActive WHERE CategoryID = @CategoryID";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@CategoryName", category.CategoryName);
@@ -75,7 +70,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "DELETE FROM Categories WHERE CategoryID = @CategoryID";
+                    string query = "DELETE FROM Category WHERE CategoryID = @CategoryID";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@CategoryID", categoryId);
@@ -97,8 +92,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    EnsureCategoriesTableExists(connection); // Ensure table exists
-                    string query = "SELECT CategoryID, CategoryName, Description, IsActive, CreatedDate FROM Categories";
+                    string query = "SELECT CategoryID, CategoryName, Description, IsActive, CreatedDate FROM Category";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         using (var reader = command.ExecuteReader())
@@ -120,9 +114,7 @@ namespace FASCloset.Services
             }
             catch (SqliteException ex)
             {
-                Console.WriteLine($"Database error: {ex.Message}");
-                // Optionally, show a user-friendly message
-                return categories; // Return empty list instead of crashing
+                throw new InvalidOperationException("Database error occurred while retrieving categories.", ex);
             }
             return categories;
         }
@@ -160,6 +152,28 @@ namespace FASCloset.Services
                 throw new InvalidOperationException("Database error occurred while retrieving category.", ex);
             }
             return null;
+        }
+
+        public static bool IsCategoryUsed(int categoryId)
+        {
+            try
+            {
+                using (var connection = new SqliteConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string query = "SELECT COUNT(*) FROM Product WHERE CategoryID = @CategoryID";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@CategoryID", categoryId);
+                        int count = Convert.ToInt32(command.ExecuteScalar());
+                        return count > 0;
+                    }
+                }
+            }
+            catch (SqliteException ex)
+            {
+                throw new InvalidOperationException("Database error occurred while checking category usage.", ex);
+            }
         }
 
         private static void EnsureCategoriesTableExists(SqliteConnection connection)

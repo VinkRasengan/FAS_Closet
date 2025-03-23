@@ -128,7 +128,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = "SELECT OrderDetailID, OrderID, ProductID, Quantity, UnitPrice FROM OrderDetails WHERE OrderDetailID = @OrderDetailID";
+                    string query = "SELECT OrderDetailID, OrderID, ProductID, Quantity, UnitPrice FROM OrderDetail WHERE OrderDetailID = @OrderDetailID";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@OrderDetailID", orderDetailId);
