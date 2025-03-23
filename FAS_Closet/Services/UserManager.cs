@@ -1,212 +1,180 @@
 // This file defines the UserManager class, which handles user-related operations.
 
 using System;
+using System.Collections.Generic;
+using System.Data;
 using Microsoft.Data.Sqlite;
 using FASCloset.Models;
-using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using FASCloset.Data;
 
 namespace FASCloset.Services
 {
     public class UserManager
     {
-        private const string UsernameParameter = "@Username";
-
         private static string GetConnectionString()
         {
             return DatabaseConnection.GetConnectionString();
         }
 
-        public static void RegisterUser(User user)
+        public User? Login(string username, string password)
         {
-            if (user == null)
+            try
             {
-                throw new ArgumentNullException(nameof(user), "User cannot be null");
+                User? user = GetUserByUsername(username);
+                
+                if (user == null)
+                    return null;
+                
+                // Verify password
+                if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
+                    return null;
+                
+                return user;
             }
-
-            string query = @"
-                INSERT INTO User (Username, PasswordHash, PasswordSalt, Name, Email, Phone)
-                VALUES (@Username, @PasswordHash, @PasswordSalt, @Name, @Email, @Phone)
-            ";
-
-            using (var connection = new SqliteConnection(GetConnectionString()))
+            catch (Exception ex)
             {
-                try
-                {
-                    connection.Open();
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue(UsernameParameter, user.Username);
-                        command.Parameters.AddWithValue("@PasswordHash", user.PasswordHash);
-                        command.Parameters.AddWithValue("@PasswordSalt", user.PasswordSalt);
-                        command.Parameters.AddWithValue("@Name", user.Name);
-                        command.Parameters.AddWithValue("@Email", user.Email);
-                        command.Parameters.AddWithValue("@Phone", user.Phone);
-                        
-                        command.ExecuteNonQuery();
-                    }
-                }
-                catch (SqliteException ex)
-                {
-                    throw new InvalidOperationException($"Error registering user: {ex.Message}", ex);
-                }
+                throw new InvalidOperationException("Login failed.", ex);
             }
         }
 
-        public User? Login(string username, string password)
+        public static void RegisterUser(User user)
         {
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            try
             {
-                return null;
+                string query = @"
+                    INSERT INTO User (Username, PasswordHash, PasswordSalt, Name, Email, Phone) 
+                    VALUES (@Username, @PasswordHash, @PasswordSalt, @Name, @Email, @Phone)";
+                    
+                var parameters = new Dictionary<string, object>
+                {
+                    { "@Username", user.Username },
+                    { "@PasswordHash", user.PasswordHash },
+                    { "@PasswordSalt", user.PasswordSalt },
+                    { "@Name", user.Name },
+                    { "@Email", user.Email },
+                    { "@Phone", user.Phone }
+                };
+                
+                DataAccessHelper.ExecuteNonQuery(query, parameters);
             }
-
-            string query = @"
-                SELECT UserID, Username, PasswordHash, PasswordSalt, Name, Email, Phone 
-                FROM User 
-                WHERE Username = @Username
-            ";
-
-            using (var connection = new SqliteConnection(GetConnectionString()))
+            catch (Exception ex)
             {
-                try
-                {
-                    connection.Open();
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue(UsernameParameter, username);
-                        
-                        using (var reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                string storedHash = reader.GetString(2); // PasswordHash
-                                string storedSalt = reader.GetString(3); // PasswordSalt
-                                
-                                byte[] hashBytes = Convert.FromBase64String(storedHash);
-                                byte[] saltBytes = Convert.FromBase64String(storedSalt);
-                                
-                                if (PasswordHasher.VerifyPasswordHash(password, hashBytes, saltBytes))
-                                {
-                                    return new User
-                                    {
-                                        UserID = reader.GetInt32(0),
-                                        Username = reader.GetString(1),
-                                        PasswordHash = storedHash,
-                                        PasswordSalt = storedSalt,
-                                        Name = reader.GetString(4),
-                                        Email = reader.GetString(5),
-                                        Phone = reader.GetString(6)
-                                    };
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Login error: {ex.Message}");
-                    // We don't throw here to avoid exposing database errors to the login screen
-                }
+                throw new InvalidOperationException("Error registering user.", ex);
             }
-            
-            return null;
         }
 
         public static bool IsUsernameTaken(string username)
         {
-            if (string.IsNullOrWhiteSpace(username))
+            try
             {
-                throw new ArgumentException("Username cannot be null or empty", nameof(username));
+                string query = "SELECT COUNT(*) FROM User WHERE Username = @Username";
+                var parameters = new Dictionary<string, object>
+                {
+                    { "@Username", username }
+                };
+                
+                int count = DataAccessHelper.ExecuteScalar<int>(query, parameters);
+                return count > 0;
             }
-
-            string query = "SELECT COUNT(*) FROM User WHERE Username = @Username";
-
-            using (var connection = new SqliteConnection(GetConnectionString()))
+            catch (Exception ex)
             {
-                try
-                {
-                    connection.Open();
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue(UsernameParameter, username);
-                        int count = Convert.ToInt32(command.ExecuteScalar());
-                        return count > 0;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new InvalidOperationException($"Error checking if username is taken: {ex.Message}", ex);
-                }
+                throw new InvalidOperationException($"Error checking username: {ex.Message}", ex);
             }
         }
 
-        public User? GetUserById(int userId)
+        public static bool IsEmailTaken(string email)
         {
-            if (userId == 0)
+            try
             {
-                throw new ArgumentException("User ID cannot be zero", nameof(userId));
-            }
-
-            using (var connection = new SqliteConnection(GetConnectionString()))
-            {
-                connection.Open();
-                string query = "SELECT UserID, Username, PasswordHash, PasswordSalt, Name, Email, Phone FROM User WHERE UserID = @UserID";
-                using (var command = new SqliteCommand(query, connection))
+                string query = "SELECT COUNT(*) FROM User WHERE Email = @Email";
+                var parameters = new Dictionary<string, object>
                 {
-                    command.Parameters.AddWithValue("@UserID", userId);
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            return new User
-                            {
-                                UserID = reader.GetInt32(0),
-                                Username = reader.GetString(1),
-                                PasswordHash = reader.GetString(2),
-                                PasswordSalt = reader.GetString(3),
-                                Name = reader.GetString(4),
-                                Email = reader.GetString(5),
-                                Phone = reader.GetString(6)
-                            };
-                        }
-                    }
-                }
+                    { "@Email", email }
+                };
+                
+                int count = DataAccessHelper.ExecuteScalar<int>(query, parameters);
+                return count > 0;
             }
-            return null;
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error checking email: {ex.Message}", ex);
+            }
         }
 
-        public User? GetUserByUsername(string username)
+        public static bool IsPhoneTaken(string phone)
         {
-            if (username == null)
+            try
             {
-                throw new ArgumentNullException(nameof(username));
+                string query = "SELECT COUNT(*) FROM User WHERE Phone = @Phone";
+                var parameters = new Dictionary<string, object>
+                {
+                    { "@Phone", phone }
+                };
+                
+                int count = DataAccessHelper.ExecuteScalar<int>(query, parameters);
+                return count > 0;
             }
-
-            using (var connection = new SqliteConnection(GetConnectionString()))
+            catch (Exception ex)
             {
-                connection.Open();
+                throw new InvalidOperationException($"Error checking phone number: {ex.Message}", ex);
+            }
+        }
+
+        public static User? GetUserByUsername(string username)
+        {
+            try
+            {
                 string query = "SELECT UserID, Username, PasswordHash, PasswordSalt, Name, Email, Phone FROM User WHERE Username = @Username";
-                using (var command = new SqliteCommand(query, connection))
+                var parameters = new Dictionary<string, object>
                 {
-                    command.Parameters.AddWithValue(UsernameParameter, username);
-                    using (var reader = command.ExecuteReader())
+                    { "@Username", username }
+                };
+                
+                return DataAccessHelper.ExecuteReaderSingle<User>(query, reader => new User
+                {
+                    UserID = reader.GetInt32(0),
+                    Username = reader.GetString(1),
+                    PasswordHash = reader.GetString(2),
+                    PasswordSalt = reader.GetString(3),
+                    Name = reader.GetString(4),
+                    Email = reader.GetString(5),
+                    Phone = reader.GetString(6)
+                }, parameters);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error retrieving user by username: {ex.Message}", ex);
+            }
+        }
+
+        private static bool VerifyPasswordHash(string password, string storedHashStr, string storedSaltStr)
+        {
+            if (string.IsNullOrWhiteSpace(password)) return false;
+            if (string.IsNullOrWhiteSpace(storedHashStr) || string.IsNullOrWhiteSpace(storedSaltStr)) return false;
+            
+            try
+            {
+                byte[] storedHash = Convert.FromBase64String(storedHashStr);
+                byte[] storedSalt = Convert.FromBase64String(storedSaltStr);
+                
+                using (var hmac = new HMACSHA512(storedSalt))
+                {
+                    byte[] computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+                    
+                    for (int i = 0; i < computedHash.Length; i++)
                     {
-                        if (reader.Read())
-                        {
-                            return new User
-                            {
-                                UserID = reader.GetInt32(0),
-                                Username = reader.GetString(1),
-                                PasswordHash = reader.GetString(2),
-                                PasswordSalt = reader.GetString(3),
-                                Name = reader.GetString(4),
-                                Email = reader.GetString(5),
-                                Phone = reader.GetString(6)
-                            };
-                        }
+                        if (computedHash[i] != storedHash[i]) return false;
                     }
                 }
+                
+                return true;
             }
-            return null;
+            catch
+            {
+                return false;
+            }
         }
     }
 }

@@ -12,6 +12,7 @@ namespace FASCloset.Forms
     public partial class AuthForm : Form
     {
         private const int MinPasswordLength = 6;
+        private const int MinUsernameLength = 3;
         private bool _isFormClosing = false;
         
         public AuthForm()
@@ -21,15 +22,22 @@ namespace FASCloset.Forms
             // Add event handlers
             this.Load += AuthForm_Load;
             this.FormClosing += AuthForm_FormClosing;
+            
+            // Login field events
             btnSwitchToRegister.Click += BtnSwitchToRegister_Click;
+            txtLoginUsername.TextChanged += TxtLoginUsername_TextChanged;
+            txtLoginPassword.TextChanged += TxtLoginPassword_TextChanged;
+            
+            // Register field events
             btnSwitchToLogin.Click += BtnSwitchToLogin_Click;
             txtRegPassword.TextChanged += TxtRegPassword_TextChanged;
             txtRegConfirmPassword.TextChanged += TxtRegConfirmPassword_TextChanged;
             txtRegEmail.TextChanged += TxtRegEmail_TextChanged;
             txtRegPhone.TextChanged += TxtRegPhone_TextChanged;
             txtRegUsername.TextChanged += TxtRegUsername_TextChanged;
+            txtRegName.TextChanged += TxtRegName_TextChanged;
             
-            // Apply some UI improvements
+            // Apply visual styling
             ApplyVisualStyles();
         }
 
@@ -37,14 +45,19 @@ namespace FASCloset.Forms
         {
             // Focus on username field when form loads
             txtLoginUsername.Focus();
+            
+            // Set default values for better appearance
+            progressBarPasswordStrength.Value = 0;
+            lblPasswordStrength.Text = "Độ mạnh mật khẩu: Chưa nhập";
+            progressBarPasswordStrength.ForeColor = Color.Gray;
         }
 
         private void AuthForm_FormClosing(object? sender, FormClosingEventArgs e)
         {
             if (!_isFormClosing && e.CloseReason == CloseReason.UserClosing)
             {
-                if (MessageBox.Show("Are you sure you want to exit the application?",
-                    "Confirm Exit", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+                if (MessageBox.Show("Bạn có chắc muốn thoát ứng dụng?", 
+                    "Xác nhận thoát", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
                 {
                     e.Cancel = true;
                 }
@@ -86,252 +99,360 @@ namespace FASCloset.Forms
             // Set background color for tab control
             tabControlAuth.BackColor = Color.FromArgb(248, 249, 250);
         }
+        
+        #region Login Tab Events and Validation
+        
+        private void TxtLoginUsername_TextChanged(object? sender, EventArgs e)
+        {
+            ValidateLoginUsername();
+            HideLoginError();
+        }
+        
+        private void TxtLoginPassword_TextChanged(object? sender, EventArgs e)
+        {
+            ValidateLoginPassword();
+            HideLoginError();
+        }
+        
+        private bool ValidateLoginUsername()
+        {
+            if (string.IsNullOrWhiteSpace(txtLoginUsername.Text))
+            {
+                errorProviderLogin.SetError(txtLoginUsername, "Vui lòng nhập tên đăng nhập");
+                return false;
+            }
+            errorProviderLogin.SetError(txtLoginUsername, "");
+            return true;
+        }
+        
+        private bool ValidateLoginPassword()
+        {
+            if (string.IsNullOrWhiteSpace(txtLoginPassword.Text))
+            {
+                errorProviderLogin.SetError(txtLoginPassword, "Vui lòng nhập mật khẩu");
+                return false;
+            }
+            errorProviderLogin.SetError(txtLoginPassword, "");
+            return true;
+        }
+        
+        private void ShowLoginError(string message)
+        {
+            lblLoginError.Text = message;
+            lblLoginError.Visible = true;
+        }
+        
+        private void HideLoginError()
+        {
+            lblLoginError.Visible = false;
+        }
 
         private void BtnSwitchToRegister_Click(object? sender, EventArgs e)
         {
             tabControlAuth.SelectedTab = tabPageRegister;
             txtRegUsername.Focus();
+            errorProviderLogin.Clear();
+            HideLoginError();
         }
+        
+        #endregion
 
+        #region Register Tab Events and Validation
+        
         private void BtnSwitchToLogin_Click(object? sender, EventArgs e)
         {
             tabControlAuth.SelectedTab = tabPageLogin;
             txtLoginUsername.Focus();
+            errorProviderRegister.Clear();
+            HideRegisterMessages();
         }
-
-        // Password strength indicator
+        
+        private void TxtRegUsername_TextChanged(object? sender, EventArgs e)
+        {
+            ValidateRegUsername();
+            HideRegisterMessages();
+        }
+        
         private void TxtRegPassword_TextChanged(object? sender, EventArgs e)
         {
             // Update password strength indicator
             int strength = CalculatePasswordStrength(txtRegPassword.Text);
             progressBarPasswordStrength.Value = strength;
             
-            // Set color based on strength
-            if (strength < 40)
+            // Update password strength label
+            if (strength == 0)
+            {
+                lblPasswordStrength.Text = "Độ mạnh mật khẩu: Chưa nhập";
+                progressBarPasswordStrength.ForeColor = Color.Gray;
+            }
+            else if (strength < 40)
+            {
+                lblPasswordStrength.Text = "Độ mạnh mật khẩu: Yếu";
                 progressBarPasswordStrength.ForeColor = Color.Red;
+            }
             else if (strength < 70)
+            {
+                lblPasswordStrength.Text = "Độ mạnh mật khẩu: Trung bình";
                 progressBarPasswordStrength.ForeColor = Color.Orange;
+            }
             else
+            {
+                lblPasswordStrength.Text = "Độ mạnh mật khẩu: Mạnh";
                 progressBarPasswordStrength.ForeColor = Color.Green;
-                
+            }
+            
+            ValidateRegPassword();
+            
             // Check if passwords match
             if (txtRegConfirmPassword.Text.Length > 0)
             {
-                ValidatePasswordMatch();
+                ValidateRegConfirmPassword();
             }
+            
+            HideRegisterMessages();
         }
         
-        // Confirm password validation
         private void TxtRegConfirmPassword_TextChanged(object? sender, EventArgs e)
         {
-            ValidatePasswordMatch();
+            ValidateRegConfirmPassword();
+            HideRegisterMessages();
         }
         
-        private void ValidatePasswordMatch()
+        private void TxtRegName_TextChanged(object? sender, EventArgs e)
         {
-            if (txtRegPassword.Text != txtRegConfirmPassword.Text)
-            {
-                errorProviderRegister.SetError(txtRegConfirmPassword, "Passwords do not match");
-            }
-            else
-            {
-                errorProviderRegister.SetError(txtRegConfirmPassword, "");
-            }
+            ValidateRegName();
+            HideRegisterMessages();
         }
         
-        // Email validation
         private void TxtRegEmail_TextChanged(object? sender, EventArgs e)
         {
-            if (!string.IsNullOrEmpty(txtRegEmail.Text) && !IsValidEmail(txtRegEmail.Text))
-            {
-                errorProviderRegister.SetError(txtRegEmail, "Invalid email format");
-            }
-            else
-            {
-                errorProviderRegister.SetError(txtRegEmail, "");
-            }
+            ValidateRegEmail();
+            HideRegisterMessages();
         }
         
-        // Phone number validation
         private void TxtRegPhone_TextChanged(object? sender, EventArgs e)
         {
-            if (!string.IsNullOrEmpty(txtRegPhone.Text) && !IsValidPhoneNumber(txtRegPhone.Text))
-            {
-                errorProviderRegister.SetError(txtRegPhone, "Invalid phone format");
-            }
-            else
-            {
-                errorProviderRegister.SetError(txtRegPhone, "");
-            }
+            ValidateRegPhone();
+            HideRegisterMessages();
         }
         
-        // Username validation
-        private void TxtRegUsername_TextChanged(object? sender, EventArgs e)
+        private bool ValidateRegUsername()
         {
-            if (!string.IsNullOrEmpty(txtRegUsername.Text) && txtRegUsername.Text.Length < 3)
+            if (string.IsNullOrWhiteSpace(txtRegUsername.Text))
             {
-                errorProviderRegister.SetError(txtRegUsername, "Username must be at least 3 characters");
+                errorProviderRegister.SetError(txtRegUsername, "Vui lòng nhập tên đăng nhập");
+                return false;
             }
-            else
+            else if (txtRegUsername.Text.Length < MinUsernameLength)
             {
-                errorProviderRegister.SetError(txtRegUsername, "");
+                errorProviderRegister.SetError(txtRegUsername, $"Tên đăng nhập phải có ít nhất {MinUsernameLength} ký tự");
+                return false;
             }
+            else if (!Regex.IsMatch(txtRegUsername.Text, @"^[a-zA-Z0-9_]+$"))
+            {
+                errorProviderRegister.SetError(txtRegUsername, "Tên đăng nhập chỉ được chứa ký tự, số và dấu gạch dưới");
+                return false;
+            }
+            
+            errorProviderRegister.SetError(txtRegUsername, "");
+            return true;
         }
+        
+        private bool ValidateRegPassword()
+        {
+            if (string.IsNullOrWhiteSpace(txtRegPassword.Text))
+            {
+                errorProviderRegister.SetError(txtRegPassword, "Vui lòng nhập mật khẩu");
+                return false;
+            }
+            else if (txtRegPassword.Text.Length < MinPasswordLength)
+            {
+                errorProviderRegister.SetError(txtRegPassword, $"Mật khẩu phải có ít nhất {MinPasswordLength} ký tự");
+                return false;
+            }
+            
+            errorProviderRegister.SetError(txtRegPassword, "");
+            return true;
+        }
+        
+        private bool ValidateRegConfirmPassword()
+        {
+            if (string.IsNullOrWhiteSpace(txtRegConfirmPassword.Text))
+            {
+                errorProviderRegister.SetError(txtRegConfirmPassword, "Vui lòng xác nhận mật khẩu");
+                return false;
+            }
+            else if (txtRegPassword.Text != txtRegConfirmPassword.Text)
+            {
+                errorProviderRegister.SetError(txtRegConfirmPassword, "Mật khẩu xác nhận không trùng khớp");
+                return false;
+            }
+            
+            errorProviderRegister.SetError(txtRegConfirmPassword, "");
+            return true;
+        }
+        
+        private bool ValidateRegName()
+        {
+            if (string.IsNullOrWhiteSpace(txtRegName.Text))
+            {
+                errorProviderRegister.SetError(txtRegName, "Vui lòng nhập họ và tên");
+                return false;
+            }
+            else if (txtRegName.Text.Length < 2)
+            {
+                errorProviderRegister.SetError(txtRegName, "Họ và tên phải có ít nhất 2 ký tự");
+                return false;
+            }
+            
+            errorProviderRegister.SetError(txtRegName, "");
+            return true;
+        }
+        
+        private bool ValidateRegEmail()
+        {
+            if (string.IsNullOrWhiteSpace(txtRegEmail.Text))
+            {
+                errorProviderRegister.SetError(txtRegEmail, "Vui lòng nhập email");
+                return false;
+            }
+            else if (!IsValidEmail(txtRegEmail.Text))
+            {
+                errorProviderRegister.SetError(txtRegEmail, "Email không đúng định dạng");
+                return false;
+            }
+            
+            errorProviderRegister.SetError(txtRegEmail, "");
+            return true;
+        }
+        
+        private bool ValidateRegPhone()
+        {
+            if (string.IsNullOrWhiteSpace(txtRegPhone.Text))
+            {
+                errorProviderRegister.SetError(txtRegPhone, "Vui lòng nhập số điện thoại");
+                return false;
+            }
+            else if (!IsValidPhoneNumber(txtRegPhone.Text))
+            {
+                errorProviderRegister.SetError(txtRegPhone, "Số điện thoại không đúng định dạng");
+                return false;
+            }
+            
+            errorProviderRegister.SetError(txtRegPhone, "");
+            return true;
+        }
+        
+        private void ShowRegisterError(string message)
+        {
+            lblRegisterError.Text = message;
+            lblRegisterError.Visible = true;
+            lblRegisterSuccess.Visible = false;
+        }
+        
+        private void ShowRegisterSuccess(string message)
+        {
+            lblRegisterSuccess.Text = message;
+            lblRegisterSuccess.Visible = true;
+            lblRegisterSuccess.ForeColor = Color.Green;
+            lblRegisterSuccess.Font = new Font(lblRegisterSuccess.Font, FontStyle.Bold);
+            lblRegisterError.Visible = false;
+        }
+        
+        private void HideRegisterMessages()
+        {
+            lblRegisterError.Visible = false;
+            lblRegisterSuccess.Visible = false;
+        }
+        
+        #endregion
 
         // Login logic
         private void btnLogin_Click(object? sender, EventArgs e)
         {
             errorProviderLogin.Clear();
-            bool hasError = false;
+            HideLoginError();
             
-            // Validate inputs
-            if (string.IsNullOrWhiteSpace(txtLoginUsername.Text))
+            // Validate all inputs
+            bool usernameValid = ValidateLoginUsername();
+            bool passwordValid = ValidateLoginPassword();
+            
+            if (!usernameValid || !passwordValid)
             {
-                errorProviderLogin.SetError(txtLoginUsername, "Username is required");
-                hasError = true;
+                ShowLoginError("Vui lòng điền đầy đủ thông tin đăng nhập");
+                return;
             }
             
-            if (string.IsNullOrWhiteSpace(txtLoginPassword.Text))
+            Cursor = Cursors.WaitCursor;
+            try
             {
-                errorProviderLogin.SetError(txtLoginPassword, "Password is required");
-                hasError = true;
+                UserManager userManager = new UserManager();
+                User? user = userManager.Login(txtLoginUsername.Text, txtLoginPassword.Text);
+                
+                if (user != null)
+                {
+                    MainForm mainForm = new MainForm(user);
+                    mainForm.Show();
+                    this.Hide();
+                    mainForm.FormClosed += (s, args) => 
+                    {
+                        this.Show();
+                        txtLoginPassword.Text = string.Empty; // Clear password for security
+                        if (!chkRememberMe.Checked)
+                            txtLoginUsername.Text = string.Empty;
+                        txtLoginUsername.Focus();
+                    };
+                }
+                else
+                {
+                    ShowLoginError("Tên đăng nhập hoặc mật khẩu không chính xác");
+                }
             }
-            
-            if (!hasError)
+            catch (Exception ex)
             {
-                Cursor = Cursors.WaitCursor;
-                try
-                {
-                    UserManager userManager = new UserManager();
-                    User? user = userManager.Login(txtLoginUsername.Text, txtLoginPassword.Text);
-                    
-                    if (user != null)
-                    {
-                        MainForm mainForm = new MainForm(user);
-                        mainForm.Show();
-                        this.Hide();
-                        mainForm.FormClosed += (s, args) => 
-                        {
-                            this.Show();
-                            txtLoginPassword.Text = string.Empty; // Clear password for security
-                            if (!chkRememberMe.Checked)
-                                txtLoginUsername.Text = string.Empty;
-                            txtLoginUsername.Focus();
-                        };
-                    }
-                    else
-                    {
-                        MessageBox.Show("Invalid username or password. Please try again.", 
-                            "Login Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"An error occurred during login: {ex.Message}", 
-                        "Login Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally
-                {
-                    Cursor = Cursors.Default;
-                }
+                ShowLoginError($"Đã xảy ra lỗi: {ex.Message}");
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
             }
         }
 
-        // Registration logic - fixed method name to follow naming convention
+        // Registration logic
         private void BtnRegister_Click(object? sender, EventArgs e)
         {
-            // Extracted to helper methods to reduce cognitive complexity
-            if (!ValidateRegistrationInputs())
+            // Validate all inputs
+            if (!ValidateAllRegistrationInputs())
                 return;
 
-            ProcessRegistration();
-        }
-        
-        private bool ValidateRegistrationInputs()
-        {
-            errorProviderRegister.Clear();
-            bool hasError = false;
-            
-            // Validate username
-            if (string.IsNullOrWhiteSpace(txtRegUsername.Text))
-            {
-                errorProviderRegister.SetError(txtRegUsername, "Username is required");
-                hasError = true;
-            }
-            else if (txtRegUsername.Text.Length < 3)
-            {
-                errorProviderRegister.SetError(txtRegUsername, "Username must be at least 3 characters");
-                hasError = true;
-            }
-            
-            // Validate password
-            if (string.IsNullOrWhiteSpace(txtRegPassword.Text))
-            {
-                errorProviderRegister.SetError(txtRegPassword, "Password is required");
-                hasError = true;
-            }
-            else if (txtRegPassword.Text.Length < MinPasswordLength)
-            {
-                errorProviderRegister.SetError(txtRegPassword, $"Password must be at least {MinPasswordLength} characters");
-                hasError = true;
-            }
-            
-            // Validate password confirmation
-            if (string.IsNullOrWhiteSpace(txtRegConfirmPassword.Text))
-            {
-                errorProviderRegister.SetError(txtRegConfirmPassword, "Please confirm your password");
-                hasError = true;
-            }
-            else if (txtRegPassword.Text != txtRegConfirmPassword.Text)
-            {
-                errorProviderRegister.SetError(txtRegConfirmPassword, "Passwords do not match");
-                hasError = true;
-            }
-            
-            // Validate name
-            if (string.IsNullOrWhiteSpace(txtRegName.Text))
-            {
-                errorProviderRegister.SetError(txtRegName, "Name is required");
-                hasError = true;
-            }
-            
-            // Validate email
-            if (string.IsNullOrWhiteSpace(txtRegEmail.Text))
-            {
-                errorProviderRegister.SetError(txtRegEmail, "Email is required");
-                hasError = true;
-            }
-            else if (!IsValidEmail(txtRegEmail.Text))
-            {
-                errorProviderRegister.SetError(txtRegEmail, "Invalid email format");
-                hasError = true;
-            }
-            
-            // Validate phone
-            if (string.IsNullOrWhiteSpace(txtRegPhone.Text))
-            {
-                errorProviderRegister.SetError(txtRegPhone, "Phone number is required");
-                hasError = true;
-            }
-            else if (!IsValidPhoneNumber(txtRegPhone.Text))
-            {
-                errorProviderRegister.SetError(txtRegPhone, "Invalid phone format");
-                hasError = true;
-            }
-            
-            return !hasError;
-        }
-        
-        private void ProcessRegistration()
-        {
+            // Process registration
             Cursor = Cursors.WaitCursor;
             try
             {
                 // Check if username already exists
                 if (UserManager.IsUsernameTaken(txtRegUsername.Text))
                 {
-                    errorProviderRegister.SetError(txtRegUsername, "Username already exists");
-                    Cursor = Cursors.Default;
+                    ShowRegisterError("Tên đăng nhập đã tồn tại, vui lòng chọn tên khác");
+                    errorProviderRegister.SetError(txtRegUsername, "Tên đăng nhập đã tồn tại");
+                    txtRegUsername.Focus();
+                    return;
+                }
+                
+                // Check if email already exists
+                if (UserManager.IsEmailTaken(txtRegEmail.Text))
+                {
+                    ShowRegisterError("Email này đã được sử dụng, vui lòng dùng email khác");
+                    errorProviderRegister.SetError(txtRegEmail, "Email đã tồn tại");
+                    txtRegEmail.Focus();
+                    return;
+                }
+                
+                // Check if phone already exists
+                if (UserManager.IsPhoneTaken(txtRegPhone.Text))
+                {
+                    ShowRegisterError("Số điện thoại này đã được sử dụng, vui lòng dùng số khác");
+                    errorProviderRegister.SetError(txtRegPhone, "Số điện thoại đã tồn tại");
+                    txtRegPhone.Focus();
                     return;
                 }
                 
@@ -353,26 +474,64 @@ namespace FASCloset.Forms
                 // Register user
                 UserManager.RegisterUser(user);
                 
-                MessageBox.Show("Registration successful! You can now log in with your new account.", 
-                    "Registration Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Show success message with more prominent display
+                ShowRegisterSuccess("Đăng ký tài khoản thành công! Bạn có thể đăng nhập ngay bây giờ.");
                 
-                // Switch to login tab and pre-fill username
-                tabControlAuth.SelectedTab = tabPageLogin;
-                txtLoginUsername.Text = txtRegUsername.Text;
-                txtLoginPassword.Focus();
+                // Make sure we show a MessageBox for more visibility
+                MessageBox.Show("Đăng ký tài khoản thành công!\nBạn sẽ được chuyển đến màn hình đăng nhập.", 
+                                "Đăng ký thành công", 
+                                MessageBoxButtons.OK, 
+                                MessageBoxIcon.Information);
                 
-                // Clear registration form
+                // Clear form after successful registration
                 ClearRegistrationForm();
+                
+                // Switch to login tab immediately after user acknowledges the message box
+                tabControlAuth.SelectedTab = tabPageLogin;
+                txtLoginUsername.Text = user.Username;
+                txtLoginPassword.Focus();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"An error occurred during registration: {ex.Message}", 
-                    "Registration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowRegisterError($"Đã xảy ra lỗi: {ex.Message}");
             }
             finally
             {
                 Cursor = Cursors.Default;
             }
+        }
+
+        private bool ValidateAllRegistrationInputs()
+        {
+            errorProviderRegister.Clear();
+            HideRegisterMessages();
+            
+            bool isValid = true;
+            
+            if (!ValidateRegUsername())
+                isValid = false;
+                
+            if (!ValidateRegPassword())
+                isValid = false;
+                
+            if (!ValidateRegConfirmPassword())
+                isValid = false;
+                
+            if (!ValidateRegName())
+                isValid = false;
+                
+            if (!ValidateRegEmail())
+                isValid = false;
+                
+            if (!ValidateRegPhone())
+                isValid = false;
+            
+            if (!isValid)
+            {
+                ShowRegisterError("Vui lòng điền đầy đủ thông tin và sửa các lỗi");
+            }
+            
+            return isValid;
         }
 
         private void ClearRegistrationForm()
@@ -384,32 +543,58 @@ namespace FASCloset.Forms
             txtRegEmail.Text = string.Empty;
             txtRegPhone.Text = string.Empty;
             progressBarPasswordStrength.Value = 0;
+            lblPasswordStrength.Text = "Độ mạnh mật khẩu: Chưa nhập";
+            errorProviderRegister.Clear();
         }
 
-        private static int CalculatePasswordStrength(string password)
+        // Password strength calculation
+        private int CalculatePasswordStrength(string password)
         {
+            if (string.IsNullOrEmpty(password)) 
+                return 0;
+            
             int score = 0;
-            if (string.IsNullOrEmpty(password)) return 0;
             
-            // Length check
-            if (password.Length >= MinPasswordLength) score += 20;
-            if (password.Length >= 10) score += 10;
+            // Length evaluation
+            if (password.Length >= MinPasswordLength)
+                score += 10;
+            if (password.Length >= 8)
+                score += 10;
+            if (password.Length >= 10)
+                score += 10;
+                
+            // Character composition
+            if (Regex.IsMatch(password, @"[a-z]"))
+                score += 10; // Has lowercase
+            if (Regex.IsMatch(password, @"[A-Z]"))
+                score += 20; // Has uppercase
+            if (Regex.IsMatch(password, @"\d"))
+                score += 20; // Has digits
+            if (Regex.IsMatch(password, @"[!@#$%^&*(),.?""':{}|<>]"))
+                score += 30; // Has special characters
+                
+            // Complexity checks
+            if (Regex.IsMatch(password, @"[a-z]") && Regex.IsMatch(password, @"[A-Z]") && 
+                Regex.IsMatch(password, @"\d"))
+                score += 10; // Has mixed case and numbers
+                
+            if (Regex.IsMatch(password, @"[a-zA-Z\d]") && 
+                Regex.IsMatch(password, @"[!@#$%^&*(),.?""':{}|<>]"))
+                score += 10; // Has alphanumeric and special chars
             
-            // Character variety checks
-            if (Regex.IsMatch(password, @"\d")) score += 15; // Numbers
-            if (Regex.IsMatch(password, @"[a-z]")) score += 15; // Lowercase
-            if (Regex.IsMatch(password, @"[A-Z]")) score += 15; // Uppercase
-            if (Regex.IsMatch(password, @"[^a-zA-Z0-9]")) score += 25; // Special chars
-            
-            return Math.Min(score, 100); // Fix: Math.min -> Math.Min
+            return Math.Min(score, 100);
         }
 
         private static bool IsValidEmail(string email)
         {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+                
             try
             {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
+                // Simple pattern matching
+                Regex regex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+                return regex.IsMatch(email);
             }
             catch
             {
@@ -419,8 +604,13 @@ namespace FASCloset.Forms
 
         private static bool IsValidPhoneNumber(string phone)
         {
-            // Simple pattern check: allow digits, spaces, dashes, and parentheses
-            return Regex.IsMatch(phone, @"^[\d\s\(\)\-\+]+$");
+            if (string.IsNullOrWhiteSpace(phone))
+                return false;
+                
+            // Vietnamese phone number format (can be adjusted to other formats)
+            // Accepts formats like: 0912345678, 84912345678, +84912345678
+            Regex regex = new Regex(@"^(0|\+?84|84)?([3|5|7|8|9])([0-9]{8})$");
+            return regex.IsMatch(phone);
         }
     }
 }

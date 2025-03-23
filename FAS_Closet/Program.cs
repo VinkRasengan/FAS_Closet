@@ -57,7 +57,11 @@ namespace FASCloset
                 // To prevent issues with access to the Visual Studio designer
                 ApplicationConfiguration.Initialize();
                 
-                // Start the application with the login form
+                // Initialize and run the Windows Forms application
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                
+                // Start with the authentication form
                 Application.Run(new Forms.AuthForm());
                 
                 #if DEBUG
