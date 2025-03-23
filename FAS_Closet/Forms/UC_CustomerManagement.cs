@@ -3,36 +3,60 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.Drawing;
-using System.ComponentModel;
 using FASCloset.Models;
 using FASCloset.Services;
 
 namespace FASCloset.Forms
 {
-    public partial class UcCustomerManagement : UserControl
+    // Use a non-partial class to avoid conflict with Designer.cs
+    public class UcCustomerManagement : UserControl
     {
-        public TextBox TxtCustomerName = new TextBox();
-        public TextBox TxtCustomerEmail = new TextBox();
-        public TextBox TxtCustomerPhone = new TextBox();
-        public TextBox TxtCustomerAddress = new TextBox();
-        public TextBox TxtCustomerId = new TextBox();
-        public TextBox TxtLoyaltyPoints = new TextBox();
-        public DataGridView DataGridViewPurchaseHistory = new DataGridView();
-        public TextBox TxtSearchCustomer = new TextBox();
+        // Fixed nullable fields
+        private TextBox? txtCustomerName;
+        private TextBox? txtCustomerEmail;
+        private TextBox? txtCustomerPhone;
+        private TextBox? txtCustomerAddress;
+        private TextBox? txtCustomerId;
+        private TextBox? txtLoyaltyPoints;
+        private DataGridView? dataGridViewPurchaseHistory;
+        private TextBox? txtSearchCustomer;
+        private DataGridView? dgvCustomers;
+        private System.ComponentModel.IContainer? components = null;
 
-        private Button btnSaveCustomerInfo;
-        private Button btnViewPurchaseHistory;
-        private Button btnManageLoyaltyPoints;
-        private DataGridView dgvCustomers;
-        
         public UcCustomerManagement()
         {
-            InitializeComponent();
+            InitializeUserInterface();
             LoadCustomers();
         }
 
-        private void InitializeComponent()
+        protected override void Dispose(bool disposing)
         {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        private void InitializeUserInterface()
+        {
+            components = new System.ComponentModel.Container();
+            
+            // Create all controls
+            txtCustomerName = new TextBox();
+            txtCustomerEmail = new TextBox();
+            txtCustomerPhone = new TextBox();
+            txtCustomerAddress = new TextBox();
+            txtCustomerId = new TextBox();
+            txtLoyaltyPoints = new TextBox();
+            dataGridViewPurchaseHistory = new DataGridView();
+            txtSearchCustomer = new TextBox();
+            dgvCustomers = new DataGridView();
+            
+            Button btnSaveCustomerInfo = new Button();
+            Button btnViewPurchaseHistory = new Button();
+            Button btnManageLoyaltyPoints = new Button();
+            
             // Create labels
             Label lblCustomerName = new Label();
             lblCustomerName.Text = "Name:";
@@ -70,67 +94,56 @@ namespace FASCloset.Forms
             lblLoyaltyPoints.Size = new Size(100, 25);
             lblLoyaltyPoints.TextAlign = ContentAlignment.MiddleRight;
 
-            // Create textboxes
-            TxtCustomerName = new TextBox();
-            TxtCustomerName.Location = new Point(130, 20);
-            TxtCustomerName.Size = new Size(200, 25);
-            TxtCustomerName.PlaceholderText = "Enter customer name";
+            // Configure textboxes
+            txtCustomerName.Location = new Point(130, 20);
+            txtCustomerName.Size = new Size(200, 25);
+            txtCustomerName.PlaceholderText = "Enter customer name";
 
-            TxtCustomerEmail = new TextBox();
-            TxtCustomerEmail.Location = new Point(130, 55);
-            TxtCustomerEmail.Size = new Size(200, 25);
-            TxtCustomerEmail.PlaceholderText = "Enter email";
+            txtCustomerEmail.Location = new Point(130, 55);
+            txtCustomerEmail.Size = new Size(200, 25);
+            txtCustomerEmail.PlaceholderText = "Enter email";
 
-            TxtCustomerPhone = new TextBox();
-            TxtCustomerPhone.Location = new Point(130, 90);
-            TxtCustomerPhone.Size = new Size(200, 25);
-            TxtCustomerPhone.PlaceholderText = "Enter phone number";
+            txtCustomerPhone.Location = new Point(130, 90);
+            txtCustomerPhone.Size = new Size(200, 25);
+            txtCustomerPhone.PlaceholderText = "Enter phone number";
 
-            TxtCustomerAddress = new TextBox();
-            TxtCustomerAddress.Location = new Point(130, 125);
-            TxtCustomerAddress.Size = new Size(200, 50);
-            TxtCustomerAddress.PlaceholderText = "Enter address";
-            TxtCustomerAddress.Multiline = true;
+            txtCustomerAddress.Location = new Point(130, 125);
+            txtCustomerAddress.Size = new Size(200, 50);
+            txtCustomerAddress.PlaceholderText = "Enter address";
+            txtCustomerAddress.Multiline = true;
 
-            TxtCustomerId = new TextBox();
-            TxtCustomerId.Location = new Point(460, 20);
-            TxtCustomerId.Size = new Size(100, 25);
-            TxtCustomerId.PlaceholderText = "ID";
-            TxtCustomerId.ReadOnly = true;
+            txtCustomerId.Location = new Point(460, 20);
+            txtCustomerId.Size = new Size(100, 25);
+            txtCustomerId.PlaceholderText = "ID";
+            txtCustomerId.ReadOnly = true;
 
-            TxtLoyaltyPoints = new TextBox();
-            TxtLoyaltyPoints.Location = new Point(460, 55);
-            TxtLoyaltyPoints.Size = new Size(100, 25);
-            TxtLoyaltyPoints.PlaceholderText = "Points";
-            TxtLoyaltyPoints.ReadOnly = true;
+            txtLoyaltyPoints.Location = new Point(460, 55);
+            txtLoyaltyPoints.Size = new Size(100, 25);
+            txtLoyaltyPoints.PlaceholderText = "Points";
+            txtLoyaltyPoints.ReadOnly = true;
             
-            TxtSearchCustomer = new TextBox();
-            TxtSearchCustomer.Location = new Point(460, 90);
-            TxtSearchCustomer.Size = new Size(150, 25);
-            TxtSearchCustomer.PlaceholderText = "Search customers";
-            TxtSearchCustomer.TextChanged += TxtSearchCustomer_TextChanged;
+            txtSearchCustomer.Location = new Point(460, 90);
+            txtSearchCustomer.Size = new Size(150, 25);
+            txtSearchCustomer.PlaceholderText = "Search customers";
+            txtSearchCustomer.TextChanged += TxtSearchCustomer_TextChanged;
 
-            // Create buttons
-            btnSaveCustomerInfo = new Button();
+            // Configure buttons
             btnSaveCustomerInfo.Text = "Save Customer";
             btnSaveCustomerInfo.Location = new Point(130, 190);
             btnSaveCustomerInfo.Size = new Size(120, 30);
             btnSaveCustomerInfo.Click += btnSaveCustomerInfo_Click;
 
-            btnViewPurchaseHistory = new Button();
             btnViewPurchaseHistory.Text = "View History";
             btnViewPurchaseHistory.Location = new Point(260, 190);
             btnViewPurchaseHistory.Size = new Size(120, 30);
             btnViewPurchaseHistory.Click += btnViewPurchaseHistory_Click;
 
-            btnManageLoyaltyPoints = new Button();
             btnManageLoyaltyPoints.Text = "Loyalty Points";
             btnManageLoyaltyPoints.Location = new Point(390, 190);
             btnManageLoyaltyPoints.Size = new Size(120, 30);
             btnManageLoyaltyPoints.Click += btnManageLoyaltyPoints_Click;
 
-            // Create DataGridViews
-            dgvCustomers = new DataGridView();
+            // Configure DataGridViews
             dgvCustomers.Location = new Point(20, 230);
             dgvCustomers.Size = new Size(280, 200);
             dgvCustomers.AllowUserToAddRows = false;
@@ -139,32 +152,30 @@ namespace FASCloset.Forms
             dgvCustomers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvCustomers.SelectionChanged += dgvCustomers_SelectionChanged;
             
-            DataGridViewPurchaseHistory = new DataGridView();
-            DataGridViewPurchaseHistory.Location = new Point(320, 230);
-            DataGridViewPurchaseHistory.Size = new Size(300, 200);
-            DataGridViewPurchaseHistory.AllowUserToAddRows = false;
-            DataGridViewPurchaseHistory.ReadOnly = true;
-            DataGridViewPurchaseHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridViewPurchaseHistory.Location = new Point(320, 230);
+            dataGridViewPurchaseHistory.Size = new Size(300, 200);
+            dataGridViewPurchaseHistory.AllowUserToAddRows = false;
+            dataGridViewPurchaseHistory.ReadOnly = true;
+            dataGridViewPurchaseHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
             // Add controls to form
             this.Controls.Add(lblCustomerName);
-            this.Controls.Add(TxtCustomerName);
+            this.Controls.Add(txtCustomerName);
             this.Controls.Add(lblCustomerEmail);
-            this.Controls.Add(TxtCustomerEmail);
+            this.Controls.Add(txtCustomerEmail);
             this.Controls.Add(lblCustomerPhone);
-            this.Controls.Add(TxtCustomerPhone);
+            this.Controls.Add(txtCustomerPhone);
             this.Controls.Add(lblCustomerAddress);
-            this.Controls.Add(TxtCustomerAddress);
+            this.Controls.Add(txtCustomerAddress);
             this.Controls.Add(lblCustomerId);
-            this.Controls.Add(TxtCustomerId);
+            this.Controls.Add(txtCustomerId);
             this.Controls.Add(lblLoyaltyPoints);
-            this.Controls.Add(TxtLoyaltyPoints);
-            this.Controls.Add(TxtSearchCustomer);
+            this.Controls.Add(txtSearchCustomer);
             this.Controls.Add(btnSaveCustomerInfo);
             this.Controls.Add(btnViewPurchaseHistory);
             this.Controls.Add(btnManageLoyaltyPoints);
             this.Controls.Add(dgvCustomers);
-            this.Controls.Add(DataGridViewPurchaseHistory);
+            this.Controls.Add(dataGridViewPurchaseHistory);
         }
         
         private void LoadCustomers()
@@ -185,27 +196,31 @@ namespace FASCloset.Forms
             }
         }
 
-        private void dgvCustomers_SelectionChanged(object sender, EventArgs e)
+        private void dgvCustomers_SelectionChanged(object? sender, EventArgs e)
         {
-            if (dgvCustomers.SelectedRows.Count > 0)
+            if (dgvCustomers?.SelectedRows.Count > 0 && dgvCustomers.SelectedRows[0].DataBoundItem is Customer customer)
             {
-                var customer = dgvCustomers.SelectedRows[0].DataBoundItem as Customer;
-                if (customer != null)
+                if (txtCustomerId != null && 
+                    txtCustomerName != null && 
+                    txtCustomerEmail != null && 
+                    txtCustomerPhone != null && 
+                    txtCustomerAddress != null && 
+                    txtLoyaltyPoints != null)
                 {
-                    TxtCustomerId.Text = customer.CustomerID.ToString();
-                    TxtCustomerName.Text = customer.Name;
-                    TxtCustomerEmail.Text = customer.Email;
-                    TxtCustomerPhone.Text = customer.Phone;
-                    TxtCustomerAddress.Text = customer.Address;
+                    txtCustomerId.Text = customer.CustomerID.ToString();
+                    txtCustomerName.Text = customer.Name;
+                    txtCustomerEmail.Text = customer.Email;
+                    txtCustomerPhone.Text = customer.Phone;
+                    txtCustomerAddress.Text = customer.Address;
                     
                     try
                     {
                         int loyaltyPoints = CustomerManager.GetLoyaltyPointsByCustomerId(customer.CustomerID);
-                        TxtLoyaltyPoints.Text = loyaltyPoints.ToString();
+                        txtLoyaltyPoints.Text = loyaltyPoints.ToString();
                     }
                     catch
                     {
-                        TxtLoyaltyPoints.Text = "0";
+                        txtLoyaltyPoints.Text = "0";
                     }
                 }
             }
@@ -213,7 +228,7 @@ namespace FASCloset.Forms
 
         private void TxtSearchCustomer_TextChanged(object? sender, EventArgs e)
         {
-            string searchTerm = TxtSearchCustomer.Text.ToLower();
+            string searchTerm = txtSearchCustomer!.Text.ToLower();
             
             try
             {
@@ -224,7 +239,7 @@ namespace FASCloset.Forms
                                c.Phone.Contains(searchTerm))
                     .ToList();
                 
-                dgvCustomers.DataSource = filteredCustomers;
+                dgvCustomers!.DataSource = filteredCustomers;
             }
             catch (Exception ex)
             {
@@ -232,12 +247,22 @@ namespace FASCloset.Forms
             }
         }
 
-        private void btnSaveCustomerInfo_Click(object sender, EventArgs e)
+        private void btnSaveCustomerInfo_Click(object? sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(TxtCustomerName.Text) ||
-                string.IsNullOrWhiteSpace(TxtCustomerEmail.Text) ||
-                string.IsNullOrWhiteSpace(TxtCustomerPhone.Text) ||
-                string.IsNullOrWhiteSpace(TxtCustomerAddress.Text))
+            if (txtCustomerName == null || 
+                txtCustomerEmail == null || 
+                txtCustomerPhone == null || 
+                txtCustomerAddress == null ||
+                txtCustomerId == null)
+            {
+                MessageBox.Show("UI components not initialized properly");
+                return;
+            }
+            
+            if (string.IsNullOrWhiteSpace(txtCustomerName.Text) ||
+                string.IsNullOrWhiteSpace(txtCustomerEmail.Text) ||
+                string.IsNullOrWhiteSpace(txtCustomerPhone.Text) ||
+                string.IsNullOrWhiteSpace(txtCustomerAddress.Text))
             {
                 MessageBox.Show("All fields are required");
                 return;
@@ -247,13 +272,13 @@ namespace FASCloset.Forms
             {
                 var customer = new Customer
                 {
-                    Name = TxtCustomerName.Text,
-                    Email = TxtCustomerEmail.Text,
-                    Phone = TxtCustomerPhone.Text,
-                    Address = TxtCustomerAddress.Text
+                    Name = txtCustomerName.Text,
+                    Email = txtCustomerEmail.Text,
+                    Phone = txtCustomerPhone.Text,
+                    Address = txtCustomerAddress.Text
                 };
                 
-                if (!string.IsNullOrEmpty(TxtCustomerId.Text) && int.TryParse(TxtCustomerId.Text, out int customerId))
+                if (!string.IsNullOrEmpty(txtCustomerId.Text) && int.TryParse(txtCustomerId.Text, out int customerId))
                 {
                     // Update existing customer
                     customer.CustomerID = customerId;
@@ -276,9 +301,9 @@ namespace FASCloset.Forms
             }
         }
 
-        private void btnViewPurchaseHistory_Click(object sender, EventArgs e)
+        private void btnViewPurchaseHistory_Click(object? sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(TxtCustomerId.Text) || !int.TryParse(TxtCustomerId.Text, out int customerId))
+            if (string.IsNullOrEmpty(txtCustomerId!.Text) || !int.TryParse(txtCustomerId.Text, out int customerId))
             {
                 MessageBox.Show("Please select a customer first");
                 return;
@@ -287,7 +312,7 @@ namespace FASCloset.Forms
             try
             {
                 var orders = OrderManager.GetOrdersByCustomerId(customerId);
-                DataGridViewPurchaseHistory.DataSource = orders;
+                dataGridViewPurchaseHistory!.DataSource = orders;
             }
             catch (Exception ex)
             {
@@ -295,9 +320,9 @@ namespace FASCloset.Forms
             }
         }
 
-        private void btnManageLoyaltyPoints_Click(object sender, EventArgs e)
+        private void btnManageLoyaltyPoints_Click(object? sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(TxtCustomerId.Text) || !int.TryParse(TxtCustomerId.Text, out int _))
+            if (string.IsNullOrEmpty(txtCustomerId!.Text) || !int.TryParse(txtCustomerId.Text, out int _))
             {
                 MessageBox.Show("Please select a customer first");
                 return;
@@ -308,12 +333,12 @@ namespace FASCloset.Forms
         
         private void ClearForm()
         {
-            TxtCustomerId.Clear();
-            TxtCustomerName.Clear();
-            TxtCustomerEmail.Clear();
-            TxtCustomerPhone.Clear();
-            TxtCustomerAddress.Clear();
-            TxtLoyaltyPoints.Clear();
+            txtCustomerId?.Clear();
+            txtCustomerName?.Clear();
+            txtCustomerEmail?.Clear();
+            txtCustomerPhone?.Clear();
+            txtCustomerAddress?.Clear();
+            txtLoyaltyPoints?.Clear();
         }
     }
 }

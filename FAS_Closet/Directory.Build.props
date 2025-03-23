@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>10.0</LangVersion>
+    <EnablePreviewFeatures>false</EnablePreviewFeatures>
+    <!-- Disable required members -->
+    <RequiredMembers_DisableRequiredMemberAttribute>true</RequiredMembers_DisableRequiredMemberAttribute>
+    <DefineConstants>$(DefineConstants);DISABLE_REQUIRED_MEMBERS</DefineConstants>
+    <NoWarn>$(NoWarn);CS8981;CS8618</NoWarn>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <CompilerVisibleProperty Include="RequiredMembers_DisableRequiredMemberAttribute" />
+  </ItemGroup>
+</Project>

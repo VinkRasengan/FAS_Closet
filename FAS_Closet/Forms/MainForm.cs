@@ -78,14 +78,6 @@ namespace FASCloset.Forms
             if (ucCustomerManagement == null)
             {
                 ucCustomerManagement = new UcCustomerManagement();
-                ucCustomerManagement.TxtCustomerName = new TextBox();
-                ucCustomerManagement.TxtCustomerEmail = new TextBox();
-                ucCustomerManagement.TxtCustomerPhone = new TextBox();
-                ucCustomerManagement.TxtCustomerAddress = new TextBox();
-                ucCustomerManagement.TxtCustomerId = new TextBox();
-                ucCustomerManagement.TxtLoyaltyPoints = new TextBox();
-                ucCustomerManagement.DataGridViewPurchaseHistory = new DataGridView();
-                ucCustomerManagement.TxtSearchCustomer = new TextBox();
             }
             
             LoadUserControl(ucCustomerManagement);
@@ -127,78 +119,98 @@ namespace FASCloset.Forms
             contentPanel.Controls.Add(userControl);
         }
 
-        // Hàm cập nhật thanh quản lý tính năng dựa trên danh sách các tính năng
+        // Refactored method to reduce cognitive complexity
         private void UpdateFeatureToolbar(string[] features)
         {
             featureToolbarPanel.Controls.Clear();
+            
             foreach (var feature in features)
             {
-                var btn = new Button
-                {
-                    Text = feature,
-                    AutoSize = true,
-                    Margin = new Padding(5),
-                    BackColor = Color.FromArgb(0, 123, 255),
-                    ForeColor = Color.White,
-                    FlatStyle = FlatStyle.Flat
-                };
-
-                // Liên kết sự kiện Click của nút với các phương thức tương ứng trong UcProductManagement
-                switch (feature)
-                {
-                    case "Thêm":
-                        btn.Click += (s, e) =>
-                        {
-                            if (ucProductManagement != null)
-                                ucProductManagement.btnAdd_Click(s ?? this, e);
-                            else
-                                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
-                        };
-                        break;
-                    case "Sửa":
-                        btn.Click += (s, e) =>
-                        {
-                            if (ucProductManagement != null)
-                                ucProductManagement.btnEdit_Click(s ?? this, e);
-                            else
-                                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
-                        };
-                        break;
-                    case "Xóa":
-                        btn.Click += (s, e) =>
-                        {
-                            if (ucProductManagement != null)
-                                ucProductManagement.btnDelete_Click(s ?? this, e);
-                            else
-                                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
-                        };
-                        break;
-                    case "Tạo đơn hàng":
-                        btn.Click += (s, e) =>
-                        {
-                            if (ucOrderManagement != null)
-                                ucOrderManagement.btnCreateOrder_Click(s ?? this, e);
-                            else
-                                MessageBox.Show("Vui lòng chọn Quản lý đơn hàng trước.");
-                        };
-                        break;
-                    case "Cập nhật tồn kho":
-                        btn.Click += (s, e) =>
-                        {
-                            if (ucInventoryManagement != null)
-                                ucInventoryManagement.btnUpdateStock_Click(s ?? this, e);
-                            else
-                                MessageBox.Show("Vui lòng chọn Quản lý kho hàng trước.");
-                        };
-                        break;
-                    default:
-                        // Ví dụ: khi nhấn vào nút tính năng, hiển thị thông báo (bạn có thể gán các sự kiện cụ thể)
-                        btn.Click += (s, e) => MessageBox.Show("Chức năng: " + feature);
-                        break;
-                }
-
+                var btn = CreateFeatureButton(feature);
                 featureToolbarPanel.Controls.Add(btn);
             }
+        }
+
+        private Button CreateFeatureButton(string feature)
+        {
+            var btn = new Button
+            {
+                Text = feature,
+                AutoSize = true,
+                Margin = new Padding(5),
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+
+            // Assign event handler based on feature
+            AssignFeatureButtonHandler(btn, feature);
+            return btn;
+        }
+
+        private void AssignFeatureButtonHandler(Button btn, string feature)
+        {
+            switch (feature)
+            {
+                case "Thêm":
+                    btn.Click += (s, e) => HandleProductAdd(s, e);
+                    break;
+                case "Sửa":
+                    btn.Click += (s, e) => HandleProductEdit(s, e);
+                    break;
+                case "Xóa":
+                    btn.Click += (s, e) => HandleProductDelete(s, e);
+                    break;
+                case "Tạo đơn hàng":
+                    btn.Click += (s, e) => HandleOrderCreate(s, e);
+                    break;
+                case "Cập nhật tồn kho":
+                    btn.Click += (s, e) => HandleInventoryUpdate(s, e);
+                    break;
+                default:
+                    btn.Click += (s, e) => MessageBox.Show("Chức năng: " + feature);
+                    break;
+            }
+        }
+
+        private void HandleProductAdd(object? sender, EventArgs e)
+        {
+            if (ucProductManagement != null)
+                ucProductManagement.btnAdd_Click(sender ?? this, e);
+            else
+                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
+        }
+
+        private void HandleProductEdit(object? sender, EventArgs e)
+        {
+            if (ucProductManagement != null)
+                ucProductManagement.btnEdit_Click(sender ?? this, e);
+            else
+                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
+        }
+
+        private void HandleProductDelete(object? sender, EventArgs e)
+        {
+            if (ucProductManagement != null)
+                ucProductManagement.btnDelete_Click(sender ?? this, e);
+            else
+                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
+        }
+
+        private void HandleOrderCreate(object? sender, EventArgs e)
+        {
+            if (ucOrderManagement != null)
+                ucOrderManagement.btnCreateOrder_Click(sender ?? this, e);
+            else
+                MessageBox.Show("Vui lòng chọn Quản lý đơn hàng trước.");
+        }
+
+        private void HandleInventoryUpdate(object? sender, EventArgs e)
+        {
+            if (ucInventoryManagement != null)
+                ucInventoryManagement.btnUpdateStock_Click(sender ?? this, e);
+            else
+                MessageBox.Show("Vui lòng chọn Quản lý kho hàng trước.");
         }
     }
 }

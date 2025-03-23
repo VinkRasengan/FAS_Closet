@@ -10,6 +10,8 @@ namespace FASCloset.Services
 {
     public static class ProductManager
     {
+        private const string DescriptionParameter = "@Description";
+        
         private static string GetConnectionString()
         {
             return DatabaseConnection.GetConnectionString();

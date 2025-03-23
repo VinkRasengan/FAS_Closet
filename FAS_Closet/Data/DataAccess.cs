@@ -1,5 +1,7 @@
 using System.Data;
 using System.Data.SQLite;
+using System.IO;
+using System;
 
 namespace FASCloset.Data
 {
@@ -9,7 +11,8 @@ namespace FASCloset.Data
 
         public DataAccess()
         {
-            string databasePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\FASCloset.db";
+            string dataDir = @"c:\Project\FAS_Closet\FAS_Closet\Data";
+            string databasePath = Path.Combine(dataDir, "FASClosetDB.sqlite");
             _connectionString = $"Data Source={databasePath};Version=3;";
         }
 

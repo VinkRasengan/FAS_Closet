@@ -5,11 +5,11 @@ namespace FASCloset.Models
     public class User
     {
         public int UserID { get; set; }
-        public required string Username { get; set; }
-        public required string PasswordHash { get; set; }
-        public required string PasswordSalt { get; set; }
-        public required string Name { get; set; }
-        public required string Email { get; set; }
-        public required string Phone { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
+        public string PasswordSalt { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
     }
 }

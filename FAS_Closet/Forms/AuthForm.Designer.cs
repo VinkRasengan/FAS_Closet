@@ -201,7 +201,7 @@ namespace FASCloset.Forms
             this.btnRegister.Text = "Đăng ký";
             this.btnRegister.Location = new System.Drawing.Point(40, 270);
             this.btnRegister.Width = 120;
-            this.btnRegister.Click += new System.EventHandler(this.btnRegister_Click);
+            this.btnRegister.Click += new System.EventHandler(this.BtnRegister_Click);
             
             this.btnSwitchToLogin.Text = "Đăng nhập";
             this.btnSwitchToLogin.Location = new System.Drawing.Point(210, 270);

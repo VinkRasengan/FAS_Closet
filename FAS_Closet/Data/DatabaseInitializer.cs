@@ -13,7 +13,10 @@ namespace FASCloset.Data
             // Create database file if it doesn't exist
             if (newDatabase)
             {
-                using (File.Create(dbPath)) { }
+                using (FileStream fs = File.Create(dbPath))
+                {
+                    fs.Close(); // Ensure file handle is released
+                }
                 
                 // Initialize schema
                 using (var connection = new SqliteConnection($"Data Source={dbPath}"))
@@ -113,7 +116,7 @@ namespace FASCloset.Data
             }
         }
         
-        private static void CreateDemoData(SqliteConnection connection)
+        public static void CreateDemoData(SqliteConnection connection)
         {
             try
             {

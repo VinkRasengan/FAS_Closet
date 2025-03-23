@@ -14,12 +14,24 @@ namespace FASCloset.Forms
         private Mode currentMode = Mode.View;
         private List<Product> products = new List<Product>();
 
+        // Use a BindingSource to manage the data binding
+        private BindingSource productsBindingSource = new BindingSource();
+
         public UcProductManagement()
         {
             InitializeComponent();
+            
+            // Configure the DataGridView for better data binding
+            SetupDataGridView();
+            
+            // Setup data binding
+            productsBindingSource.DataSource = typeof(List<Product>);
+            ProductDisplay.DataSource = productsBindingSource;
+            
+            // Load data
             LoadProducts();
             LoadCategories();
-            LoadManufacturers(); // Make sure manufacturers are loaded
+            LoadManufacturers();
         }
 
         private void InitializeAddProductUI()
@@ -139,7 +151,7 @@ namespace FASCloset.Forms
                     categoryId = Convert.ToInt32(CmbCategory.SelectedValue);
                 }
                 
-                int manufacturerId = 0;
+                int? manufacturerId = null; // Use nullable int
                 if (CmbManufacturer.SelectedValue != null)
                 {
                     manufacturerId = Convert.ToInt32(CmbManufacturer.SelectedValue);
@@ -157,8 +169,8 @@ namespace FASCloset.Forms
                 }
                 else if (currentMode == Mode.Edit && ProductDisplay.SelectedRows.Count > 0)
                 {
-                    var selectedProduct = (Product)ProductDisplay.SelectedRows[0].DataBoundItem;
-                    if (productName != selectedProduct.ProductName)
+                    var selectedProduct = ProductDisplay.SelectedRows[0].DataBoundItem as Product;
+                    if (selectedProduct != null && productName != selectedProduct.ProductName)
                     {
                         var existingProduct = ProductManager.GetProductByName(productName);
                         if (existingProduct != null && existingProduct.ProductID != selectedProduct.ProductID)
@@ -219,8 +231,19 @@ namespace FASCloset.Forms
 
         private void LoadProducts()
         {
-            var products = ProductManager.GetProducts();
-            ProductDisplay.DataSource = new BindingSource { DataSource = products };
+            try
+            {
+                var products = ProductManager.GetProducts();
+                productsBindingSource.DataSource = products;
+                
+                // Update UI after data load
+                ProductDisplay.Refresh();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading products: {ex.Message}", "Data Loading Error", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void LoadProductsByCategory(int categoryId)
@@ -283,16 +306,39 @@ namespace FASCloset.Forms
 
         private void TxtSearch_TextChanged(object sender, EventArgs e)
         {
-            var searchText = TxtSearch.Text.ToLower();
-            var filteredProducts = ProductManager.GetProducts().Where(p => p.ProductName.ToLower().Contains(searchText)).ToList();
-            ProductDisplay.DataSource = new BindingSource { DataSource = filteredProducts };
+            if (searchTimer == null)
+            {
+                searchTimer = new System.Timers.Timer(300);
+                searchTimer.AutoReset = false;
+                searchTimer.Elapsed += (s, args) => 
+                {
+                    this.BeginInvoke(new Action(() => {
+                        PerformSearch(TxtSearch.Text);
+                    }));
+                };
+            }
+            
+            searchTimer.Stop();
+            searchTimer.Start();
+        }
+        
+        private void PerformSearch(string searchText)
+        {
+            searchText = searchText.ToLower();
+            var filteredProducts = ProductManager.GetProducts()
+                .Where(p => p.ProductName.ToLower().Contains(searchText) || 
+                           p.Description.ToLower().Contains(searchText))
+                .ToList();
+            productsBindingSource.DataSource = filteredProducts;
         }
 
         private void BtnConfirmAdd_Click(object sender, EventArgs e)
         {
             // Lấy dữ liệu từ các trường nhập liệu
             string productName = TxtProductName.Text.Trim();
-            string category = CmbCategory.SelectedItem?.ToString() ?? string.Empty; // Ensure non-null value
+            // Fix potential null reference by using null conditional and empty fallback
+            string? categoryName = CmbCategory.SelectedItem?.ToString();
+            string category = categoryName ?? string.Empty;
             string priceText = TxtPrice.Text.Trim();
             string stockText = TxtStock.Text.Trim();
             string description = TxtDescription.Text.Trim();
@@ -319,11 +365,19 @@ namespace FASCloset.Forms
                 categoryId = Convert.ToInt32(CmbCategory.SelectedValue);
             }
 
+            // Use null-conditional operator to avoid null reference
+            int? manufacturerId = null;
+            if (CmbManufacturer.SelectedValue != null)
+            {
+                manufacturerId = Convert.ToInt32(CmbManufacturer.SelectedValue);
+            }
+
             // Tạo đối tượng sản phẩm mới
             Product newProduct = new Product
             {
                 ProductName = productName,
                 CategoryID = categoryId,
+                ManufacturerID = manufacturerId,
                 Price = price,
                 Stock = stock,
                 Description = description
@@ -347,10 +401,11 @@ namespace FASCloset.Forms
 
         private void AddProduct(Product product)
         {
-            // Giả sử bạn có một danh sách sản phẩm (List<Product> products)
-            products.Add(product);
-            // Hoặc lưu vào cơ sở dữ liệu nếu bạn sử dụng DB
-            // Ví dụ: dbContext.Products.Add(product); dbContext.SaveChanges();
+            if (product != null)
+            {
+                products.Add(product);
+                // Hoặc lưu vào cơ sở dữ liệu nếu bạn sử dụng DB
+            }
         }
 
         private void btnAddCategory_Click(object sender, EventArgs e)
@@ -435,6 +490,47 @@ namespace FASCloset.Forms
             // Add your paint logic here
         }
 
-        // Remove duplicate TableLayoutPanel_Paint method - we're using OnTableLayoutPanelPaint now
+        private void SetupDataGridView()
+        {
+            // Configure columns for better display
+            ProductDisplay.AutoGenerateColumns = false;
+            
+            if (ProductDisplay.Columns.Count == 0)
+            {
+                ProductDisplay.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "ProductID",
+                    HeaderText = "ID",
+                    Width = 50
+                });
+                ProductDisplay.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "ProductName",
+                    HeaderText = "Product Name",
+                    Width = 150
+                });
+                ProductDisplay.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "Price",
+                    HeaderText = "Price",
+                    Width = 80,
+                    DefaultCellStyle = new DataGridViewCellStyle { Format = "C2" }
+                });
+                ProductDisplay.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "Stock",
+                    HeaderText = "Stock",
+                    Width = 60
+                });
+            }
+            
+            // Configure selection behavior
+            ProductDisplay.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            ProductDisplay.MultiSelect = false;
+            ProductDisplay.ReadOnly = true;
+        }
+
+        // Improved search with debounce functionality
+        private System.Timers.Timer searchTimer;
     }
 }

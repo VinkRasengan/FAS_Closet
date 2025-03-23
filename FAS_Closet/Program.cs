@@ -10,6 +10,10 @@ namespace FASCloset
 {
     internal static class Program
     {
+        // Changed to use Data subdirectory in project folder
+        private static readonly string databaseDir = @"c:\Project\FAS_Closet\FAS_Closet\Data";
+        private static readonly string dbPath = Path.Combine(databaseDir, "FASClosetDB.sqlite");
+        
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
@@ -18,54 +22,100 @@ namespace FASCloset
         {
             try
             {
-                Application.EnableVisualStyles();
-                Application.SetCompatibleTextRenderingDefault(false);
-                
                 // Ensure database directory exists
-                string databaseDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
                 if (!Directory.Exists(databaseDir))
                 {
                     Directory.CreateDirectory(databaseDir);
                 }
                 
-                // Database path
-                string dbPath = Path.Combine(databaseDir, "FASClosetDB.sqlite");
+                bool isNewDatabase = !File.Exists(dbPath);
                 
-                // Initialize database if it doesn't exist
-                DatabaseInitializer.Initialize(dbPath);
+                // Initialize database if needed
+                if (isNewDatabase)
+                {
+                    using (FileStream fs = File.Create(dbPath))
+                    {
+                        fs.Close(); // Ensure file handle is released
+                    }
+                    
+                    using (var connection = new SqliteConnection($"Data Source={dbPath}"))
+                    {
+                        connection.Open();
+                        DatabaseInitializer.InitializeDatabaseSchema(connection);
+                        DatabaseInitializer.CreateDemoData(connection);
+                    }
+                }
                 
-                // Copy db file to output directory if running in debug mode
+                // Verify database connection before starting the application
+                if (!VerifyDatabaseConnection())
+                {
+                    MessageBox.Show("Cannot connect to the database. Please check your database configuration.",
+                        "Database Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                
+                // To prevent issues with access to the Visual Studio designer
+                ApplicationConfiguration.Initialize();
+                
+                // Start the application with the login form
+                Application.Run(new Forms.AuthForm());
+                
                 #if DEBUG
-                    CopyDatabaseToOutputDirectory(dbPath);
+                // For debugging: Verify database location
+                Console.WriteLine($"Database location: {dbPath}");
+                Console.WriteLine($"Database exists: {File.Exists(dbPath)}");
                 #endif
-                
-                Application.Run(new AuthForm());
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"An error occurred during application startup: {ex.Message}", 
+                MessageBox.Show($"Error initializing application: {ex.Message}\n\nStack trace: {ex.StackTrace}", 
                     "Application Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        
+        private static bool VerifyDatabaseConnection()
+        {
+            try
+            {
+                using (var connection = new SqliteConnection($"Data Source={dbPath}"))
+                {
+                    connection.Open();
+                    
+                    // Verify we can query the database
+                    using (var command = new SqliteCommand("SELECT 1", connection))
+                    {
+                        command.ExecuteScalar();
+                    }
+                    
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Database connection error: {ex.Message}");
+                return false;
             }
         }
         
         private static void CopyDatabaseToOutputDirectory(string sourcePath)
         {
-            string? targetDir = Path.GetDirectoryName(Application.ExecutablePath);
-            if (targetDir == null) return;
-            
-            string targetPath = Path.Combine(targetDir, "FASClosetDB.sqlite");
-            
             try
             {
-                if (File.Exists(targetPath))
-                    File.Delete(targetPath);
-                    
-                File.Copy(sourcePath, targetPath);
+                string outputDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string destinationPath = Path.Combine(outputDirectory, "FASClosetDB.sqlite");
+                
+                // Only copy if source exists and is different from destination
+                if (File.Exists(sourcePath) && (!File.Exists(destinationPath) || 
+                    File.GetLastWriteTime(sourcePath) > File.GetLastWriteTime(destinationPath)))
+                {
+                    File.Copy(sourcePath, destinationPath, true);
+                    Console.WriteLine($"Database copied to: {destinationPath}");
+                }
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
-                // Just log the error, don't prevent application from running
-                Console.WriteLine($"Error copying database: {ex.Message}");
+                Console.WriteLine($"Warning: Failed to copy database to output directory: {ex.Message}");
+                // This is just for debugging, so we don't want to throw an exception
             }
         }
     }
