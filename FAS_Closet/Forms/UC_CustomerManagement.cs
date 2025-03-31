@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -22,6 +22,8 @@ namespace FASCloset.Forms
         private TextBox? txtSearchCustomer;
         private DataGridView? dgvCustomers;
         private System.ComponentModel.IContainer? components = null;
+        public Button btnAddCustomer;
+        public Button btnDelete;
 
         public UcCustomerManagement()
         {
@@ -41,7 +43,7 @@ namespace FASCloset.Forms
         private void InitializeUserInterface()
         {
             components = new System.ComponentModel.Container();
-            
+
             // Create all controls
             txtCustomerName = new TextBox();
             txtCustomerEmail = new TextBox();
@@ -52,11 +54,11 @@ namespace FASCloset.Forms
             dataGridViewPurchaseHistory = new DataGridView();
             txtSearchCustomer = new TextBox();
             dgvCustomers = new DataGridView();
-            
+
             Button btnSaveCustomerInfo = new Button();
             Button btnViewPurchaseHistory = new Button();
             Button btnManageLoyaltyPoints = new Button();
-            
+
             // Create labels
             Label lblCustomerName = new Label();
             lblCustomerName.Text = "Name:";
@@ -121,7 +123,7 @@ namespace FASCloset.Forms
             txtLoyaltyPoints.Size = new Size(100, 25);
             txtLoyaltyPoints.PlaceholderText = "Points";
             txtLoyaltyPoints.ReadOnly = true;
-            
+
             txtSearchCustomer.Location = new Point(460, 90);
             txtSearchCustomer.Size = new Size(150, 25);
             txtSearchCustomer.PlaceholderText = "Search customers";
@@ -151,7 +153,7 @@ namespace FASCloset.Forms
             dgvCustomers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvCustomers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvCustomers.SelectionChanged += dgvCustomers_SelectionChanged;
-            
+
             dataGridViewPurchaseHistory.Location = new Point(320, 230);
             dataGridViewPurchaseHistory.Size = new Size(300, 200);
             dataGridViewPurchaseHistory.AllowUserToAddRows = false;
@@ -177,14 +179,72 @@ namespace FASCloset.Forms
             this.Controls.Add(dgvCustomers);
             this.Controls.Add(dataGridViewPurchaseHistory);
         }
-        
+
+
+        public void btnAddCustomer_Click(object sender, EventArgs e)
+        {
+            txtCustomerId.Text = string.Empty;
+            txtCustomerName.Text = string.Empty;
+            txtCustomerEmail.Text = string.Empty;
+            txtCustomerPhone.Text = string.Empty;
+            txtCustomerAddress.Text = string.Empty;
+            txtLoyaltyPoints.Text = string.Empty;
+
+            if (dgvCustomers?.SelectedRows.Count > 0)
+            {
+                dgvCustomers.ClearSelection();
+            }
+
+            MessageBox.Show("Bạn có thể nhập thông tin khách hàng mới.");
+        }
+
+        public void AddNewCustomer()
+        {
+            txtCustomerId.Text = string.Empty;
+            txtCustomerName.Text = string.Empty;
+            txtCustomerEmail.Text = string.Empty;
+            txtCustomerPhone.Text = string.Empty;
+            txtCustomerAddress.Text = string.Empty;
+            txtLoyaltyPoints.Text = string.Empty;
+
+            if (dgvCustomers?.SelectedRows.Count > 0)
+            {
+                dgvCustomers.ClearSelection();
+            }
+        }
+
+        public void btnDeleteCustomer_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(txtCustomerId?.Text) || !int.TryParse(txtCustomerId.Text, out int customerId))
+            {
+                MessageBox.Show("Vui lòng chọn khách hàng cần xóa.");
+                return;
+            }
+
+            var result = MessageBox.Show("Bạn có chắc chắn muốn xóa khách hàng này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (result == DialogResult.Yes)
+            {
+                try
+                {
+                    CustomerManager.DeleteCustomer(customerId);
+                    MessageBox.Show("Xóa khách hàng thành công!");
+                    ClearForm();
+                    LoadCustomers();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi khi xóa khách hàng: {ex.Message}");
+                }
+            }
+        }
+
         private void LoadCustomers()
         {
             try
             {
                 var customers = CustomerManager.GetCustomers();
                 dgvCustomers.DataSource = customers;
-                
+
                 if (dgvCustomers.Columns.Count > 0)
                 {
                     dgvCustomers.Columns["Address"].Visible = false;
@@ -200,11 +260,11 @@ namespace FASCloset.Forms
         {
             if (dgvCustomers?.SelectedRows.Count > 0 && dgvCustomers.SelectedRows[0].DataBoundItem is Customer customer)
             {
-                if (txtCustomerId != null && 
-                    txtCustomerName != null && 
-                    txtCustomerEmail != null && 
-                    txtCustomerPhone != null && 
-                    txtCustomerAddress != null && 
+                if (txtCustomerId != null &&
+                    txtCustomerName != null &&
+                    txtCustomerEmail != null &&
+                    txtCustomerPhone != null &&
+                    txtCustomerAddress != null &&
                     txtLoyaltyPoints != null)
                 {
                     txtCustomerId.Text = customer.CustomerID.ToString();
@@ -212,7 +272,7 @@ namespace FASCloset.Forms
                     txtCustomerEmail.Text = customer.Email;
                     txtCustomerPhone.Text = customer.Phone;
                     txtCustomerAddress.Text = customer.Address;
-                    
+
                     try
                     {
                         int loyaltyPoints = CustomerManager.GetLoyaltyPointsByCustomerId(customer.CustomerID);
@@ -229,16 +289,16 @@ namespace FASCloset.Forms
         private void TxtSearchCustomer_TextChanged(object? sender, EventArgs e)
         {
             string searchTerm = txtSearchCustomer!.Text.ToLower();
-            
+
             try
             {
                 var allCustomers = CustomerManager.GetCustomers();
                 var filteredCustomers = allCustomers
-                    .Where(c => c.Name.ToLower().Contains(searchTerm) || 
+                    .Where(c => c.Name.ToLower().Contains(searchTerm) ||
                                c.Email.ToLower().Contains(searchTerm) ||
                                c.Phone.Contains(searchTerm))
                     .ToList();
-                
+
                 dgvCustomers!.DataSource = filteredCustomers;
             }
             catch (Exception ex)
@@ -249,16 +309,16 @@ namespace FASCloset.Forms
 
         private void btnSaveCustomerInfo_Click(object? sender, EventArgs e)
         {
-            if (txtCustomerName == null || 
-                txtCustomerEmail == null || 
-                txtCustomerPhone == null || 
+            if (txtCustomerName == null ||
+                txtCustomerEmail == null ||
+                txtCustomerPhone == null ||
                 txtCustomerAddress == null ||
                 txtCustomerId == null)
             {
                 MessageBox.Show("UI components not initialized properly");
                 return;
             }
-            
+
             if (string.IsNullOrWhiteSpace(txtCustomerName.Text) ||
                 string.IsNullOrWhiteSpace(txtCustomerEmail.Text) ||
                 string.IsNullOrWhiteSpace(txtCustomerPhone.Text) ||
@@ -267,7 +327,7 @@ namespace FASCloset.Forms
                 MessageBox.Show("All fields are required");
                 return;
             }
-            
+
             try
             {
                 var customer = new Customer
@@ -277,7 +337,7 @@ namespace FASCloset.Forms
                     Phone = txtCustomerPhone.Text,
                     Address = txtCustomerAddress.Text
                 };
-                
+
                 if (!string.IsNullOrEmpty(txtCustomerId.Text) && int.TryParse(txtCustomerId.Text, out int customerId))
                 {
                     // Update existing customer
@@ -292,7 +352,7 @@ namespace FASCloset.Forms
                     MessageBox.Show("Customer added successfully");
                     ClearForm();
                 }
-                
+
                 LoadCustomers();
             }
             catch (Exception ex)
@@ -308,7 +368,7 @@ namespace FASCloset.Forms
                 MessageBox.Show("Please select a customer first");
                 return;
             }
-            
+
             try
             {
                 var orders = OrderManager.GetOrdersByCustomerId(customerId);
@@ -327,10 +387,10 @@ namespace FASCloset.Forms
                 MessageBox.Show("Please select a customer first");
                 return;
             }
-            
+
             MessageBox.Show("Loyalty points management feature is coming soon");
         }
-        
+
         private void ClearForm()
         {
             txtCustomerId?.Clear();

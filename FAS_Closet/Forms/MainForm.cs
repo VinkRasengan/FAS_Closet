@@ -193,15 +193,38 @@ namespace FASCloset.Forms
 
         private void btnCustomerManagement_Click(object sender, EventArgs e)
         {
-            UpdateFeatureToolbar(new string[] { "Lưu thông tin", "Lịch sử mua hàng", "Tích điểm" });
+            UpdateFeatureToolbar(new string[] { "Thêm khách hàng", "Chỉnh sửa thông tin khách hàng", "Xóa khách hàng" });
 
             if (ucCustomerManagement == null)
             {
                 ucCustomerManagement = new UcCustomerManagement();
+
+                ucCustomerManagement.btnAddCustomer = new Button();
+                ucCustomerManagement.btnAddCustomer.Text = "Thêm khách hàng";
+                ucCustomerManagement.btnDelete = new Button();
+                ucCustomerManagement.btnDelete.Text = "Xóa khách hàng";
             }
 
             LoadUserControl(ucCustomerManagement);
+            ucCustomerManagement.AddNewCustomer();
         }
+
+        private void HandelCustomerAdd(object? sender, EventArgs e)
+        {
+            if (ucCustomerManagement != null)
+                ucCustomerManagement.btnAddCustomer_Click(sender ?? this, e);
+            else
+                MessageBox.Show("Vui lòng chọn.");
+        }
+
+        private void HandleCustomerDelete(object? sender, EventArgs e)
+        {
+            if (ucCustomerManagement != null)
+                ucCustomerManagement.btnDeleteCustomer_Click(sender ?? this, e);
+            else
+                MessageBox.Show("Vui lòng chọn khách hàng cần xóa.");
+        }
+
 
         private void btnRevenueReport_Click(object sender, EventArgs e)
         {
@@ -310,6 +333,12 @@ namespace FASCloset.Forms
                     break;
                 case "Cập nhật tồn kho":
                     btn.Click += (s, e) => HandleInventoryUpdate(s, e);
+                    break;
+                case "Thêm khách hàng":
+                    btn.Click += (s, e) => HandelCustomerAdd(s, e);
+                    break;                
+                case "Xóa khách hàng":
+                    btn.Click += (s, e) => HandleCustomerDelete(s, e);
                     break;
                 default:
                     btn.Click += (s, e) => MessageBox.Show("Chức năng: " + feature);
