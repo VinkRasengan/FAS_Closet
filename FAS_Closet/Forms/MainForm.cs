@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using FASCloset.Models;
@@ -20,78 +20,29 @@ namespace FASCloset.Forms
         public MainForm(User user)
         {
             InitializeComponent();
-            
+
             // Store the current user
             CurrentUser = user;
             lblWelcome.Text = "Welcome, " + user.Name;
-            
+
             // Add warehouse selector
             InitializeWarehouseSelector();
-            
-            // Add notification settings button
-            Button btnNotificationSettings = new Button();
-            btnNotificationSettings.Text = "Notification Settings";
-            btnNotificationSettings.BackColor = Color.FromArgb(0, 123, 255);
-            btnNotificationSettings.ForeColor = Color.White;
-            btnNotificationSettings.FlatStyle = FlatStyle.Flat;
-            btnNotificationSettings.Location = new Point(15, 315);
-            btnNotificationSettings.Margin = new Padding(5);
-            btnNotificationSettings.Name = "btnNotificationSettings";
-            btnNotificationSettings.Size = new Size(220, 40);
-            btnNotificationSettings.TabIndex = 6;
-            btnNotificationSettings.UseVisualStyleBackColor = false;
-            btnNotificationSettings.Click += btnNotificationSettings_Click;
-            leftPanel.Controls.Add(btnNotificationSettings);
-            
-            // Add warehouse management button
-            Button btnWarehouseManagement = new Button();
-            btnWarehouseManagement.Text = "Warehouse Management";
-            btnWarehouseManagement.BackColor = Color.FromArgb(0, 123, 255);
-            btnWarehouseManagement.ForeColor = Color.White;
-            btnWarehouseManagement.FlatStyle = FlatStyle.Flat;
-            btnWarehouseManagement.Location = new Point(15, 365);
-            btnWarehouseManagement.Margin = new Padding(5);
-            btnWarehouseManagement.Name = "btnWarehouseManagement";
-            btnWarehouseManagement.Size = new Size(220, 40);
-            btnWarehouseManagement.TabIndex = 7;
-            btnWarehouseManagement.UseVisualStyleBackColor = false;
-            btnWarehouseManagement.Click += btnWarehouseManagement_Click;
-            leftPanel.Controls.Add(btnWarehouseManagement);
-            
+
             // Check for low stock items on startup
             NotificationManager.CheckAndSendLowStockNotifications();
+
+            btnDashboard_Click(this, EventArgs.Empty);
         }
 
         private User CurrentUser { get; set; }
         private int CurrentWarehouseID { get; set; } = 1; // Default to main warehouse
 
-        private ComboBox cmbWarehouses;
-
         private void InitializeWarehouseSelector()
         {
-            // Create warehouse label
-            Label lblWarehouse = new Label();
-            lblWarehouse.Text = "Current Warehouse:";
-            lblWarehouse.AutoSize = true;
-            lblWarehouse.Location = new Point(10, 15);
-            
-            // Create warehouse dropdown
-            cmbWarehouses = new ComboBox();
-            cmbWarehouses.Width = 180;
-            cmbWarehouses.Location = new Point(120, 12);
+            // Cấu hình warehouse dropdown
             cmbWarehouses.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbWarehouses.SelectedIndexChanged += CmbWarehouses_SelectedIndexChanged;
-            
-            // Add controls to header
-            Panel warehousePanel = new Panel();
-            warehousePanel.Width = 320;
-            warehousePanel.Height = 40;
-            warehousePanel.Location = new Point(headerPanel.Width / 2 - 160, 5);
-            warehousePanel.Controls.Add(lblWarehouse);
-            warehousePanel.Controls.Add(cmbWarehouses);
-            
-            headerPanel.Controls.Add(warehousePanel);
-            
+
             // Load warehouses for this user
             LoadWarehouses();
         }
@@ -102,18 +53,18 @@ namespace FASCloset.Forms
             {
                 // Get warehouses for current user
                 var warehouses = WarehouseManager.GetWarehousesByUser(CurrentUser.UserID);
-                
+
                 // If user has no warehouses assigned, get all warehouses
                 if (warehouses.Count == 0)
                 {
                     warehouses = WarehouseManager.GetWarehouses();
                 }
-                
+
                 // Setup data binding
                 cmbWarehouses.DisplayMember = "Name";
                 cmbWarehouses.ValueMember = "WarehouseID";
                 cmbWarehouses.DataSource = warehouses;
-                
+
                 // Default to first warehouse
                 if (warehouses.Count > 0)
                 {
@@ -123,7 +74,7 @@ namespace FASCloset.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading warehouses: {ex.Message}", "Error", 
+                MessageBox.Show($"Error loading warehouses: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -134,7 +85,7 @@ namespace FASCloset.Forms
             {
                 // Update current warehouse
                 CurrentWarehouseID = selectedWarehouse.WarehouseID;
-                
+
                 // Refresh the current view to show data for selected warehouse
                 RefreshCurrentView();
             }
@@ -167,23 +118,23 @@ namespace FASCloset.Forms
         private void btnProductManagement_Click(object sender, EventArgs e)
         {
             UpdateFeatureToolbar(new string[] { "Thêm", "Sửa", "Xóa", "Phân loại" });
-            
+
             if (ucProductManagement == null)
             {
                 ucProductManagement = new UcProductManagement();
-                
+
                 // Create the action buttons here for the toolbar rather than in the user control
                 ucProductManagement.btnAdd = new Button();
                 ucProductManagement.btnAdd.Text = "Thêm";
                 ucProductManagement.btnEdit = new Button();
                 ucProductManagement.btnEdit.Text = "Sửa";
-                ucProductManagement.btnDelete = new Button(); 
+                ucProductManagement.btnDelete = new Button();
                 ucProductManagement.btnDelete.Text = "Xóa";
             }
-            
+
             LoadUserControl(ucProductManagement);
         }
-        
+
         // Make sure these handlers correctly call the product management methods
         private void HandleProductAdd(object? sender, EventArgs e)
         {
@@ -212,7 +163,7 @@ namespace FASCloset.Forms
         private void btnInventoryManagement_Click(object sender, EventArgs e)
         {
             UpdateFeatureToolbar(new string[] { "Cập nhật tồn kho", "Cảnh báo sắp hết" });
-            
+
             if (ucInventoryManagement == null)
             {
                 ucInventoryManagement = new UcInventoryManagement();
@@ -221,14 +172,14 @@ namespace FASCloset.Forms
                 ucInventoryManagement.dataGridViewLowStock = new DataGridView();
                 ucInventoryManagement.TxtSearchProductId = new TextBox();
             }
-            
+
             LoadUserControl(ucInventoryManagement);
         }
 
         private void btnOrderManagement_Click(object sender, EventArgs e)
         {
             UpdateFeatureToolbar(new string[] { "Tạo đơn hàng", "Xử lý thanh toán", "In hóa đơn" });
-            
+
             if (ucOrderManagement == null)
             {
                 ucOrderManagement = new UcOrderManagement();
@@ -236,26 +187,49 @@ namespace FASCloset.Forms
                 ucOrderManagement.txtTotalAmount = new TextBox();
                 ucOrderManagement.cmbPaymentMethod = new ComboBox();
             }
-            
+
             LoadUserControl(ucOrderManagement);
         }
 
         private void btnCustomerManagement_Click(object sender, EventArgs e)
         {
-            UpdateFeatureToolbar(new string[] { "Lưu thông tin", "Lịch sử mua hàng", "Tích điểm" });
-            
+            UpdateFeatureToolbar(new string[] { "Thêm khách hàng", "Chỉnh sửa thông tin khách hàng", "Xóa khách hàng" });
+
             if (ucCustomerManagement == null)
             {
                 ucCustomerManagement = new UcCustomerManagement();
+
+                ucCustomerManagement.btnAddCustomer = new Button();
+                ucCustomerManagement.btnAddCustomer.Text = "Thêm khách hàng";
+                ucCustomerManagement.btnDelete = new Button();
+                ucCustomerManagement.btnDelete.Text = "Xóa khách hàng";
             }
-            
+
             LoadUserControl(ucCustomerManagement);
+            ucCustomerManagement.AddNewCustomer();
         }
+
+        private void HandelCustomerAdd(object? sender, EventArgs e)
+        {
+            if (ucCustomerManagement != null)
+                ucCustomerManagement.btnAddCustomer_Click(sender ?? this, e);
+            else
+                MessageBox.Show("Vui lòng chọn.");
+        }
+
+        private void HandleCustomerDelete(object? sender, EventArgs e)
+        {
+            if (ucCustomerManagement != null)
+                ucCustomerManagement.btnDeleteCustomer_Click(sender ?? this, e);
+            else
+                MessageBox.Show("Vui lòng chọn khách hàng cần xóa.");
+        }
+
 
         private void btnRevenueReport_Click(object sender, EventArgs e)
         {
             UpdateFeatureToolbar(new string[] { "Thống kê doanh số", "Xuất báo cáo chi tiết" });
-            
+
             if (ucRevenueReport == null)
             {
                 ucRevenueReport = new UcRevenueReport();
@@ -264,43 +238,43 @@ namespace FASCloset.Forms
                 ucRevenueReport.DataGridViewReport = new DataGridView();
                 ucRevenueReport.ProgressBarReport = new ProgressBar();
             }
-            
+
             LoadUserControl(ucRevenueReport);
         }
 
         private void btnDashboard_Click(object sender, EventArgs e)
         {
             UpdateFeatureToolbar(new string[] { "Sản phẩm bán chạy" });
-            
+
             if (ucDashboard == null)
             {
                 ucDashboard = new UcDashboard();
             }
-            
+
             LoadUserControl(ucDashboard);
         }
 
         private void btnNotificationSettings_Click(object sender, EventArgs e)
         {
             UpdateFeatureToolbar(new string[] { "Configure Notifications", "View Notification Logs" });
-            
+
             if (ucNotificationSettings == null)
             {
                 ucNotificationSettings = new UcNotificationSettings();
             }
-            
+
             LoadUserControl(ucNotificationSettings);
         }
 
         private void btnWarehouseManagement_Click(object sender, EventArgs e)
         {
             UpdateFeatureToolbar(new string[] { "Add Warehouse", "Edit Warehouse", "Deactivate Warehouse" });
-            
+
             if (ucWarehouseManagement == null)
             {
                 ucWarehouseManagement = new UcWarehouseManagement(CurrentUser);
             }
-            
+
             LoadUserControl(ucWarehouseManagement);
         }
 
@@ -316,7 +290,7 @@ namespace FASCloset.Forms
         private void UpdateFeatureToolbar(string[] features)
         {
             featureToolbarPanel.Controls.Clear();
-            
+
             foreach (var feature in features)
             {
                 var btn = CreateFeatureButton(feature);
@@ -359,6 +333,12 @@ namespace FASCloset.Forms
                     break;
                 case "Cập nhật tồn kho":
                     btn.Click += (s, e) => HandleInventoryUpdate(s, e);
+                    break;
+                case "Thêm khách hàng":
+                    btn.Click += (s, e) => HandelCustomerAdd(s, e);
+                    break;                
+                case "Xóa khách hàng":
+                    btn.Click += (s, e) => HandleCustomerDelete(s, e);
                     break;
                 default:
                     btn.Click += (s, e) => MessageBox.Show("Chức năng: " + feature);

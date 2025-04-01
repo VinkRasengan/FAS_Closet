@@ -1,4 +1,4 @@
-// This file defines the AuthForm class, which handles user authentication.
+﻿// This file defines the AuthForm class, which handles user authentication.
 
 using System;
 using System.Drawing;
@@ -14,20 +14,20 @@ namespace FASCloset.Forms
         private const int MinPasswordLength = 6;
         private const int MinUsernameLength = 3;
         private bool _isFormClosing = false;
-        
+
         public AuthForm()
         {
             InitializeComponent();
-            
+
             // Add event handlers
             this.Load += AuthForm_Load;
             this.FormClosing += AuthForm_FormClosing;
-            
+
             // Login field events
             btnSwitchToRegister.Click += BtnSwitchToRegister_Click;
             txtLoginUsername.TextChanged += TxtLoginUsername_TextChanged;
             txtLoginPassword.TextChanged += TxtLoginPassword_TextChanged;
-            
+
             // Register field events
             btnSwitchToLogin.Click += BtnSwitchToLogin_Click;
             txtRegPassword.TextChanged += TxtRegPassword_TextChanged;
@@ -36,7 +36,7 @@ namespace FASCloset.Forms
             txtRegPhone.TextChanged += TxtRegPhone_TextChanged;
             txtRegUsername.TextChanged += TxtRegUsername_TextChanged;
             txtRegName.TextChanged += TxtRegName_TextChanged;
-            
+
             // Apply visual styling
             ApplyVisualStyles();
         }
@@ -45,7 +45,7 @@ namespace FASCloset.Forms
         {
             // Focus on username field when form loads
             txtLoginUsername.Focus();
-            
+
             // Set default values for better appearance
             progressBarPasswordStrength.Value = 0;
             lblPasswordStrength.Text = "Độ mạnh mật khẩu: Chưa nhập";
@@ -56,7 +56,7 @@ namespace FASCloset.Forms
         {
             if (!_isFormClosing && e.CloseReason == CloseReason.UserClosing)
             {
-                if (MessageBox.Show("Bạn có chắc muốn thoát ứng dụng?", 
+                if (MessageBox.Show("Bạn có chắc muốn thoát ứng dụng?",
                     "Xác nhận thoát", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
                 {
                     e.Cancel = true;
@@ -77,43 +77,43 @@ namespace FASCloset.Forms
             btnLogin.FlatStyle = FlatStyle.Flat;
             btnLogin.FlatAppearance.BorderSize = 0;
             btnLogin.Cursor = Cursors.Hand;
-            
+
             btnRegister.BackColor = Color.FromArgb(0, 123, 255);
             btnRegister.ForeColor = Color.White;
             btnRegister.FlatStyle = FlatStyle.Flat;
             btnRegister.FlatAppearance.BorderSize = 0;
             btnRegister.Cursor = Cursors.Hand;
-            
+
             btnSwitchToRegister.BackColor = Color.FromArgb(108, 117, 125);
             btnSwitchToRegister.ForeColor = Color.White;
             btnSwitchToRegister.FlatStyle = FlatStyle.Flat;
             btnSwitchToRegister.FlatAppearance.BorderSize = 0;
             btnSwitchToRegister.Cursor = Cursors.Hand;
-            
+
             btnSwitchToLogin.BackColor = Color.FromArgb(108, 117, 125);
             btnSwitchToLogin.ForeColor = Color.White;
             btnSwitchToLogin.FlatStyle = FlatStyle.Flat;
             btnSwitchToLogin.FlatAppearance.BorderSize = 0;
             btnSwitchToLogin.Cursor = Cursors.Hand;
-            
+
             // Set background color for tab control
             tabControlAuth.BackColor = Color.FromArgb(248, 249, 250);
         }
-        
+
         #region Login Tab Events and Validation
-        
+
         private void TxtLoginUsername_TextChanged(object? sender, EventArgs e)
         {
             ValidateLoginUsername();
             HideLoginError();
         }
-        
+
         private void TxtLoginPassword_TextChanged(object? sender, EventArgs e)
         {
             ValidateLoginPassword();
             HideLoginError();
         }
-        
+
         private bool ValidateLoginUsername()
         {
             if (string.IsNullOrWhiteSpace(txtLoginUsername.Text))
@@ -124,7 +124,7 @@ namespace FASCloset.Forms
             errorProviderLogin.SetError(txtLoginUsername, "");
             return true;
         }
-        
+
         private bool ValidateLoginPassword()
         {
             if (string.IsNullOrWhiteSpace(txtLoginPassword.Text))
@@ -135,13 +135,13 @@ namespace FASCloset.Forms
             errorProviderLogin.SetError(txtLoginPassword, "");
             return true;
         }
-        
+
         private void ShowLoginError(string message)
         {
             lblLoginError.Text = message;
             lblLoginError.Visible = true;
         }
-        
+
         private void HideLoginError()
         {
             lblLoginError.Visible = false;
@@ -154,11 +154,11 @@ namespace FASCloset.Forms
             errorProviderLogin.Clear();
             HideLoginError();
         }
-        
+
         #endregion
 
         #region Register Tab Events and Validation
-        
+
         private void BtnSwitchToLogin_Click(object? sender, EventArgs e)
         {
             tabControlAuth.SelectedTab = tabPageLogin;
@@ -166,19 +166,19 @@ namespace FASCloset.Forms
             errorProviderRegister.Clear();
             HideRegisterMessages();
         }
-        
+
         private void TxtRegUsername_TextChanged(object? sender, EventArgs e)
         {
             ValidateRegUsername();
             HideRegisterMessages();
         }
-        
+
         private void TxtRegPassword_TextChanged(object? sender, EventArgs e)
         {
             // Update password strength indicator
             int strength = CalculatePasswordStrength(txtRegPassword.Text);
             progressBarPasswordStrength.Value = strength;
-            
+
             // Update password strength label
             if (strength == 0)
             {
@@ -200,42 +200,42 @@ namespace FASCloset.Forms
                 lblPasswordStrength.Text = "Độ mạnh mật khẩu: Mạnh";
                 progressBarPasswordStrength.ForeColor = Color.Green;
             }
-            
+
             ValidateRegPassword();
-            
+
             // Check if passwords match
             if (txtRegConfirmPassword.Text.Length > 0)
             {
                 ValidateRegConfirmPassword();
             }
-            
+
             HideRegisterMessages();
         }
-        
+
         private void TxtRegConfirmPassword_TextChanged(object? sender, EventArgs e)
         {
             ValidateRegConfirmPassword();
             HideRegisterMessages();
         }
-        
+
         private void TxtRegName_TextChanged(object? sender, EventArgs e)
         {
             ValidateRegName();
             HideRegisterMessages();
         }
-        
+
         private void TxtRegEmail_TextChanged(object? sender, EventArgs e)
         {
             ValidateRegEmail();
             HideRegisterMessages();
         }
-        
+
         private void TxtRegPhone_TextChanged(object? sender, EventArgs e)
         {
             ValidateRegPhone();
             HideRegisterMessages();
         }
-        
+
         private bool ValidateRegUsername()
         {
             if (string.IsNullOrWhiteSpace(txtRegUsername.Text))
@@ -253,11 +253,11 @@ namespace FASCloset.Forms
                 errorProviderRegister.SetError(txtRegUsername, "Tên đăng nhập chỉ được chứa ký tự, số và dấu gạch dưới");
                 return false;
             }
-            
+
             errorProviderRegister.SetError(txtRegUsername, "");
             return true;
         }
-        
+
         private bool ValidateRegPassword()
         {
             if (string.IsNullOrWhiteSpace(txtRegPassword.Text))
@@ -270,11 +270,11 @@ namespace FASCloset.Forms
                 errorProviderRegister.SetError(txtRegPassword, $"Mật khẩu phải có ít nhất {MinPasswordLength} ký tự");
                 return false;
             }
-            
+
             errorProviderRegister.SetError(txtRegPassword, "");
             return true;
         }
-        
+
         private bool ValidateRegConfirmPassword()
         {
             if (string.IsNullOrWhiteSpace(txtRegConfirmPassword.Text))
@@ -287,11 +287,11 @@ namespace FASCloset.Forms
                 errorProviderRegister.SetError(txtRegConfirmPassword, "Mật khẩu xác nhận không trùng khớp");
                 return false;
             }
-            
+
             errorProviderRegister.SetError(txtRegConfirmPassword, "");
             return true;
         }
-        
+
         private bool ValidateRegName()
         {
             if (string.IsNullOrWhiteSpace(txtRegName.Text))
@@ -304,11 +304,11 @@ namespace FASCloset.Forms
                 errorProviderRegister.SetError(txtRegName, "Họ và tên phải có ít nhất 2 ký tự");
                 return false;
             }
-            
+
             errorProviderRegister.SetError(txtRegName, "");
             return true;
         }
-        
+
         private bool ValidateRegEmail()
         {
             if (string.IsNullOrWhiteSpace(txtRegEmail.Text))
@@ -321,11 +321,11 @@ namespace FASCloset.Forms
                 errorProviderRegister.SetError(txtRegEmail, "Email không đúng định dạng");
                 return false;
             }
-            
+
             errorProviderRegister.SetError(txtRegEmail, "");
             return true;
         }
-        
+
         private bool ValidateRegPhone()
         {
             if (string.IsNullOrWhiteSpace(txtRegPhone.Text))
@@ -338,18 +338,18 @@ namespace FASCloset.Forms
                 errorProviderRegister.SetError(txtRegPhone, "Số điện thoại không đúng định dạng");
                 return false;
             }
-            
+
             errorProviderRegister.SetError(txtRegPhone, "");
             return true;
         }
-        
+
         private void ShowRegisterError(string message)
         {
             lblRegisterError.Text = message;
             lblRegisterError.Visible = true;
             lblRegisterSuccess.Visible = false;
         }
-        
+
         private void ShowRegisterSuccess(string message)
         {
             lblRegisterSuccess.Text = message;
@@ -358,13 +358,13 @@ namespace FASCloset.Forms
             lblRegisterSuccess.Font = new Font(lblRegisterSuccess.Font, FontStyle.Bold);
             lblRegisterError.Visible = false;
         }
-        
+
         private void HideRegisterMessages()
         {
             lblRegisterError.Visible = false;
             lblRegisterSuccess.Visible = false;
         }
-        
+
         #endregion
 
         // Login logic
@@ -372,29 +372,29 @@ namespace FASCloset.Forms
         {
             errorProviderLogin.Clear();
             HideLoginError();
-            
+
             // Validate all inputs
             bool usernameValid = ValidateLoginUsername();
             bool passwordValid = ValidateLoginPassword();
-            
+
             if (!usernameValid || !passwordValid)
             {
                 ShowLoginError("Vui lòng điền đầy đủ thông tin đăng nhập");
                 return;
             }
-            
+
             Cursor = Cursors.WaitCursor;
             try
             {
                 UserManager userManager = new UserManager();
                 User? user = userManager.Login(txtLoginUsername.Text, txtLoginPassword.Text);
-                
+
                 if (user != null)
                 {
                     MainForm mainForm = new MainForm(user);
                     mainForm.Show();
                     this.Hide();
-                    mainForm.FormClosed += (s, args) => 
+                    mainForm.FormClosed += (s, args) =>
                     {
                         this.Show();
                         txtLoginPassword.Text = string.Empty; // Clear password for security
@@ -437,7 +437,7 @@ namespace FASCloset.Forms
                     txtRegUsername.Focus();
                     return;
                 }
-                
+
                 // Check if email already exists
                 if (UserManager.IsEmailTaken(txtRegEmail.Text))
                 {
@@ -446,7 +446,7 @@ namespace FASCloset.Forms
                     txtRegEmail.Focus();
                     return;
                 }
-                
+
                 // Check if phone already exists
                 if (UserManager.IsPhoneTaken(txtRegPhone.Text))
                 {
@@ -455,11 +455,11 @@ namespace FASCloset.Forms
                     txtRegPhone.Focus();
                     return;
                 }
-                
+
                 // Create password hash and salt
                 byte[] passwordHash, passwordSalt;
                 PasswordHasher.CreatePasswordHash(txtRegPassword.Text, out passwordHash, out passwordSalt);
-                
+
                 // Create user object
                 User user = new User
                 {
@@ -470,22 +470,22 @@ namespace FASCloset.Forms
                     Email = txtRegEmail.Text,
                     Phone = txtRegPhone.Text
                 };
-                
+
                 // Register user
                 UserManager.RegisterUser(user);
-                
+
                 // Show success message with more prominent display
                 ShowRegisterSuccess("Đăng ký tài khoản thành công! Bạn có thể đăng nhập ngay bây giờ.");
-                
+
                 // Make sure we show a MessageBox for more visibility
-                MessageBox.Show("Đăng ký tài khoản thành công!\nBạn sẽ được chuyển đến màn hình đăng nhập.", 
-                                "Đăng ký thành công", 
-                                MessageBoxButtons.OK, 
+                MessageBox.Show("Đăng ký tài khoản thành công!\nBạn sẽ được chuyển đến màn hình đăng nhập.",
+                                "Đăng ký thành công",
+                                MessageBoxButtons.OK,
                                 MessageBoxIcon.Information);
-                
+
                 // Clear form after successful registration
                 ClearRegistrationForm();
-                
+
                 // Switch to login tab immediately after user acknowledges the message box
                 tabControlAuth.SelectedTab = tabPageLogin;
                 txtLoginUsername.Text = user.Username;
@@ -505,32 +505,32 @@ namespace FASCloset.Forms
         {
             errorProviderRegister.Clear();
             HideRegisterMessages();
-            
+
             bool isValid = true;
-            
+
             if (!ValidateRegUsername())
                 isValid = false;
-                
+
             if (!ValidateRegPassword())
                 isValid = false;
-                
+
             if (!ValidateRegConfirmPassword())
                 isValid = false;
-                
+
             if (!ValidateRegName())
                 isValid = false;
-                
+
             if (!ValidateRegEmail())
                 isValid = false;
-                
+
             if (!ValidateRegPhone())
                 isValid = false;
-            
+
             if (!isValid)
             {
                 ShowRegisterError("Vui lòng điền đầy đủ thông tin và sửa các lỗi");
             }
-            
+
             return isValid;
         }
 
@@ -550,11 +550,11 @@ namespace FASCloset.Forms
         // Password strength calculation
         private static int CalculatePasswordStrength(string password)
         {
-            if (string.IsNullOrEmpty(password)) 
+            if (string.IsNullOrEmpty(password))
                 return 0;
-            
+
             int score = 0;
-            
+
             // Length evaluation
             if (password.Length >= MinPasswordLength)
                 score += 10;
@@ -562,7 +562,7 @@ namespace FASCloset.Forms
                 score += 10;
             if (password.Length >= 10)
                 score += 10;
-                
+
             // Character composition
             if (Regex.IsMatch(password, @"[a-z]"))
                 score += 10; // Has lowercase
@@ -572,16 +572,16 @@ namespace FASCloset.Forms
                 score += 20; // Has digits
             if (Regex.IsMatch(password, @"[!@#$%^&*(),.?""':{}|<>]"))
                 score += 30; // Has special characters
-                
+
             // Complexity checks
-            if (Regex.IsMatch(password, @"[a-z]") && Regex.IsMatch(password, @"[A-Z]") && 
+            if (Regex.IsMatch(password, @"[a-z]") && Regex.IsMatch(password, @"[A-Z]") &&
                 Regex.IsMatch(password, @"\d"))
                 score += 10; // Has mixed case and numbers
-                
-            if (Regex.IsMatch(password, @"[a-zA-Z\d]") && 
+
+            if (Regex.IsMatch(password, @"[a-zA-Z\d]") &&
                 Regex.IsMatch(password, @"[!@#$%^&*(),.?""':{}|<>]"))
                 score += 10; // Has alphanumeric and special chars
-            
+
             return Math.Min(score, 100);
         }
 
@@ -589,7 +589,7 @@ namespace FASCloset.Forms
         {
             if (string.IsNullOrWhiteSpace(email))
                 return false;
-                
+
             try
             {
                 // Simple pattern matching
@@ -606,7 +606,7 @@ namespace FASCloset.Forms
         {
             if (string.IsNullOrWhiteSpace(phone))
                 return false;
-                
+
             // Vietnamese phone number format (can be adjusted to other formats)
             // Accepts formats like: 0912345678, 84912345678, +84912345678
             Regex regex = new Regex(@"^(0|\+?84|84)?([3|5|7|8|9])([0-9]{8})$");
