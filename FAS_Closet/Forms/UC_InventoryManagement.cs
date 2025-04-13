@@ -13,94 +13,6 @@ namespace FASCloset.Forms
         // Add a field to track current warehouse
         private int currentWarehouseId = 1;
 
-        private DataGridView dataGridViewCategories;
-        private TextBox txtCategoryName;
-        private TextBox txtCategoryDescription;
-        private Button btnAddCategory;
-        private Button btnUpdateCategory;
-        private Button btnDeleteCategory;
-
-        private void InitializeCategoryComponents()
-        {
-            Label lblCategory = new Label
-            {
-                Text = "Product Categories",
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point),
-                Location = new Point(12, 600),
-                AutoSize = true
-            };
-
-            dataGridViewCategories = new DataGridView
-            {
-                Location = new Point(12, 630),
-                Size = new Size(500, 150),
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                ReadOnly = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect
-            };
-            dataGridViewCategories.SelectionChanged += DataGridViewCategories_SelectionChanged;
-
-            Label lblCategoryName = new Label
-            {
-                Text = "Category Name:",
-                Location = new Point(530, 630),
-                Size = new Size(100, 23)
-            };
-
-            txtCategoryName = new TextBox
-            {
-                Location = new Point(640, 630),
-                Size = new Size(150, 23)
-            };
-
-            Label lblCategoryDesc = new Label
-            {
-                Text = "Description:",
-                Location = new Point(530, 660),
-                Size = new Size(100, 23)
-            };
-
-            txtCategoryDescription = new TextBox
-            {
-                Location = new Point(640, 660),
-                Size = new Size(150, 23)
-            };
-
-            btnAddCategory = new Button
-            {
-                Text = "Add",
-                Location = new Point(530, 700),
-                Size = new Size(80, 30)
-            };
-            btnAddCategory.Click += BtnAddCategory_Click;
-
-            btnUpdateCategory = new Button
-            {
-                Text = "Update",
-                Location = new Point(620, 700),
-                Size = new Size(80, 30)
-            };
-            btnUpdateCategory.Click += BtnUpdateCategory_Click;
-
-            btnDeleteCategory = new Button
-            {
-                Text = "Delete",
-                Location = new Point(710, 700),
-                Size = new Size(80, 30)
-            };
-            btnDeleteCategory.Click += BtnDeleteCategory_Click;
-
-            this.Controls.Add(lblCategory);
-            this.Controls.Add(dataGridViewCategories);
-            this.Controls.Add(lblCategoryName);
-            this.Controls.Add(txtCategoryName);
-            this.Controls.Add(lblCategoryDesc);
-            this.Controls.Add(txtCategoryDescription);
-            this.Controls.Add(btnAddCategory);
-            this.Controls.Add(btnUpdateCategory);
-            this.Controls.Add(btnDeleteCategory);
-        }
-
         public void LoadCategories()
         {
             dataGridViewCategories.DataSource = CategoryManager.GetCategories();
@@ -174,7 +86,6 @@ namespace FASCloset.Forms
         public UcInventoryManagement()
         {
             InitializeComponent();
-            InitializeCategoryComponents();
             LoadCategories();
         }
 
@@ -197,10 +108,8 @@ namespace FASCloset.Forms
                 
                 // Update UI elements
                 lblCurrentWarehouse.Text = $"Current Warehouse: {warehouseId}";
-                lblLowStockCount.Text = $"Low Stock Products: {lowStockProducts.Count}";
                 
                 // Refresh grid views
-                dataGridViewInventory.Refresh();
                 dataGridViewLowStock.Refresh();
             }
             catch (Exception ex)
@@ -278,27 +187,6 @@ namespace FASCloset.Forms
             }
         }
 
-        // Fix the pattern matching with proper type checking
-        private void btnTransferStock_Click(object sender, EventArgs e)
-        {
-            if (dataGridViewInventory.SelectedRows.Count > 0 && 
-                dataGridViewInventory.SelectedRows[0].DataBoundItem is Product selectedProduct)
-            {
-                using (var transferForm = new TransferStockForm(selectedProduct))
-                {
-                    if (transferForm.ShowDialog() == DialogResult.OK)
-                    {
-                        // Refresh data after successful transfer
-                        LoadWarehouseInventory(currentWarehouseId);
-                    }
-                }
-            }
-            else
-            {
-                MessageBox.Show("Please select a product to transfer.", "No Selection", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-        }
 
         private void btnLowStockWarning_Click(object? sender, EventArgs e)
         {
