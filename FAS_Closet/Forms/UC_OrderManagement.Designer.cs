@@ -12,6 +12,9 @@ namespace FASCloset.Forms
         public TextBox txtTotalAmount;
         public ComboBox cmbPaymentMethod;
         private DataGridView dgvOrders;
+        public ComboBox cmbProduct;
+        public TextBox txtQuantity;
+        private List<OrderDetail> orderDetails = new List<OrderDetail>();
         
         /// <summary> 
         /// Clean up any resources being used.
@@ -107,6 +110,49 @@ namespace FASCloset.Forms
             lblPaymentMethod.Location = new System.Drawing.Point(20, 83);
             lblPaymentMethod.Size = new System.Drawing.Size(100, 23);
             lblPaymentMethod.Text = "Payment Method:";
+
+            // Product Dropdown
+            ComboBox cmbProduct = new ComboBox();
+            cmbProduct.Location = new Point(300, 20);
+            cmbProduct.Name = "cmbProduct";
+            cmbProduct.Size = new Size(300, 23);
+            cmbProduct.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.cmbProduct = cmbProduct;
+
+            // Quantity Input
+            TextBox txtQuantity = new TextBox();
+            txtQuantity.Location = new Point(300, 50);
+            txtQuantity.Name = "txtQuantity";
+            txtQuantity.Size = new Size(150, 23);
+            this.txtQuantity = txtQuantity;
+
+            // Add Product Button
+            Button btnAddProduct = new Button();
+            btnAddProduct.Location = new Point(300, 80);
+            btnAddProduct.Name = "btnAddProduct";
+            btnAddProduct.Size = new Size(150, 30);
+            btnAddProduct.Text = "Add Product";
+            btnAddProduct.Click += new EventHandler(this.btnAddProduct_Click);
+
+            // Product Label
+            Label lblProduct = new Label();
+            lblProduct.Location = new Point(220, 23);
+            lblProduct.Size = new Size(80, 23);
+            lblProduct.Text = "Product:";
+
+            // Quantity Label
+            Label lblQuantity = new Label();
+            lblQuantity.Location = new Point(220, 53);
+            lblQuantity.Size = new Size(80, 23);
+            lblQuantity.Text = "Quantity:";
+
+            // Add new controls
+            this.Controls.Add(lblProduct);
+            this.Controls.Add(this.cmbProduct);
+            this.Controls.Add(lblQuantity);
+            this.Controls.Add(this.txtQuantity);
+            this.Controls.Add(btnAddProduct);
+
             
             // Add controls
             this.Controls.Add(lblCustomerId);

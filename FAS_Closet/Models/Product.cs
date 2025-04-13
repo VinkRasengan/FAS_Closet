@@ -25,5 +25,7 @@ namespace FASCloset.Models
         public int SalesCount { get; set; }
         public int TotalQuantity { get; set; }
         public decimal Revenue { get; set; }
+
+        public string DisplayName => $"{ProductName} - {Price:C} - Stock: {Stock}";
     }
 }

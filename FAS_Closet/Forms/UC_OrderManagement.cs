@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows.Forms;
 using System.Drawing;
 using FASCloset.Models;
@@ -12,6 +12,7 @@ namespace FASCloset.Forms
         {
             InitializeComponent();
             LoadPaymentMethods();
+            LoadProducts();
             LoadOrders();
         }
 
@@ -22,6 +23,64 @@ namespace FASCloset.Forms
             if (cmbPaymentMethod.Items.Count > 0)
                 cmbPaymentMethod.SelectedIndex = 0;
         }
+
+        private void LoadProducts()
+        {
+            var products = ProductManager.GetProducts(); // Danh sách Product
+
+            cmbProduct.DataSource = products;
+            cmbProduct.DisplayMember = "DisplayName"; // Dùng thuộc tính tuỳ chỉnh
+            cmbProduct.ValueMember = "ProductID";
+        }
+
+        private void btnAddProduct_Click(object sender, EventArgs e)
+        {
+            // Kiểm tra sản phẩm đã được chọn chưa
+            if (cmbProduct.SelectedItem is not Product selectedProduct)
+            {
+                MessageBox.Show("Please select a product.");
+                return;
+            }
+
+            // Kiểm tra số lượng có hợp lệ không
+            if (string.IsNullOrWhiteSpace(txtQuantity.Text))
+            {
+                MessageBox.Show("Please enter a quantity.");
+                return;
+            }
+
+            if (!int.TryParse(txtQuantity.Text, out int quantity))
+            {
+                MessageBox.Show("Quantity must be a valid integer.");
+                return;
+            }
+
+            if (quantity <= 0)
+            {
+                MessageBox.Show("Quantity must be greater than zero.");
+                return;
+            }
+
+            if (quantity > selectedProduct.Stock)
+            {
+                MessageBox.Show($"Only {selectedProduct.Stock} items available in stock for {selectedProduct.ProductName}.");
+                return;
+            }
+
+            // Thêm vào danh sách tạm
+            var detail = new OrderDetail
+            {
+                ProductID = selectedProduct.ProductID,
+                Quantity = quantity,
+                UnitPrice = selectedProduct.Price
+            };
+
+            orderDetails.Add(detail);
+            MessageBox.Show($"Added {selectedProduct.ProductName} x{quantity} to order.");
+        }
+
+
+
 
         private void LoadOrders()
         {
