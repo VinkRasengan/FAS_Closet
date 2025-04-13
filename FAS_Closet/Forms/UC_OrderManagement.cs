@@ -98,6 +98,143 @@ namespace FASCloset.Forms
             }
         }
 
+        private Form popup;
+
+        private void HandleCustomerAdd(object sender, EventArgs e)
+        {
+            popup = new Form();
+            popup.Text = "Add New Customer";
+            popup.Size = new Size(500, 350);
+            popup.FormBorderStyle = FormBorderStyle.FixedDialog;
+            popup.StartPosition = FormStartPosition.CenterParent;
+            popup.MaximizeBox = false;
+            popup.MinimizeBox = false;
+
+            Label lblName = new Label
+            {
+                Text = "Name:",
+                Location = new Point(20, 20),
+                Size = new Size(90, 23),
+                TextAlign = ContentAlignment.MiddleRight
+            };
+
+            Label lblEmail = new Label
+            {
+                Text = "Email:",
+                Location = new Point(20, 60),
+                Size = new Size(90, 23),
+                TextAlign = ContentAlignment.MiddleRight
+            };
+
+            Label lblPhone = new Label
+            {
+                Text = "Phone:",
+                Location = new Point(20, 100),
+                Size = new Size(90, 23),
+                TextAlign = ContentAlignment.MiddleRight
+            };
+
+            Label lblAddress = new Label
+            {
+                Text = "Address:",
+                Location = new Point(20, 140),
+                Size = new Size(90, 23),
+                TextAlign = ContentAlignment.MiddleRight
+            };
+
+            TextBox txtName = new TextBox
+            {
+                Location = new Point(120, 20),
+                Width = 320
+            };
+
+            TextBox txtEmail = new TextBox
+            {
+                Location = new Point(120, 60),
+                Width = 320
+            };
+
+            TextBox txtPhone = new TextBox
+            {
+                Location = new Point(120, 100),
+                Width = 320
+            };
+
+            TextBox txtAddress = new TextBox
+            {
+                Location = new Point(120, 140),
+                Width = 320,
+                Height = 60,
+                Multiline = true
+            };
+
+            Button btnSave = new Button
+            {
+                Text = "Save",
+                Location = new Point(140, 220),
+                Width = 100
+            };
+
+            Button btnCancel = new Button
+            {
+                Text = "Cancel",
+                Location = new Point(250, 220),
+                Width = 100
+            };
+
+
+            btnCancel.Click += (s, ev) => popup.DialogResult = DialogResult.Cancel;
+            btnSave.Click += (s, ev) =>
+            {
+                if (string.IsNullOrWhiteSpace(txtName.Text) ||
+                    string.IsNullOrWhiteSpace(txtEmail.Text) ||
+                    string.IsNullOrWhiteSpace(txtPhone.Text) ||
+                    string.IsNullOrWhiteSpace(txtAddress.Text))
+                {
+                    MessageBox.Show("All fields are required.");
+                    return;
+                }
+
+                try
+                {
+                    var customer = new Customer
+                    {
+                        Name = txtName.Text.Trim(),
+                        Email = txtEmail.Text.Trim(),
+                        Phone = txtPhone.Text.Trim(),
+                        Address = txtAddress.Text.Trim()
+                    };
+
+                    CustomerManager.AddCustomer(customer);
+                    MessageBox.Show("Customer added successfully.");
+                    popup.DialogResult = DialogResult.OK;
+
+                    LoadCustomers();
+                    var customers = CustomerManager.GetCustomers();
+                    var added = customers.LastOrDefault(c => c.Name == customer.Name);
+                    if (added != null)
+                        cmbCustomer.SelectedValue = added.CustomerID;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error adding customer: " + ex.Message);
+                }
+            };
+
+            popup.Controls.Add(lblName);
+            popup.Controls.Add(lblEmail);
+            popup.Controls.Add(lblPhone);
+            popup.Controls.Add(lblAddress);
+            popup.Controls.Add(txtName);
+            popup.Controls.Add(txtEmail);
+            popup.Controls.Add(txtPhone);
+            popup.Controls.Add(txtAddress);
+            popup.Controls.Add(btnSave);
+            popup.Controls.Add(btnCancel);
+
+            popup.ShowDialog();
+        }
+
         // Revert to original method naming to fix missing method errors
         public void btnCreateOrder_Click(object sender, EventArgs e)
         {

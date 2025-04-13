@@ -1,4 +1,4 @@
-namespace FASCloset.Forms
+﻿namespace FASCloset.Forms
 {
     partial class UcOrderManagement
     {
@@ -15,6 +15,7 @@ namespace FASCloset.Forms
         public TextBox txtQuantity;
         private List<OrderDetail> orderDetails = new List<OrderDetail>();
         public ComboBox cmbCustomer;
+        private Button btnCreateCustomer;
 
         
         /// <summary> 
@@ -45,17 +46,25 @@ namespace FASCloset.Forms
             this.cmbCustomer.Name = "cmbCustomer";
             this.cmbCustomer.Size = new System.Drawing.Size(150, 23);
             this.cmbCustomer.DropDownStyle = ComboBoxStyle.DropDownList;
+
+            btnCreateCustomer = new Button();
+            btnCreateCustomer.Location = new Point(270, 20); // cạnh cmbCustomer
+            btnCreateCustomer.Size = new Size(25, 23);
+            btnCreateCustomer.Text = "+";
+            btnCreateCustomer.Name = "btnCreateCustomer";
+            btnCreateCustomer.Click += new EventHandler(this.HandleCustomerAdd);
+            this.Controls.Add(btnCreateCustomer);
             
             // Payment Method
             this.cmbPaymentMethod = new ComboBox();
-            this.cmbPaymentMethod.Location = new System.Drawing.Point(120, 80);
+            this.cmbPaymentMethod.Location = new System.Drawing.Point(120, 50);
             this.cmbPaymentMethod.Name = "cmbPaymentMethod";
             this.cmbPaymentMethod.Size = new System.Drawing.Size(150, 23);
             this.cmbPaymentMethod.DropDownStyle = ComboBoxStyle.DropDownList;
             
             // Create Order Button
             Button btnCreateOrder = new Button();
-            btnCreateOrder.Location = new System.Drawing.Point(120, 110);
+            btnCreateOrder.Location = new System.Drawing.Point(120, 80);
             btnCreateOrder.Name = "btnCreateOrder";
             btnCreateOrder.Size = new System.Drawing.Size(150, 30);
             btnCreateOrder.Text = "Create Order";
@@ -114,7 +123,7 @@ namespace FASCloset.Forms
             this.Controls.Add(this.txtTotalAmount);
             
             Label lblPaymentMethod = new Label();
-            lblPaymentMethod.Location = new System.Drawing.Point(20, 83);
+            lblPaymentMethod.Location = new System.Drawing.Point(20, 53);
             lblPaymentMethod.Size = new System.Drawing.Size(100, 23);
             lblPaymentMethod.Text = "Payment Method:";
 
