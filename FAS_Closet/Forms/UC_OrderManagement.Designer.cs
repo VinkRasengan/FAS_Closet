@@ -8,13 +8,14 @@ namespace FASCloset.Forms
         private System.ComponentModel.IContainer components = null;
         
         // UI Controls
-        public TextBox txtCustomerId;
         public TextBox txtTotalAmount;
         public ComboBox cmbPaymentMethod;
         private DataGridView dgvOrders;
         public ComboBox cmbProduct;
         public TextBox txtQuantity;
         private List<OrderDetail> orderDetails = new List<OrderDetail>();
+        public ComboBox cmbCustomer;
+
         
         /// <summary> 
         /// Clean up any resources being used.
@@ -39,17 +40,11 @@ namespace FASCloset.Forms
         {
             this.components = new System.ComponentModel.Container();
             
-            // Customer ID
-            this.txtCustomerId = new TextBox();
-            this.txtCustomerId.Location = new System.Drawing.Point(120, 20);
-            this.txtCustomerId.Name = "txtCustomerId";
-            this.txtCustomerId.Size = new System.Drawing.Size(150, 23);
-            
-            // Total Amount
-            this.txtTotalAmount = new TextBox();
-            this.txtTotalAmount.Location = new System.Drawing.Point(120, 50);
-            this.txtTotalAmount.Name = "txtTotalAmount";
-            this.txtTotalAmount.Size = new System.Drawing.Size(150, 23);
+            this.cmbCustomer = new ComboBox();
+            this.cmbCustomer.Location = new System.Drawing.Point(120, 20);
+            this.cmbCustomer.Name = "cmbCustomer";
+            this.cmbCustomer.Size = new System.Drawing.Size(150, 23);
+            this.cmbCustomer.DropDownStyle = ComboBoxStyle.DropDownList;
             
             // Payment Method
             this.cmbPaymentMethod = new ComboBox();
@@ -102,9 +97,21 @@ namespace FASCloset.Forms
             lblCustomerId.Text = "Customer ID:";
             
             Label lblTotalAmount = new Label();
-            lblTotalAmount.Location = new System.Drawing.Point(20, 53);
-            lblTotalAmount.Size = new System.Drawing.Size(100, 23);
+            lblTotalAmount.Location = new Point(300, 115);
+            lblTotalAmount.Size = new Size(100, 23);
             lblTotalAmount.Text = "Total Amount:";
+
+            // Total Amount TextBox (mới)
+            this.txtTotalAmount = new TextBox();
+            this.txtTotalAmount.Location = new Point(400, 115);
+            this.txtTotalAmount.Size = new Size(150, 23);
+            this.txtTotalAmount.ReadOnly = true;
+            this.txtTotalAmount.BackColor = SystemColors.Window;
+            this.txtTotalAmount.ForeColor = Color.Black;
+
+            // Add vào form
+            this.Controls.Add(lblTotalAmount);
+            this.Controls.Add(this.txtTotalAmount);
             
             Label lblPaymentMethod = new Label();
             lblPaymentMethod.Location = new System.Drawing.Point(20, 83);
@@ -113,7 +120,7 @@ namespace FASCloset.Forms
 
             // Product Dropdown
             ComboBox cmbProduct = new ComboBox();
-            cmbProduct.Location = new Point(300, 20);
+            cmbProduct.Location = new Point(400, 20);
             cmbProduct.Name = "cmbProduct";
             cmbProduct.Size = new Size(300, 23);
             cmbProduct.DropDownStyle = ComboBoxStyle.DropDownList;
@@ -121,28 +128,28 @@ namespace FASCloset.Forms
 
             // Quantity Input
             TextBox txtQuantity = new TextBox();
-            txtQuantity.Location = new Point(300, 50);
+            txtQuantity.Location = new Point(400, 50);
             txtQuantity.Name = "txtQuantity";
             txtQuantity.Size = new Size(150, 23);
             this.txtQuantity = txtQuantity;
 
             // Add Product Button
             Button btnAddProduct = new Button();
-            btnAddProduct.Location = new Point(300, 80);
+            btnAddProduct.Location = new Point(400, 80);
             btnAddProduct.Name = "btnAddProduct";
             btnAddProduct.Size = new Size(150, 30);
-            btnAddProduct.Text = "Add Product";
+            btnAddProduct.Text = "Select This Product";
             btnAddProduct.Click += new EventHandler(this.btnAddProduct_Click);
 
             // Product Label
             Label lblProduct = new Label();
-            lblProduct.Location = new Point(220, 23);
+            lblProduct.Location = new Point(300, 23);
             lblProduct.Size = new Size(80, 23);
             lblProduct.Text = "Product:";
 
             // Quantity Label
             Label lblQuantity = new Label();
-            lblQuantity.Location = new Point(220, 53);
+            lblQuantity.Location = new Point(300, 53);
             lblQuantity.Size = new Size(80, 23);
             lblQuantity.Text = "Quantity:";
 
@@ -156,9 +163,8 @@ namespace FASCloset.Forms
             
             // Add controls
             this.Controls.Add(lblCustomerId);
-            this.Controls.Add(this.txtCustomerId);
-            this.Controls.Add(lblTotalAmount);
-            this.Controls.Add(this.txtTotalAmount);
+            this.Controls.Add(this.cmbCustomer);
+
             this.Controls.Add(lblPaymentMethod);
             this.Controls.Add(this.cmbPaymentMethod);
             this.Controls.Add(btnCreateOrder);

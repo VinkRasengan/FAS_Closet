@@ -13,6 +13,7 @@ namespace FASCloset.Forms
             InitializeComponent();
             LoadPaymentMethods();
             LoadProducts();
+            LoadCustomers();
             LoadOrders();
         }
 
@@ -33,41 +34,35 @@ namespace FASCloset.Forms
             cmbProduct.ValueMember = "ProductID";
         }
 
+        private void LoadCustomers()
+        {
+            var customers = CustomerManager.GetCustomers(); // danh sách Customer
+
+            cmbCustomer.DataSource = customers;
+            cmbCustomer.DisplayMember = "Name"; // giả sử bạn có thuộc tính này
+            cmbCustomer.ValueMember = "CustomerID";
+        }
+
         private void btnAddProduct_Click(object sender, EventArgs e)
         {
-            // Kiểm tra sản phẩm đã được chọn chưa
             if (cmbProduct.SelectedItem is not Product selectedProduct)
             {
                 MessageBox.Show("Please select a product.");
                 return;
             }
 
-            // Kiểm tra số lượng có hợp lệ không
-            if (string.IsNullOrWhiteSpace(txtQuantity.Text))
+            if (!int.TryParse(txtQuantity.Text, out int quantity) || quantity <= 0)
             {
-                MessageBox.Show("Please enter a quantity.");
-                return;
-            }
-
-            if (!int.TryParse(txtQuantity.Text, out int quantity))
-            {
-                MessageBox.Show("Quantity must be a valid integer.");
-                return;
-            }
-
-            if (quantity <= 0)
-            {
-                MessageBox.Show("Quantity must be greater than zero.");
+                MessageBox.Show("Quantity must be a valid positive number.");
                 return;
             }
 
             if (quantity > selectedProduct.Stock)
             {
-                MessageBox.Show($"Only {selectedProduct.Stock} items available in stock for {selectedProduct.ProductName}.");
+                MessageBox.Show($"Only {selectedProduct.Stock} items in stock.");
                 return;
             }
 
-            // Thêm vào danh sách tạm
             var detail = new OrderDetail
             {
                 ProductID = selectedProduct.ProductID,
@@ -75,11 +70,19 @@ namespace FASCloset.Forms
                 UnitPrice = selectedProduct.Price
             };
 
+            if (txtTotalAmount == null)
+            {
+                MessageBox.Show("txtTotalAmount is NULL");
+                return;
+            }
+
             orderDetails.Add(detail);
-            MessageBox.Show($"Added {selectedProduct.ProductName} x{quantity} to order.");
+
+            decimal total = orderDetails.Sum(d => d.Quantity * d.UnitPrice);
+            txtTotalAmount.Text = total.ToString("0.00");
+
+            MessageBox.Show("Total Amount is: " + total.ToString("0.00"));
         }
-
-
 
 
         private void LoadOrders()
@@ -105,7 +108,7 @@ namespace FASCloset.Forms
             {
                 var order = new Order
                 {
-                    CustomerID = int.Parse(txtCustomerId.Text),
+                    CustomerID = (int)cmbCustomer.SelectedValue,
                     OrderDate = DateTime.Now,
                     TotalAmount = decimal.Parse(txtTotalAmount.Text),
                     PaymentMethod = cmbPaymentMethod.SelectedItem?.ToString() ?? string.Empty
@@ -115,8 +118,6 @@ namespace FASCloset.Forms
                 MessageBox.Show("Order created successfully.");
                 LoadOrders();
                 
-                // Clear inputs
-                txtCustomerId.Clear();
                 txtTotalAmount.Clear();
                 cmbPaymentMethod.SelectedIndex = 0;
             }
@@ -158,17 +159,6 @@ namespace FASCloset.Forms
 
         private bool ValidateOrderInputs()
         {
-            if (string.IsNullOrWhiteSpace(txtCustomerId.Text))
-            {
-                MessageBox.Show("Customer ID is required.");
-                return false;
-            }
-            
-            if (!int.TryParse(txtCustomerId.Text, out _))
-            {
-                MessageBox.Show("Customer ID must be a valid number.");
-                return false;
-            }
             
             if (string.IsNullOrWhiteSpace(txtTotalAmount.Text))
             {

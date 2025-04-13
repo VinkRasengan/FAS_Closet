@@ -183,8 +183,6 @@ namespace FASCloset.Forms
             if (ucOrderManagement == null)
             {
                 ucOrderManagement = new UcOrderManagement();
-                ucOrderManagement.txtCustomerId = new TextBox();
-                ucOrderManagement.txtTotalAmount = new TextBox();
                 ucOrderManagement.cmbPaymentMethod = new ComboBox();
             }
 
