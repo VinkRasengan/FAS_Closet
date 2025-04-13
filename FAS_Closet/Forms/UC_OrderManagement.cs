@@ -186,12 +186,41 @@ namespace FASCloset.Forms
             btnCancel.Click += (s, ev) => popup.DialogResult = DialogResult.Cancel;
             btnSave.Click += (s, ev) =>
             {
-                if (string.IsNullOrWhiteSpace(txtName.Text) ||
-                    string.IsNullOrWhiteSpace(txtEmail.Text) ||
-                    string.IsNullOrWhiteSpace(txtPhone.Text) ||
-                    string.IsNullOrWhiteSpace(txtAddress.Text))
+                string name = txtName.Text.Trim();
+                string email = txtEmail.Text.Trim();
+                string phone = txtPhone.Text.Trim();
+                string address = txtAddress.Text.Trim();
+
+                // Kiểm tra rỗng
+                if (string.IsNullOrWhiteSpace(name) ||
+                    string.IsNullOrWhiteSpace(email) ||
+                    string.IsNullOrWhiteSpace(phone) ||
+                    string.IsNullOrWhiteSpace(address))
                 {
-                    MessageBox.Show("All fields are required.");
+                    MessageBox.Show("All fields are required.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Kiểm tra email
+                try
+                {
+                    var addr = new System.Net.Mail.MailAddress(email);
+                    if (addr.Address != email)
+                    {
+                        MessageBox.Show("Invalid email format.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+                }
+                catch
+                {
+                    MessageBox.Show("Invalid email format.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Kiểm tra phone: phải là số và có độ dài hợp lệ (ví dụ 8–15 ký tự)
+                if (!phone.All(char.IsDigit) || phone.Length < 8 || phone.Length > 15)
+                {
+                    MessageBox.Show("Phone must be numeric and 8–15 digits long.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -199,10 +228,10 @@ namespace FASCloset.Forms
                 {
                     var customer = new Customer
                     {
-                        Name = txtName.Text.Trim(),
-                        Email = txtEmail.Text.Trim(),
-                        Phone = txtPhone.Text.Trim(),
-                        Address = txtAddress.Text.Trim()
+                        Name = name,
+                        Email = email,
+                        Phone = phone,
+                        Address = address
                     };
 
                     CustomerManager.AddCustomer(customer);
@@ -220,7 +249,6 @@ namespace FASCloset.Forms
                     MessageBox.Show("Error adding customer: " + ex.Message);
                 }
             };
-
             popup.Controls.Add(lblName);
             popup.Controls.Add(lblEmail);
             popup.Controls.Add(lblPhone);
