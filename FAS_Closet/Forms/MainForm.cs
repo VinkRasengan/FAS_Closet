@@ -132,6 +132,8 @@ namespace FASCloset.Forms
                 ucProductManagement.btnDelete.Text = "Xóa";
             }
 
+            ucProductManagement.LoadCategories();
+
             LoadUserControl(ucProductManagement);
         }
 
@@ -172,6 +174,9 @@ namespace FASCloset.Forms
                 ucInventoryManagement.dataGridViewLowStock = new DataGridView();
                 ucInventoryManagement.TxtSearchProductId = new TextBox();
             }
+
+            ucInventoryManagement.LoadCategories();
+
 
             LoadUserControl(ucInventoryManagement);
         }

@@ -257,7 +257,7 @@ namespace FASCloset.Forms
             }
         }
 
-        private void LoadCategories()
+        public void LoadCategories()
         {
             try
             {
