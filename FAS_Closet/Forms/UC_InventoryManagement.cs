@@ -20,6 +20,24 @@ namespace FASCloset.Forms
             dataGridViewCategories.DataSource = CategoryManager.GetCategories();
         }
 
+        private void btnViewProductsByCategory_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewCategories.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a category.");
+                return;
+            }
+
+            if (dataGridViewCategories.SelectedRows[0].DataBoundItem is Category selectedCategory)
+            {
+                var products = ProductManager.GetProductsByCategory(selectedCategory.CategoryID);
+
+                var form = new FormViewCategoryProducts(selectedCategory.CategoryName, products);
+                form.ShowDialog();
+            }
+        }
+
+
         private void BtnAddCategory_Click(object sender, EventArgs e)
         {
             string name = txtCategoryName.Text.Trim();

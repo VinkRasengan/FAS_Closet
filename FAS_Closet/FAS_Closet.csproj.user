@@ -7,6 +7,9 @@
     <Compile Update="Forms\AuthForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Forms\FormViewCategoryProducts.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

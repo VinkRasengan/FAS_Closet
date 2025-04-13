@@ -404,5 +404,35 @@ namespace FASCloset.Services
                 }
             }
         }
+
+        public static List<Product> GetProductsByCategory(int categoryId)
+        {
+            string query = @"
+                SELECT p.*, c.CategoryName, m.ManufacturerName
+                FROM Product p
+                LEFT JOIN Category c ON p.CategoryID = c.CategoryID
+                LEFT JOIN Manufacturer m ON p.ManufacturerID = m.ManufacturerID
+                WHERE p.CategoryID = @CategoryID";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@CategoryID", categoryId }
+            };
+
+            return DataAccessHelper.ExecuteReader(query, reader => new Product
+            {
+                ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
+                ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
+                CategoryID = reader.GetInt32(reader.GetOrdinal("CategoryID")),
+                ManufacturerID = reader.IsDBNull(reader.GetOrdinal("ManufacturerID")) ? null : reader.GetInt32(reader.GetOrdinal("ManufacturerID")),
+                Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                Stock = reader.GetInt32(reader.GetOrdinal("Stock")),
+                Description = reader.GetString(reader.GetOrdinal("Description")),
+                IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+                CategoryName = reader.IsDBNull(reader.GetOrdinal("CategoryName")) ? string.Empty : reader.GetString(reader.GetOrdinal("CategoryName")),
+                ManufacturerName = reader.IsDBNull(reader.GetOrdinal("ManufacturerName")) ? string.Empty : reader.GetString(reader.GetOrdinal("ManufacturerName")),
+            }, parameters);
+        }
+
     }
 }

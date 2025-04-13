@@ -106,7 +106,7 @@ namespace FASCloset.Forms
             this.TxtSearchProductId = new TextBox();
             this.btnSearch = new Button();
             this.btnTransferStock = new Button();
-            this.btnViewAllWarehouses = new Button();
+            this.btnViewProductsByCategory = new Button();
 
 
             this.panel1.BorderStyle = BorderStyle.FixedSingle;
@@ -139,13 +139,13 @@ namespace FASCloset.Forms
             this.btnUpdateStock.UseVisualStyleBackColor = true;
             this.btnUpdateStock.Click += new EventHandler(this.btnUpdateStock_Click);
 
-            this.btnViewAllWarehouses.Location = new Point(350, 300);
-            this.btnViewAllWarehouses.Name = "btnViewAllWarehouses";
-            this.btnViewAllWarehouses.Size = new Size(130, 30);
-            this.btnViewAllWarehouses.TabIndex = 7;
-            this.btnViewAllWarehouses.Text = "View All Products";
-            this.btnViewAllWarehouses.UseVisualStyleBackColor = true;
-            //this.btnViewAllWarehouses.Click += new EventHandler(this.btnViewAllWarehouses_Click);
+            this.btnViewProductsByCategory.Location = new Point(350, 300);
+            this.btnViewProductsByCategory.Name = "btnViewProductsByCategory";
+            this.btnViewProductsByCategory.Size = new Size(130, 30);
+            this.btnViewProductsByCategory.TabIndex = 7;
+            this.btnViewProductsByCategory.Text = "View Products";
+            this.btnViewProductsByCategory.UseVisualStyleBackColor = true;
+            this.btnViewProductsByCategory.Click += new EventHandler(this.btnViewProductsByCategory_Click);
 
             this.lblLowStockTitle.AutoSize = true;
             this.lblLowStockTitle.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point);
@@ -186,7 +186,7 @@ namespace FASCloset.Forms
             this.Controls.Add(this.btnDeleteCategory);
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.btnViewAllWarehouses);
+            this.Controls.Add(this.btnViewProductsByCategory);
             this.Controls.Add(this.lblLowStockTitle);
             this.Controls.Add(this.TxtSearchProductId);
             this.Controls.Add(this.btnSearch);
@@ -207,7 +207,7 @@ namespace FASCloset.Forms
         public TextBox txtStockQuantity;
         public Button btnUpdateStock;
         public Button btnTransferStock;
-        public Button btnViewAllWarehouses;
+        public Button btnViewProductsByCategory;
         public TextBox TxtSearchProductId;
         public Button btnSearch;
 
