@@ -56,6 +56,23 @@ namespace FASCloset.Services
                 LogNotification(NotificationType.Error, "Error sending low stock notification", ex.Message);
             }
         }
+
+         public static void ShowLowStockPopup(List<Product> lowStockItems)
+        {
+            if (lowStockItems == null || lowStockItems.Count == 0)
+                return;
+
+            StringBuilder sb = new StringBuilder("⚠ Low stock warning:\n\n");
+            foreach (var product in lowStockItems.Take(5))
+            {
+                sb.AppendLine($"- {product.ProductName} (Stock: {product.Stock})");
+            }
+
+            if (lowStockItems.Count > 5)
+                sb.AppendLine($"\n...and {lowStockItems.Count - 5} more.");
+
+            MessageBox.Show(sb.ToString(), "Low Stock Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
         
         /// <summary>
         /// Creates a nicely formatted message for low stock items

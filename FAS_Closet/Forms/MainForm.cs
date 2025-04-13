@@ -16,6 +16,9 @@ namespace FASCloset.Forms
         private UcDashboard? ucDashboard = null;
         private UcNotificationSettings? ucNotificationSettings = null;
 
+        private System.Windows.Forms.Timer notificationTimer;
+
+
         public MainForm(User user)
         {
             InitializeComponent();
@@ -29,9 +32,96 @@ namespace FASCloset.Forms
 
             // Check for low stock items on startup
             NotificationManager.CheckAndSendLowStockNotifications();
+            StartNotificationTimer();
 
             btnDashboard_Click(this, EventArgs.Empty);
         }
+
+        private void StartNotificationTimer()
+        {
+            notificationTimer = new System.Windows.Forms.Timer();
+            notificationTimer.Interval = 10000; // 5 seconds
+            notificationTimer.Tick += (s, e) =>
+            {
+                var lowStock = InventoryManager.GetLowStockProducts();
+                if (lowStock.Count > 0)
+                {
+                    ShowToastNotification(lowStock);
+                    NotificationManager.CheckAndSendLowStockNotifications();
+                }
+            };
+            notificationTimer.Start();
+        }
+
+        private void ShowToastNotification(List<Product> lowStockItems)
+        {
+            if (lowStockItems == null || lowStockItems.Count == 0) return;
+
+            // Xoá các toast cũ (nếu cần)
+            var existingToast = this.Controls.OfType<Panel>().FirstOrDefault(p => p.Name == "LowStockToast");
+            if (existingToast != null) this.Controls.Remove(existingToast);
+
+            var toast = new Panel
+            {
+                Name = "LowStockToast",
+                Size = new Size(280, 140),
+                BackColor = Color.FromArgb(255, 255, 192),
+                BorderStyle = BorderStyle.FixedSingle,
+                Location = new Point(this.ClientSize.Width - 290, 10),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+
+            var title = new Label
+            {
+                Text = "⚠ Low Stock Alert",
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                ForeColor = Color.DarkRed,
+                Dock = DockStyle.Top,
+                Height = 30,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            toast.Controls.Add(title);
+
+            var content = new Label
+            {
+                Text = string.Join("\n", lowStockItems.Take(3).Select(p => $"- {p.ProductName} ({p.Stock})")) +
+                       (lowStockItems.Count > 3 ? $"\n+{lowStockItems.Count - 3} more..." : ""),
+                Font = new Font("Segoe UI", 9F),
+                AutoSize = false,
+                Location = new Point(10, 35),
+                Size = new Size(260, 70)
+            };
+            toast.Controls.Add(content);
+
+            var closeButton = new Button
+            {
+                Text = "X",
+                BackColor = Color.Red,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Size = new Size(25, 25),
+                Location = new Point(toast.Width - 30, 5)
+            };
+            closeButton.FlatAppearance.BorderSize = 0;
+            closeButton.Click += (s, e) => this.Controls.Remove(toast);
+            toast.Controls.Add(closeButton);
+
+            this.Controls.Add(toast);
+            toast.BringToFront();
+
+            // Auto-remove sau 6s
+            var autoClose = new System.Windows.Forms.Timer { Interval = 4000 };
+            autoClose.Tick += (s, e) =>
+            {
+                if (this.Controls.Contains(toast))
+                    this.Controls.Remove(toast);
+                autoClose.Stop();
+            };
+            autoClose.Start();
+        }
+
+
+
 
         private User CurrentUser { get; set; }
         private int CurrentWarehouseID { get; set; } = 1; // Default to main warehouse
