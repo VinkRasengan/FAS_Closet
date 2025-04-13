@@ -4,9 +4,6 @@
     <_LastSelectedProfileId>c:\Project\FAS_Closet\FAS_Closet\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Update="Forms\AllWarehousesInventoryForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Update="Forms\AuthForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -35,9 +32,6 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="Forms\UC_RevenueReport.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="Forms\UC_WarehouseManagement.cs">
       <SubType>UserControl</SubType>
     </Compile>
   </ItemGroup>

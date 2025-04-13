@@ -15,7 +15,6 @@ namespace FASCloset.Forms
         private UcRevenueReport? ucRevenueReport = null;
         private UcDashboard? ucDashboard = null;
         private UcNotificationSettings? ucNotificationSettings = null;
-        private UcWarehouseManagement? ucWarehouseManagement = null;
 
         public MainForm(User user)
         {
@@ -41,55 +40,10 @@ namespace FASCloset.Forms
         {
             // Cấu hình warehouse dropdown
             cmbWarehouses.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbWarehouses.SelectedIndexChanged += CmbWarehouses_SelectedIndexChanged;
 
             // Load warehouses for this user
-            LoadWarehouses();
         }
 
-        private void LoadWarehouses()
-        {
-            try
-            {
-                // Get warehouses for current user
-                var warehouses = WarehouseManager.GetWarehousesByUser(CurrentUser.UserID);
-
-                // If user has no warehouses assigned, get all warehouses
-                if (warehouses.Count == 0)
-                {
-                    warehouses = WarehouseManager.GetWarehouses();
-                }
-
-                // Setup data binding
-                cmbWarehouses.DisplayMember = "Name";
-                cmbWarehouses.ValueMember = "WarehouseID";
-                cmbWarehouses.DataSource = warehouses;
-
-                // Default to first warehouse
-                if (warehouses.Count > 0)
-                {
-                    CurrentWarehouseID = warehouses[0].WarehouseID;
-                    cmbWarehouses.SelectedValue = CurrentWarehouseID;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading warehouses: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void CmbWarehouses_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (cmbWarehouses.SelectedItem is Warehouse selectedWarehouse)
-            {
-                // Update current warehouse
-                CurrentWarehouseID = selectedWarehouse.WarehouseID;
-
-                // Refresh the current view to show data for selected warehouse
-                RefreshCurrentView();
-            }
-        }
 
         private void RefreshCurrentView()
         {
@@ -98,15 +52,16 @@ namespace FASCloset.Forms
             {
                 if (activeControl is UcInventoryManagement invManagement)
                 {
-                    invManagement.LoadWarehouseInventory(CurrentWarehouseID);
+                    invManagement.LoadLowStockProducts(); // Đã chuyển sang không còn dùng warehouseId
                 }
                 else if (activeControl is UcProductManagement prodManagement)
                 {
-                    prodManagement.LoadProducts(CurrentWarehouseID);
+                    prodManagement.LoadProducts(); // Cũng đã bỏ warehouseId
                 }
                 // Add more controls as needed
             }
         }
+
 
         // Sự kiện cho nút Logout
         private void btnLogout_Click(object sender, EventArgs e)
@@ -169,8 +124,6 @@ namespace FASCloset.Forms
             if (ucInventoryManagement == null)
             {
                 ucInventoryManagement = new UcInventoryManagement();
-                ucInventoryManagement.txtProductId = new TextBox();
-                ucInventoryManagement.txtStockQuantity = new TextBox();
                 ucInventoryManagement.dataGridViewLowStock = new DataGridView();
                 ucInventoryManagement.TxtSearchProductId = new TextBox();
             }
@@ -267,18 +220,6 @@ namespace FASCloset.Forms
             }
 
             LoadUserControl(ucNotificationSettings);
-        }
-
-        private void btnWarehouseManagement_Click(object sender, EventArgs e)
-        {
-            UpdateFeatureToolbar(new string[] { "Add Warehouse", "Edit Warehouse", "Deactivate Warehouse" });
-
-            if (ucWarehouseManagement == null)
-            {
-                ucWarehouseManagement = new UcWarehouseManagement(CurrentUser);
-            }
-
-            LoadUserControl(ucWarehouseManagement);
         }
 
         // Hàm phụ trợ để load một UserControl vào contentPanel

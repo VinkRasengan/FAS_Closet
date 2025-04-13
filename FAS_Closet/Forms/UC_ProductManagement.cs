@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows.Forms;
 using FASCloset.Models;
 using FASCloset.Services;
@@ -188,59 +188,44 @@ namespace FASCloset.Forms
         #region Data Loading Methods
 
         // Add a method to load products with a specific warehouse ID
-        public void LoadProducts(int warehouseId = 1)
+        public void LoadProducts()
         {
             try
             {
                 List<Product> resultProducts;
-                
-                // Load products with appropriate filters
+
                 if (showOnlyLowStock)
                 {
-                    var lowStockProducts = InventoryManager.GetLowStockProducts(warehouseId);
-                    
-                    // Convert Inventory objects to Product objects, then filter
-                    resultProducts = lowStockProducts
-                        .Where(i => i.Product != null)
-                        .Select(i => i.Product!)
+                    // Lấy các sản phẩm tồn kho thấp (Stock < 5)
+                    resultProducts = InventoryManager.GetLowStockProducts()
                         .Where(p => showInactiveProducts || p.IsActive)
                         .ToList();
                 }
                 else
                 {
-                    // Get products filtered by warehouse
-                    resultProducts = ProductManager.GetProductsForWarehouse(warehouseId, showInactiveProducts);
-                    Console.WriteLine($"Loaded {resultProducts.Count} products for warehouse {warehouseId}");
-                    
-                    // If resulting collection is empty, try loading all products as fallback
-                    if (resultProducts.Count == 0)
-                    {
-                        Console.WriteLine("No products found for current warehouse, trying to load all products");
-                        resultProducts = ProductManager.GetProducts(showInactiveProducts);
-                        Console.WriteLine($"Loaded {resultProducts.Count} products in total");
-                    }
+                    // Lấy tất cả sản phẩm, có thể bao gồm sản phẩm không hoạt động
+                    resultProducts = InventoryManager.GetAllProducts(!showInactiveProducts);
                 }
-                
-                // Debug information
-                Console.WriteLine($"Retrieved {resultProducts?.Count ?? 0} products for warehouse {warehouseId}");
-                
-                // Properly clear and rebind data
+
+                Console.WriteLine($"Retrieved {resultProducts?.Count ?? 0} products");
+
+                // Cập nhật dữ liệu hiển thị
                 productsBindingSource.SuspendBinding();
                 productsBindingSource.Clear();
                 productsBindingSource.DataSource = null;
                 productsBindingSource.DataSource = resultProducts;
                 productsBindingSource.ResumeBinding();
-                
-                // Make sure UI is updated
+
                 ProductDisplay.Refresh();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in LoadProducts: {ex.Message}");
-                MessageBox.Show($"Error loading products: {ex.Message}", "Data Loading Error", 
+                MessageBox.Show($"Error loading products: {ex.Message}", "Data Loading Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         private void LoadProductsByCategory(int categoryId)
         {
@@ -401,16 +386,16 @@ namespace FASCloset.Forms
                 if (CmbFilterCategory.SelectedItem is Category selectedCategory)
                 {
                     Console.WriteLine($"Category selected: {selectedCategory.CategoryName} (ID: {selectedCategory.CategoryID})");
-                    
-                    if (selectedCategory.CategoryID == 0) 
+
+                    if (selectedCategory.CategoryID == 0)
                     {
-                        // All Categories selected - get current warehouse ID if available from MainForm
-                        int warehouseId = GetCurrentWarehouseId();
-                        Console.WriteLine($"Loading all products for warehouse ID: {warehouseId}");
-                        LoadProducts(warehouseId); 
+                        // "All Categories" selected — load all products
+                        Console.WriteLine("Loading all products...");
+                        LoadProducts();
                     }
-                    else 
+                    else
                     {
+                        // Load products for selected category
                         Console.WriteLine($"Loading products for category ID: {selectedCategory.CategoryID}");
                         LoadProductsByCategory(selectedCategory.CategoryID);
                     }
@@ -419,10 +404,11 @@ namespace FASCloset.Forms
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in category change: {ex.Message}");
-                MessageBox.Show($"Error loading products by category: {ex.Message}", "Error", 
+                MessageBox.Show($"Error loading products by category: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         // Helper method to get current warehouse ID from parent form
         private int GetCurrentWarehouseId()
@@ -972,29 +958,27 @@ namespace FASCloset.Forms
             }
         }
 
-        private void LoadLowStockProducts(int warehouseId)
+        private void LoadLowStockProducts()
         {
             try
             {
-                // Use the unified method with the correct parameter
-                var lowStockProducts = InventoryManager.GetLowStockProducts(warehouseId);
-                
-                // Properly handle the inventory collection that contains Product objects
+                var lowStockProducts = InventoryManager.GetLowStockProducts();
+
                 var filteredProducts = lowStockProducts
-                    .Where(i => i.Product != null)
-                    .Select(i => i.Product!)
                     .Where(p => showInactiveProducts || p.IsActive)
                     .ToList();
-                    
-                // Use the filtered products list as needed
-                // For example, display in a separate grid:
-                // lowStockGridView.DataSource = new BindingSource { DataSource = filteredProducts };
+
+                // Gán vào data grid hoặc binding source
+                //lowStockGridView.DataSource = new BindingSource { DataSource = filteredProducts };
+
+                Console.WriteLine($"Loaded {filteredProducts.Count} low stock products");
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading low stock products: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         #endregion
     }

@@ -8,14 +8,11 @@ namespace FASCloset.Forms
 {
     public partial class TransferStockForm : Form
     {
-        private Product selectedProduct;
-        private List<Warehouse> warehouses;
-        
+        private Product selectedProduct;        
         public TransferStockForm(Product product)
         {
             InitializeComponent();
             selectedProduct = product;
-            LoadWarehouses();
             InitializeProductInfo();
         }
         
@@ -63,7 +60,6 @@ namespace FASCloset.Forms
             cmbFromWarehouse.Location = new System.Drawing.Point(130, 20);
             cmbFromWarehouse.Size = new System.Drawing.Size(200, 23);
             cmbFromWarehouse.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbFromWarehouse.SelectedIndexChanged += CmbFromWarehouse_SelectedIndexChanged;
             
             lblCurrentStock = new Label();
             lblCurrentStock.Location = new System.Drawing.Point(130, 50);
@@ -99,7 +95,7 @@ namespace FASCloset.Forms
             btnTransfer.Text = "Transfer";
             btnTransfer.Size = new System.Drawing.Size(100, 30);
             btnTransfer.Location = new System.Drawing.Point(130, 150);
-            btnTransfer.Click += BtnTransfer_Click;
+            //btnTransfer.Click += BtnTransfer_Click;
             
             Button btnCancel = new Button();
             btnCancel.Text = "Cancel";
@@ -135,116 +131,58 @@ namespace FASCloset.Forms
                                  $"Category: {selectedProduct.CategoryName}\r\n" +
                                  $"Total Stock: {selectedProduct.Stock}";
         }
+       
         
-        private void LoadWarehouses()
-        {
-            try
-            {
-                warehouses = WarehouseManager.GetWarehouses();
+        //private void BtnTransfer_Click(object sender, EventArgs e)
+        //{
+        //    try
+        //    {
+        //        if (cmbFromWarehouse.SelectedItem == null || cmbToWarehouse.SelectedItem == null)
+        //        {
+        //            MessageBox.Show("Please select both source and destination warehouses.", "Missing Selection", 
+        //                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        //            return;
+        //        }
                 
-                cmbFromWarehouse.DisplayMember = "Name";
-                cmbFromWarehouse.ValueMember = "WarehouseID";
-                cmbFromWarehouse.DataSource = new BindingSource { DataSource = warehouses };
+        //        int fromWarehouseId = (int)cmbFromWarehouse.SelectedValue;
+        //        int toWarehouseId = (int)cmbToWarehouse.SelectedValue;
+        //        int quantity = (int)numQuantity.Value;
                 
-                List<Warehouse> toWarehouses = new List<Warehouse>(warehouses);
-                cmbToWarehouse.DisplayMember = "Name";
-                cmbToWarehouse.ValueMember = "WarehouseID";
-                cmbToWarehouse.DataSource = new BindingSource { DataSource = toWarehouses };
+        //        if (fromWarehouseId == toWarehouseId)
+        //        {
+        //            MessageBox.Show("Source and destination warehouses must be different.", "Invalid Selection", 
+        //                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        //            return;
+        //        }
                 
-                // Ensure different default selections
-                if (cmbToWarehouse.Items.Count > 1)
-                    cmbToWarehouse.SelectedIndex = 1;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading warehouses: {ex.Message}", "Error", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        
-        private void CmbFromWarehouse_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (cmbFromWarehouse.SelectedItem is Warehouse selectedWarehouse)
-            {
-                UpdateFromWarehouseStock(selectedWarehouse.WarehouseID);
-            }
-        }
-        
-        private void UpdateFromWarehouseStock(int warehouseId)
-        {
-            try
-            {
-                var inventoryItem = InventoryManager.GetInventoryByProductAndWarehouse(selectedProduct.ProductID, warehouseId);
-                if (inventoryItem != null)
-                {
-                    lblCurrentStock.Text = $"Current Stock: {inventoryItem.StockQuantity}";
-                    numQuantity.Maximum = inventoryItem.StockQuantity;
-                    numQuantity.Value = Math.Min(inventoryItem.StockQuantity, numQuantity.Value);
-                }
-                else
-                {
-                    lblCurrentStock.Text = "Current Stock: 0";
-                    numQuantity.Maximum = 0;
-                    numQuantity.Value = 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error retrieving stock information: {ex.Message}", "Error", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        
-        private void BtnTransfer_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (cmbFromWarehouse.SelectedItem == null || cmbToWarehouse.SelectedItem == null)
-                {
-                    MessageBox.Show("Please select both source and destination warehouses.", "Missing Selection", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
+        //        if (quantity <= 0)
+        //        {
+        //            MessageBox.Show("Please enter a quantity greater than zero.", "Invalid Quantity", 
+        //                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        //            return;
+        //        }
                 
-                int fromWarehouseId = (int)cmbFromWarehouse.SelectedValue;
-                int toWarehouseId = (int)cmbToWarehouse.SelectedValue;
-                int quantity = (int)numQuantity.Value;
-                
-                if (fromWarehouseId == toWarehouseId)
-                {
-                    MessageBox.Show("Source and destination warehouses must be different.", "Invalid Selection", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                
-                if (quantity <= 0)
-                {
-                    MessageBox.Show("Please enter a quantity greater than zero.", "Invalid Quantity", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                
-                // Confirm transfer
-                if (MessageBox.Show($"Are you sure you want to transfer {quantity} units of {selectedProduct.ProductName} " +
-                    $"from {((Warehouse)cmbFromWarehouse.SelectedItem).Name} to {((Warehouse)cmbToWarehouse.SelectedItem).Name}?", 
-                    "Confirm Transfer", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                {
-                    // Perform transfer
-                    InventoryManager.TransferStock(selectedProduct.ProductID, fromWarehouseId, toWarehouseId, quantity);
+        //        // Confirm transfer
+        //        if (MessageBox.Show($"Are you sure you want to transfer {quantity} units of {selectedProduct.ProductName} " +
+        //            $"from {((Warehouse)cmbFromWarehouse.SelectedItem).Name} to {((Warehouse)cmbToWarehouse.SelectedItem).Name}?", 
+        //            "Confirm Transfer", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+        //        {
+        //            // Perform transfer
+        //            InventoryManager.TransferStock(selectedProduct.ProductID, fromWarehouseId, toWarehouseId, quantity);
                     
-                    MessageBox.Show("Stock transferred successfully.", "Success", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+        //            MessageBox.Show("Stock transferred successfully.", "Success", 
+        //                MessageBoxButtons.OK, MessageBoxIcon.Information);
                     
-                    DialogResult = DialogResult.OK;
-                    Close();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error transferring stock: {ex.Message}", "Error", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+        //            DialogResult = DialogResult.OK;
+        //            Close();
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Error transferring stock: {ex.Message}", "Error", 
+        //            MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //    }
+        //}
         
         private void BtnCancel_Click(object sender, EventArgs e)
         {

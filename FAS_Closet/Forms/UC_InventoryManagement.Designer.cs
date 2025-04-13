@@ -103,11 +103,11 @@ namespace FASCloset.Forms
             this.txtProductId = new TextBox();
             this.txtStockQuantity = new TextBox();
             this.btnUpdateStock = new Button();
-            this.lblCurrentWarehouse = new Label();
             this.TxtSearchProductId = new TextBox();
             this.btnSearch = new Button();
             this.btnTransferStock = new Button();
             this.btnViewAllWarehouses = new Button();
+
 
             this.panel1.BorderStyle = BorderStyle.FixedSingle;
             this.panel1.Controls.Add(new Label() { Text = "Product ID:", AutoSize = true, Location = new Point(10, 15) });
@@ -139,20 +139,13 @@ namespace FASCloset.Forms
             this.btnUpdateStock.UseVisualStyleBackColor = true;
             this.btnUpdateStock.Click += new EventHandler(this.btnUpdateStock_Click);
 
-            this.lblCurrentWarehouse.AutoSize = true;
-            this.lblCurrentWarehouse.Location = new Point(350, 270);
-            this.lblCurrentWarehouse.Name = "lblCurrentWarehouse";
-            this.lblCurrentWarehouse.Size = new Size(179, 15);
-            this.lblCurrentWarehouse.TabIndex = 6;
-            this.lblCurrentWarehouse.Text = "Current Warehouse: Main Warehouse";
-
             this.btnViewAllWarehouses.Location = new Point(350, 300);
             this.btnViewAllWarehouses.Name = "btnViewAllWarehouses";
             this.btnViewAllWarehouses.Size = new Size(130, 30);
             this.btnViewAllWarehouses.TabIndex = 7;
-            this.btnViewAllWarehouses.Text = "View All Warehouses";
+            this.btnViewAllWarehouses.Text = "View All Products";
             this.btnViewAllWarehouses.UseVisualStyleBackColor = true;
-            this.btnViewAllWarehouses.Click += new EventHandler(this.btnViewAllWarehouses_Click);
+            //this.btnViewAllWarehouses.Click += new EventHandler(this.btnViewAllWarehouses_Click);
 
             this.lblLowStockTitle.AutoSize = true;
             this.lblLowStockTitle.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point);
@@ -193,7 +186,6 @@ namespace FASCloset.Forms
             this.Controls.Add(this.btnDeleteCategory);
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.lblCurrentWarehouse);
             this.Controls.Add(this.btnViewAllWarehouses);
             this.Controls.Add(this.lblLowStockTitle);
             this.Controls.Add(this.TxtSearchProductId);
@@ -205,27 +197,9 @@ namespace FASCloset.Forms
             this.Name = "UcInventoryManagement";
             this.Size = new Size(800, 740);
         }
-        
-        private void btnViewAllWarehouses_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // Show all warehouse inventory in a new form with tabs
-                using (var allWarehouseForm = new AllWarehousesInventoryForm())
-                {
-                    allWarehouseForm.ShowDialog();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error viewing all warehouses: {ex.Message}", 
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
         public Label lblTitle;
         public Label lblLowStockTitle;
-        public Label lblCurrentWarehouse;
         public Panel panel1;
         public Panel panel2;
         public DataGridView dataGridViewLowStock;

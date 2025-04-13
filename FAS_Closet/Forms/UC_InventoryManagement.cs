@@ -1,17 +1,19 @@
-using System;
+﻿using System;
 using System.Windows.Forms;
-using FASCloset.Models;  // Add this import for Product class
+using FASCloset.Models;
 using FASCloset.Services;
-using System.Drawing;
 using System.Linq;
-using System.ComponentModel;
 
 namespace FASCloset.Forms
 {
     public partial class UcInventoryManagement : UserControl
     {
-        // Add a field to track current warehouse
-        private int currentWarehouseId = 1;
+        public UcInventoryManagement()
+        {
+            InitializeComponent();
+            LoadCategories();
+            LoadLowStockProducts(); // load ngay khi khởi tạo
+        }
 
         public void LoadCategories()
         {
@@ -27,6 +29,7 @@ namespace FASCloset.Forms
                 MessageBox.Show("Please enter a category name.");
                 return;
             }
+
             var newCategory = new Category
             {
                 CategoryName = name,
@@ -34,6 +37,7 @@ namespace FASCloset.Forms
                 IsActive = true,
                 CreatedDate = DateTime.Now
             };
+
             CategoryManager.AddCategory(newCategory);
             LoadCategories();
             txtCategoryName.Clear();
@@ -83,132 +87,79 @@ namespace FASCloset.Forms
             }
         }
 
-        public UcInventoryManagement()
-        {
-            InitializeComponent();
-            LoadCategories();
-        }
-
-        public void btnUpdateStock_Click(object? sender, EventArgs e)
-        {
-            UpdateProductStock();
-        }
-
-        // Add a method to load warehouse-specific inventory
-        public void LoadWarehouseInventory(int warehouseId)
-        {
-            // Store the current warehouse ID
-            currentWarehouseId = warehouseId;
-            
-            try
-            {
-                // Get low stock products for this warehouse
-                var lowStockProducts = InventoryManager.GetLowStockProducts(warehouseId);
-                dataGridViewLowStock.DataSource = lowStockProducts;
-                
-                // Update UI elements
-                lblCurrentWarehouse.Text = $"Current Warehouse: {warehouseId}";
-                
-                // Refresh grid views
-                dataGridViewLowStock.Refresh();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading warehouse inventory: {ex.Message}", 
-                    "Inventory Loading Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        // Update the UpdateStock method to include warehouse
         private void UpdateProductStock()
         {
             try
             {
-                if (string.IsNullOrEmpty(txtProductId.Text))
+                if (!int.TryParse(txtProductId.Text.Trim(), out int productId))
                 {
-                    MessageBox.Show("Please enter a product ID.", "Missing Information", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Please enter a valid numeric Product ID.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-                
-                if (string.IsNullOrEmpty(txtStockQuantity.Text))
+
+                if (!int.TryParse(txtStockQuantity.Text.Trim(), out int quantity) || quantity < 0)
                 {
-                    MessageBox.Show("Please enter a stock quantity.", "Missing Information", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Please enter a valid non-negative stock quantity.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-                
-                if (!int.TryParse(txtProductId.Text, out int productId))
-                {
-                    MessageBox.Show("Invalid product ID. Please enter a number.", "Invalid Input", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                
-                if (!int.TryParse(txtStockQuantity.Text, out int quantity) || quantity < 0)
-                {
-                    MessageBox.Show("Invalid stock quantity. Please enter a non-negative number.", "Invalid Input", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                
-                // Get product information to confirm
+
                 var product = ProductManager.GetProductById(productId);
                 if (product == null)
                 {
-                    MessageBox.Show("No product found with that ID.", "Product Not Found", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("No product found with that ID.", "Product Not Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-                
-                // Confirm update
-                if (MessageBox.Show($"Are you sure you want to update stock for {product.ProductName} to {quantity}?", 
-                    "Confirm Update", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                {
-                    // Update stock with warehouse
-                    InventoryManager.UpdateStock(productId, currentWarehouseId, quantity);
-                    
-                    // Show success message and refresh data
-                    MessageBox.Show("Stock updated successfully.", "Success", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        
-                    // Refresh inventory display
-                    LoadWarehouseInventory(currentWarehouseId);
-                    
-                    // Clear input fields
-                    txtProductId.Text = "";
-                    txtStockQuantity.Text = "";
-                }
+
+                var confirmResult = MessageBox.Show(
+                    $"Are you sure you want to update the stock of '{product.ProductName}' to {quantity}?",
+                    "Confirm Stock Update", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (confirmResult != DialogResult.Yes) return;
+
+                InventoryManager.UpdateStock(productId, quantity);
+                LoadLowStockProducts();
+
+                txtProductId.Clear();
+                txtStockQuantity.Clear();
+
+                MessageBox.Show("Stock updated successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating stock: {ex.Message}", "Error", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error updating stock: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-
-        private void btnLowStockWarning_Click(object? sender, EventArgs e)
+        public void LoadLowStockProducts()
         {
-            if (dataGridViewLowStock == null)
+            try
             {
-                MessageBox.Show("Data grid view not initialized.");
-                return;
+                var lowStockProducts = InventoryManager.GetLowStockProducts();
+                dataGridViewLowStock.DataSource = null;
+                dataGridViewLowStock.AutoGenerateColumns = true;
+                dataGridViewLowStock.DataSource = lowStockProducts;
             }
-            
-            var lowStockProducts = InventoryManager.GetLowStockProducts(currentWarehouseId);
-            dataGridViewLowStock.DataSource = lowStockProducts;
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading low stock products: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
+
+        public void btnUpdateStock_Click(object? sender, EventArgs e) => UpdateProductStock();
+
+        private void btnLowStockWarning_Click(object? sender, EventArgs e) => LoadLowStockProducts();
 
         private void TxtSearchProductId_TextChanged(object? sender, EventArgs e)
         {
             if (TxtSearchProductId == null || dataGridViewLowStock == null)
                 return;
-                
+
             var searchText = TxtSearchProductId.Text;
             if (int.TryParse(searchText, out int productId))
             {
-                var filteredProducts = ProductManager.GetProducts().Where(p => p.ProductID == productId).ToList();
+                var filteredProducts = ProductManager.GetProducts()
+                    .Where(p => p.ProductID == productId)
+                    .ToList();
                 dataGridViewLowStock.DataSource = new BindingSource { DataSource = filteredProducts };
             }
         }
