@@ -22,17 +22,6 @@ namespace FASCloset.Forms
             btnDeleteProduct.Click += btnDeleteProduct_Click;
             this.Controls.Add(btnDeleteProduct);
 
-            Button btnEditProduct = new Button();
-            btnEditProduct.Text = "Edit Product";
-            btnEditProduct.Location = new Point(530, 190);  // Next to Delete Product button
-            this.Controls.Add(btnEditProduct);
-
-            Button btnEditDraftOrder = new Button();
-            btnEditDraftOrder.Text = "Edit Draft Order";
-            btnEditDraftOrder.Location = new Point(530, 350);  // bên phải bảng
-            btnEditDraftOrder.Click += btnEditDraftOrder_Click;
-            this.Controls.Add(btnEditDraftOrder);
-
             Button btnDeleteDraftOrder = new Button();
             btnDeleteDraftOrder.Text = "Delete Draft Order";
             btnDeleteDraftOrder.Location = new Point(530, 370);  // bên phải bảng
@@ -589,12 +578,17 @@ namespace FASCloset.Forms
 
                 // Optionally, you could load the finalized orders if needed
                 LoadOrders();
+
+                // Clear the DataGridView displaying the product list
+                productList.DataSource = null;
+
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error finalizing order: " + ex.Message);
             }
         }
+
 
 
         private bool ValidateOrderInputs()
