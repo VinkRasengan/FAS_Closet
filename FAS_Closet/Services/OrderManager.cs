@@ -185,9 +185,8 @@ namespace FASCloset.Services
                                     command.Parameters.AddWithValue("@Quantity", detail.Quantity);
                                     command.Parameters.AddWithValue("@UnitPrice", detail.UnitPrice);
                                     command.ExecuteNonQuery();
-                                    
                                     // Update inventory
-                                    UpdateInventory(connection, transaction, detail.ProductID, detail.Quantity);
+                                    UpdateProductStock(connection, transaction, detail.ProductID, detail.Quantity);
                                 }
                             }
                             
@@ -210,28 +209,30 @@ namespace FASCloset.Services
                 throw new InvalidOperationException("Failed to create order with details", ex);
             }
         }
-        
+
         /// <summary>
         /// Updates inventory after an order is placed
         /// </summary>
-        private static void UpdateInventory(SqliteConnection connection, SqliteTransaction transaction, int productId, int quantity)
+        private static void UpdateProductStock(SqliteConnection connection, SqliteTransaction transaction, int productId, int quantity)
         {
             string query = @"
-                UPDATE Inventory SET StockQuantity = StockQuantity - @Quantity 
-                WHERE ProductID = @ProductID AND StockQuantity >= @Quantity";
-                
+        UPDATE Product 
+        SET Stock = Stock - @Quantity 
+        WHERE ProductID = @ProductID AND Stock >= @Quantity";
+
             using (var command = new SqliteCommand(query, connection, transaction))
             {
                 command.Parameters.AddWithValue("@ProductID", productId);
                 command.Parameters.AddWithValue("@Quantity", quantity);
-                
+
                 int rowsAffected = command.ExecuteNonQuery();
-                
+
                 if (rowsAffected == 0)
                 {
                     throw new InvalidOperationException($"Not enough stock for product ID {productId}");
                 }
             }
         }
+
     }
 }

@@ -16,8 +16,11 @@
         private List<OrderDetail> orderDetails = new List<OrderDetail>();
         public ComboBox cmbCustomer;
         private Button btnCreateCustomer;
+        private DataGridView productList;
+        private DataGridView dgvDraftOrders;
+        private Label lblSuccessOrder;
 
-        
+
         /// <summary> 
         /// Clean up any resources being used.
         /// </summary>
@@ -54,26 +57,62 @@
             btnCreateCustomer.Name = "btnCreateCustomer";
             btnCreateCustomer.Click += new EventHandler(this.HandleCustomerAdd);
             this.Controls.Add(btnCreateCustomer);
-            
+
+            Label lblProductDetails = new Label();
+            lblProductDetails.Text = "Order Product Detail";
+            lblProductDetails.Location = new Point(20, 140);  // Set location above the product list table
+            lblProductDetails.Size = new Size(200, 20);  // Set size of the label
+            lblProductDetails.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            lblProductDetails.ForeColor = Color.Black;
+            this.Controls.Add(lblProductDetails);
+
+            this.productList = new DataGridView();
+            this.productList.Location = new System.Drawing.Point(20, 160);  // Below the label
+            this.productList.Name = "productList";
+            this.productList.Size = new System.Drawing.Size(500, 130);
+            this.productList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            this.productList.AllowUserToAddRows = false;
+            this.productList.ReadOnly = true;
+            this.productList.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            this.productList.ColumnHeadersVisible = true; // Ensure column headers are visible
+            this.productList.BackColor = Color.White;
+            this.Controls.Add(this.productList);
+
+            Label draftOrderDetail = new Label();
+            draftOrderDetail.Text = "Draft Orders";
+            draftOrderDetail.Location = new Point(20, 350);  // Set location above the product list table
+            draftOrderDetail.Size = new Size(200, 20);  // Set size of the label
+            draftOrderDetail.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            draftOrderDetail.ForeColor = Color.Black;
+            this.Controls.Add(draftOrderDetail);
+
+            this.dgvDraftOrders = new System.Windows.Forms.DataGridView();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvDraftOrders)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // dgvDraftOrders
+            // 
+            this.dgvDraftOrders.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvDraftOrders.Location = new System.Drawing.Point(20, 370); 
+            this.dgvDraftOrders.Name = "dgvDraftOrders";
+            this.dgvDraftOrders.Size = new System.Drawing.Size(500, 150); // Adjust size
+            this.dgvDraftOrders.TabIndex = 0;
+            this.Controls.Add(this.dgvDraftOrders);
+
+            ((System.ComponentModel.ISupportInitialize)(this.dgvDraftOrders)).EndInit();
+            this.ResumeLayout(false);
+
             // Payment Method
             this.cmbPaymentMethod = new ComboBox();
             this.cmbPaymentMethod.Location = new System.Drawing.Point(120, 50);
             this.cmbPaymentMethod.Name = "cmbPaymentMethod";
             this.cmbPaymentMethod.Size = new System.Drawing.Size(150, 23);
             this.cmbPaymentMethod.DropDownStyle = ComboBoxStyle.DropDownList;
-            
-            // Create Order Button
-            Button btnCreateOrder = new Button();
-            btnCreateOrder.Location = new System.Drawing.Point(120, 80);
-            btnCreateOrder.Name = "btnCreateOrder";
-            btnCreateOrder.Size = new System.Drawing.Size(150, 30);
-            btnCreateOrder.Text = "Create Order";
-            btnCreateOrder.UseVisualStyleBackColor = true;
-            btnCreateOrder.Click += new System.EventHandler(this.btnCreateOrder_Click);
+           
             
             // Orders Grid
             this.dgvOrders = new DataGridView();
-            this.dgvOrders.Location = new System.Drawing.Point(20, 150);
+            this.dgvOrders.Location = new System.Drawing.Point(20, 600);
             this.dgvOrders.Name = "dgvOrders";
             this.dgvOrders.Size = new System.Drawing.Size(500, 200);
             this.dgvOrders.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -81,24 +120,34 @@
             this.dgvOrders.ReadOnly = true;
             this.dgvOrders.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             
-            // Process Payment Button
-            Button btnProcessPayment = new Button();
-            btnProcessPayment.Location = new System.Drawing.Point(20, 360);
-            btnProcessPayment.Name = "btnProcessPayment";
-            btnProcessPayment.Size = new System.Drawing.Size(150, 30);
-            btnProcessPayment.Text = "Process Payment";
-            btnProcessPayment.UseVisualStyleBackColor = true;
-            btnProcessPayment.Click += new System.EventHandler(this.btnProcessPayment_Click);
-            
             // Print Invoice Button
             Button btnPrintInvoice = new Button();
-            btnPrintInvoice.Location = new System.Drawing.Point(180, 360);
+            btnPrintInvoice.Location = new System.Drawing.Point(20, 530);
             btnPrintInvoice.Name = "btnPrintInvoice";
             btnPrintInvoice.Size = new System.Drawing.Size(150, 30);
             btnPrintInvoice.Text = "Print Invoice";
             btnPrintInvoice.UseVisualStyleBackColor = true;
             btnPrintInvoice.Click += new System.EventHandler(this.btnPrintInvoice_Click);
-            
+
+            // Create Order Button
+            Button btnCreateOrder = new Button();
+            btnCreateOrder.Location = new System.Drawing.Point(20, 300);
+            btnCreateOrder.Name = "btnCreateOrder";
+            btnCreateOrder.Size = new System.Drawing.Size(150, 30);
+            btnCreateOrder.Text = "Create Order";
+            btnCreateOrder.UseVisualStyleBackColor = true;
+            btnCreateOrder.Click += new System.EventHandler(this.btnCreateOrder_Click);
+
+            this.lblSuccessOrder = new Label();
+            this.lblSuccessOrder.Name = "lblSuccessOrder";
+            this.lblSuccessOrder.Text = "";
+            this.lblSuccessOrder.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            this.lblSuccessOrder.ForeColor = Color.Green;
+            this.lblSuccessOrder.Size = new Size(500, 30);
+            this.lblSuccessOrder.Location = new Point(20, 335);
+            this.lblSuccessOrder.TextAlign = ContentAlignment.MiddleLeft;
+            this.Controls.Add(this.lblSuccessOrder);
+
             // Labels
             Label lblCustomerId = new Label();
             lblCustomerId.Location = new System.Drawing.Point(20, 23);
@@ -106,13 +155,13 @@
             lblCustomerId.Text = "Customer ID:";
             
             Label lblTotalAmount = new Label();
-            lblTotalAmount.Location = new Point(300, 115);
+            lblTotalAmount.Location = new Point(20, 80);
             lblTotalAmount.Size = new Size(100, 23);
             lblTotalAmount.Text = "Total Amount:";
 
             // Total Amount TextBox (mới)
             this.txtTotalAmount = new TextBox();
-            this.txtTotalAmount.Location = new Point(400, 115);
+            this.txtTotalAmount.Location = new Point(120, 80);
             this.txtTotalAmount.Size = new Size(150, 23);
             this.txtTotalAmount.ReadOnly = true;
             this.txtTotalAmount.BackColor = SystemColors.Window;
@@ -178,7 +227,6 @@
             this.Controls.Add(this.cmbPaymentMethod);
             this.Controls.Add(btnCreateOrder);
             this.Controls.Add(this.dgvOrders);
-            this.Controls.Add(btnProcessPayment);
             this.Controls.Add(btnPrintInvoice);
             
             this.Name = "UcOrderManagement";

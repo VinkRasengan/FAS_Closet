@@ -57,7 +57,6 @@ namespace FASCloset.Forms
         {
             if (lowStockItems == null || lowStockItems.Count == 0) return;
 
-            // Xoá các toast cũ (nếu cần)
             var existingToast = this.Controls.OfType<Panel>().FirstOrDefault(p => p.Name == "LowStockToast");
             if (existingToast != null) this.Controls.Remove(existingToast);
 
@@ -82,16 +81,44 @@ namespace FASCloset.Forms
             };
             toast.Controls.Add(title);
 
-            var content = new Label
+            int yOffset = 35;
+            foreach (var product in lowStockItems.Take(3))
             {
-                Text = string.Join("\n", lowStockItems.Take(3).Select(p => $"- {p.ProductName} ({p.Stock})")) +
-                       (lowStockItems.Count > 3 ? $"\n+{lowStockItems.Count - 3} more..." : ""),
-                Font = new Font("Segoe UI", 9F),
-                AutoSize = false,
-                Location = new Point(10, 35),
-                Size = new Size(260, 70)
-            };
-            toast.Controls.Add(content);
+                var link = new LinkLabel
+                {
+                    Text = $"- {product.ProductName} ({product.Stock})",
+                    Font = new Font("Segoe UI", 9F),
+                    AutoSize = true,
+                    Location = new Point(10, yOffset),
+                    Cursor = Cursors.Hand
+                };
+
+                link.LinkClicked += (s, e) =>
+                {
+                    btnInventoryManagement_Click(this, EventArgs.Empty);
+                    if (ucInventoryManagement != null)
+                    {
+                        ucInventoryManagement.txtProductId.Text = product.ProductID.ToString();
+                        ucInventoryManagement.TxtSearchProductId.Text = product.ProductID.ToString();
+                    }
+                    this.Controls.Remove(toast);
+                };
+
+                toast.Controls.Add(link);
+                yOffset += 22;
+            }
+
+            if (lowStockItems.Count > 3)
+            {
+                var moreLabel = new Label
+                {
+                    Text = $"+{lowStockItems.Count - 3} more...",
+                    Location = new Point(10, yOffset),
+                    Font = new Font("Segoe UI", 8F, FontStyle.Italic),
+                    AutoSize = true
+                };
+                toast.Controls.Add(moreLabel);
+            }
 
             var closeButton = new Button
             {
@@ -109,8 +136,7 @@ namespace FASCloset.Forms
             this.Controls.Add(toast);
             toast.BringToFront();
 
-            // Auto-remove sau 6s
-            var autoClose = new System.Windows.Forms.Timer { Interval = 4000 };
+            var autoClose = new System.Windows.Forms.Timer { Interval = 6000 };
             autoClose.Tick += (s, e) =>
             {
                 if (this.Controls.Contains(toast))
@@ -119,9 +145,6 @@ namespace FASCloset.Forms
             };
             autoClose.Start();
         }
-
-
-
 
         private User CurrentUser { get; set; }
         private int CurrentWarehouseID { get; set; } = 1; // Default to main warehouse
@@ -231,7 +254,6 @@ namespace FASCloset.Forms
             if (ucOrderManagement == null)
             {
                 ucOrderManagement = new UcOrderManagement();
-                ucOrderManagement.cmbPaymentMethod = new ComboBox();
             }
 
             LoadUserControl(ucOrderManagement);

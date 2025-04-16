@@ -15,7 +15,185 @@ namespace FASCloset.Forms
             LoadProducts();
             LoadCustomers();
             LoadOrders();
+
+            Button btnDeleteProduct = new Button();
+            btnDeleteProduct.Text = "Delete Product";
+            btnDeleteProduct.Location = new Point(530, 160); // bên phải bảng
+            btnDeleteProduct.Click += btnDeleteProduct_Click;
+            this.Controls.Add(btnDeleteProduct);
+
+            Button btnEditProduct = new Button();
+            btnEditProduct.Text = "Edit Product";
+            btnEditProduct.Location = new Point(530, 190);  // Next to Delete Product button
+            this.Controls.Add(btnEditProduct);
+
+            Button btnEditDraftOrder = new Button();
+            btnEditDraftOrder.Text = "Edit Draft Order";
+            btnEditDraftOrder.Location = new Point(530, 350);  // bên phải bảng
+            btnEditDraftOrder.Click += btnEditDraftOrder_Click;
+            this.Controls.Add(btnEditDraftOrder);
+
+            Button btnDeleteDraftOrder = new Button();
+            btnDeleteDraftOrder.Text = "Delete Draft Order";
+            btnDeleteDraftOrder.Location = new Point(530, 370);  // bên phải bảng
+            btnDeleteDraftOrder.Click += btnDeleteDraftOrder_Click;
+            this.Controls.Add(btnDeleteDraftOrder);
+
+            productList.CellClick += productList_CellClick;  // Attach here
         }
+
+        private void productList_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Ensure it's not the header row
+            if (e.RowIndex >= 0)
+            {
+                // Get the selected ProductID from the clicked row
+                int productId = Convert.ToInt32(productList.Rows[e.RowIndex].Cells["ProductID"].Value);
+
+                // Find the product in the order details
+                var selectedProduct = orderDetails.FirstOrDefault(d => d.ProductID == productId);
+
+                if (selectedProduct != null)
+                {
+                    // Open the popup to edit the quantity
+                    OpenEditQuantityPopup(selectedProduct);
+                }
+            }
+        }
+
+        private void OpenEditQuantityPopup(OrderDetail selectedProduct)
+        {
+            // Create the popup form
+            Form popup = new Form
+            {
+                Text = "Edit Quantity",
+                Size = new Size(300, 200),
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                StartPosition = FormStartPosition.CenterParent,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
+
+            // Add controls for quantity edit
+            Label lblQuantity = new Label
+            {
+                Text = "Quantity:",
+                Location = new Point(20, 30),
+                Size = new Size(100, 23),
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+
+            TextBox txtQuantity = new TextBox
+            {
+                Location = new Point(120, 30),
+                Size = new Size(150, 23),
+                Text = selectedProduct.Quantity.ToString()
+            };
+
+            Button btnSave = new Button
+            {
+                Text = "Save",
+                Location = new Point(50, 100),
+                Size = new Size(75, 30)
+            };
+
+            Button btnCancel = new Button
+            {
+                Text = "Cancel",
+                Location = new Point(150, 100),
+                Size = new Size(75, 30)
+            };
+
+            // Button event to save changes
+            btnSave.Click += (s, ev) =>
+            {
+                // Parse the new quantity
+                if (int.TryParse(txtQuantity.Text, out int newQuantity) && newQuantity > 0)
+                {
+                    // Check if the new quantity exceeds the available stock
+                    var product = ProductManager.GetProductById(selectedProduct.ProductID);
+                    if (product != null && newQuantity > product.Stock)
+                    {
+                        MessageBox.Show($"Insufficient stock. Only {product.Stock} items available.");
+                        return;
+                    }
+
+                    // Update the quantity of the selected product
+                    selectedProduct.Quantity = newQuantity;
+
+                    // Recalculate the total amount
+                    decimal total = orderDetails.Sum(d => d.Quantity * d.UnitPrice);
+                    txtTotalAmount.Text = total.ToString("0.00");
+
+                    // Refresh the DataGridView with updated quantity
+                    productList.DataSource = null;
+                    productList.DataSource = orderDetails.Select(d => new
+                    {
+                        ProductName = ProductManager.GetProductById(d.ProductID)?.ProductName ?? "Unknown",  // Show Product Name
+                        d.ProductID,  // Keep ProductID for data but not displayed in the UI
+                        d.Quantity,
+                        d.UnitPrice,
+                        Total = d.Quantity * d.UnitPrice
+                    }).ToList();
+
+                    // Hide the ProductID column from the DataGridView
+                    productList.Columns["ProductID"].Visible = false;
+
+                    MessageBox.Show("Quantity updated successfully.");
+                    popup.Close();
+                }
+                else
+                {
+                    MessageBox.Show("Please enter a valid quantity.");
+                }
+            };
+
+            // Button event to cancel the edit
+            btnCancel.Click += (s, ev) =>
+            {
+                popup.Close();
+            };
+
+            // Add controls to the popup form
+            popup.Controls.Add(lblQuantity);
+            popup.Controls.Add(txtQuantity);
+            popup.Controls.Add(btnSave);
+            popup.Controls.Add(btnCancel);
+
+            // Show the popup form
+            popup.ShowDialog();
+        }
+
+        private void btnDeleteProduct_Click(object sender, EventArgs e)
+        {
+            if (productList.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a product to remove.");
+                return;
+            }
+
+            int productId = Convert.ToInt32(productList.SelectedRows[0].Cells["ProductID"].Value);
+            var itemToRemove = orderDetails.FirstOrDefault(d => d.ProductID == productId);
+            if (itemToRemove != null)
+            {
+                orderDetails.Remove(itemToRemove);
+
+                // Cập nhật lại total
+                decimal total = orderDetails.Sum(d => d.Quantity * d.UnitPrice);
+                txtTotalAmount.Text = total.ToString("0.00");
+
+                // Cập nhật lại bảng
+                productList.DataSource = null;
+                productList.DataSource = orderDetails.Select(d => new
+                {
+                    d.ProductID,
+                    d.Quantity,
+                    d.UnitPrice,
+                    Total = d.Quantity * d.UnitPrice
+                }).ToList();
+            }
+        }
+
 
         private void LoadPaymentMethods()
         {
@@ -63,26 +241,47 @@ namespace FASCloset.Forms
                 return;
             }
 
-            var detail = new OrderDetail
+            var existing = orderDetails.FirstOrDefault(d => d.ProductID == selectedProduct.ProductID);
+            if (existing != null)
             {
-                ProductID = selectedProduct.ProductID,
-                Quantity = quantity,
-                UnitPrice = selectedProduct.Price
-            };
-
-            if (txtTotalAmount == null)
-            {
-                MessageBox.Show("txtTotalAmount is NULL");
-                return;
+                existing.Quantity = quantity; // Overwrite quantity
             }
-
-            orderDetails.Add(detail);
+            else
+            {
+                var detail = new OrderDetail
+                {
+                    ProductID = selectedProduct.ProductID,
+                    Quantity = quantity,
+                    UnitPrice = selectedProduct.Price
+                };
+                orderDetails.Add(detail);
+            }
 
             decimal total = orderDetails.Sum(d => d.Quantity * d.UnitPrice);
             txtTotalAmount.Text = total.ToString("0.00");
 
-            MessageBox.Show("Total Amount is: " + total.ToString("0.00"));
+            // Clear existing DataSource and reset DataGridView
+            productList.DataSource = null;
+
+            // Set the DataSource with new data and show ProductName instead of ProductID
+            productList.DataSource = orderDetails.Select(d => new
+            {
+                ProductName = ProductManager.GetProductById(d.ProductID)?.ProductName ?? "Unknown",  // Show Product Name
+                d.ProductID,  // Keep ProductID for data but not displayed in the UI
+                d.Quantity,
+                d.UnitPrice,
+                Total = d.Quantity * d.UnitPrice
+            }).ToList();
+
+            // Manually set the column headers (make sure only these columns appear)
+            productList.Columns["ProductID"].Visible = false; // Hide ProductID column from UI
+            productList.Columns["ProductName"].HeaderText = "Product Name";
+            productList.Columns["Quantity"].HeaderText = "Quantity";
+            productList.Columns["UnitPrice"].HeaderText = "Unit Price";
+            productList.Columns["Total"].HeaderText = "Total";
         }
+
+
 
 
         private void LoadOrders()
@@ -263,12 +462,13 @@ namespace FASCloset.Forms
             popup.ShowDialog();
         }
 
-        // Revert to original method naming to fix missing method errors
+        private List<(Order Order, List<OrderDetail> Details)> draftOrders = new List<(Order, List<OrderDetail>)>();
+
+        // Method to add products to the draft order
         public void btnCreateOrder_Click(object sender, EventArgs e)
         {
-            if (!ValidateOrderInputs())
-                return;
-            
+            if (!ValidateOrderInputs()) return;
+
             try
             {
                 var order = new Order
@@ -278,23 +478,48 @@ namespace FASCloset.Forms
                     TotalAmount = decimal.Parse(txtTotalAmount.Text),
                     PaymentMethod = cmbPaymentMethod.SelectedItem?.ToString() ?? string.Empty
                 };
-                
-                OrderManager.AddOrder(order);
-                MessageBox.Show("Order created successfully.");
-                LoadOrders();
-                
+
+                // Copy order details to ensure they stay intact in the draft
+                var detailCopy = orderDetails.Select(d => new OrderDetail
+                {
+                    ProductID = d.ProductID,
+                    Quantity = d.Quantity,
+                    UnitPrice = d.UnitPrice
+                }).ToList();
+
+                // Add to draft orders for later processing
+                draftOrders.Add((order, detailCopy));
+
+                // Display draft orders in DataGridView
+                LoadDraftOrders();
+
+                MessageBox.Show("Draft created. Please print invoice to finalize.");
+
+                // Clear inputs after creating draft
+                orderDetails.Clear();
+                txtQuantity.Clear();
                 txtTotalAmount.Clear();
-                cmbPaymentMethod.SelectedIndex = 0;
-            }
-            catch (FormatException ex)
-            {
-                MessageBox.Show("Invalid input format: " + ex.Message);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred: " + ex.Message);
+                MessageBox.Show("Error creating draft: " + ex.Message);
             }
         }
+
+        // Method to load draft orders into DataGridView
+        private void LoadDraftOrders()
+        {
+            dgvDraftOrders.DataSource = null;
+            dgvDraftOrders.DataSource = draftOrders.Select((x, i) => new
+            {
+                DraftID = i + 1,
+                x.Order.CustomerID,
+                x.Order.TotalAmount,
+                x.Order.PaymentMethod,
+                x.Order.OrderDate
+            }).ToList();
+        }
+
 
         // Revert to original method naming
         private void btnProcessPayment_Click(object sender, EventArgs e)
@@ -312,15 +537,65 @@ namespace FASCloset.Forms
         // Revert to original method naming
         private void btnPrintInvoice_Click(object sender, EventArgs e)
         {
-            if (dgvOrders.SelectedRows.Count == 0)
+            if (dgvDraftOrders.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Please select an order to print invoice.");
+                MessageBox.Show("Please select a draft order to finalize.");
                 return;
             }
-            
-            // Implementation would actually print invoice
-            MessageBox.Show("Invoice printed successfully.");
+
+            int selectedIndex = dgvDraftOrders.SelectedRows[0].Index;
+            if (selectedIndex < 0 || selectedIndex >= draftOrders.Count)
+                return;
+
+            var (order, details) = draftOrders[selectedIndex];
+
+            try
+            {
+                // Insert order and details into the database
+                int orderId = OrderManager.CreateOrderWithDetails(order, details);
+                LoadProducts();
+
+                // Update inventory based on the draft order
+                foreach (var detail in details)
+                {
+                    var product = ProductManager.GetProductById(detail.ProductID);
+                    if (product == null)
+                        throw new Exception($"Product not found: ID {detail.ProductID}");
+
+                    int newStock = product.Stock - detail.Quantity;
+                    InventoryManager.UpdateStock(detail.ProductID, newStock);
+                }
+
+                // Show the success message
+                MessageBox.Show($"Order #{orderId} has been finalized and inventory updated.");
+
+                // Display order details in a custom popup form
+                string orderDetailsInfo = $"Order ID: {orderId}\n\n";
+                foreach (var detail in details)
+                {
+                    var product = ProductManager.GetProductById(detail.ProductID);
+                    orderDetailsInfo += $"Product: {product?.ProductName ?? "Unknown"}\n" +
+                                        $"Quantity: {detail.Quantity}\n" +
+                                        $"Unit Price: {detail.UnitPrice:C}\n" +
+                                        $"Total: {detail.Quantity * detail.UnitPrice:C}\n\n";
+                }
+
+                // Create and show the order details popup
+                MessageBox.Show(orderDetailsInfo, "Order Details", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // Remove the finalized draft from the list
+                draftOrders.RemoveAt(selectedIndex);
+                LoadDraftOrders(); // Refresh draft orders
+
+                // Optionally, you could load the finalized orders if needed
+                LoadOrders();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error finalizing order: " + ex.Message);
+            }
         }
+
 
         private bool ValidateOrderInputs()
         {
@@ -345,5 +620,152 @@ namespace FASCloset.Forms
             
             return true;
         }
+
+        private void btnDeleteDraftOrder_Click(object sender, EventArgs e)
+        {
+            if (dgvDraftOrders.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a draft order to delete.");
+                return;
+            }
+
+            int selectedIndex = dgvDraftOrders.SelectedRows[0].Index;
+            if (selectedIndex < 0 || selectedIndex >= draftOrders.Count)
+            {
+                return;
+            }
+
+            // Ask for confirmation before deletion
+            var confirmResult = MessageBox.Show("Are you sure you want to delete this draft order?",
+                                                "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (confirmResult == DialogResult.Yes)
+            {
+                draftOrders.RemoveAt(selectedIndex);
+                LoadDraftOrders();  // Refresh draft orders
+                MessageBox.Show("Draft order deleted successfully.");
+            }
+        }
+
+        private void btnEditDraftOrder_Click(object sender, EventArgs e)
+        {
+            if (dgvDraftOrders.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a draft order to edit.");
+                return;
+            }
+
+            int selectedIndex = dgvDraftOrders.SelectedRows[0].Index;
+            if (selectedIndex < 0 || selectedIndex >= draftOrders.Count)
+            {
+                return;
+            }
+
+            var (order, details) = draftOrders[selectedIndex];
+
+            // Set the values of the order details in the controls
+            cmbCustomer.SelectedValue = order.CustomerID;
+            cmbPaymentMethod.SelectedItem = order.PaymentMethod;
+            txtTotalAmount.Text = order.TotalAmount.ToString("0.00");
+
+            // Bind the DataGridView to display the current order details
+            productList.DataSource = null;
+            productList.DataSource = details.Select(d => new
+            {
+                ProductName = ProductManager.GetProductById(d.ProductID)?.ProductName ?? "Unknown",
+                d.ProductID,
+                d.Quantity,
+                d.UnitPrice,
+                Total = d.Quantity * d.UnitPrice
+            }).ToList();
+
+            // Hide ProductID column from the UI
+            productList.Columns["ProductID"].Visible = false;
+
+            // Allow editing of the quantity directly in the DataGridView
+            productList.ReadOnly = false;
+        }
+
+        private void btnSaveEditedDraftOrder_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (productList.Rows.Count == 0)
+                {
+                    MessageBox.Show("No products to save.");
+                    return;
+                }
+
+                // Save the edited draft order
+                int selectedIndex = dgvDraftOrders.SelectedRows[0].Index;
+                if (selectedIndex < 0 || selectedIndex >= draftOrders.Count)
+                {
+                    return;
+                }
+
+                var (order, details) = draftOrders[selectedIndex];
+
+                // Update order with new values
+                order.CustomerID = (int)cmbCustomer.SelectedValue;
+                order.PaymentMethod = cmbPaymentMethod.SelectedItem.ToString();
+                order.TotalAmount = decimal.Parse(txtTotalAmount.Text);
+
+                // Update order details with new values from the DataGridView
+                foreach (DataGridViewRow row in productList.Rows)
+                {
+                    if (row.Cells["ProductID"].Value != null)
+                    {
+                        int productId = (int)row.Cells["ProductID"].Value;
+                        var existingDetail = details.FirstOrDefault(d => d.ProductID == productId);
+
+                        if (existingDetail != null)
+                        {
+                            existingDetail.Quantity = (int)row.Cells["Quantity"].Value;
+                            existingDetail.UnitPrice = (decimal)row.Cells["UnitPrice"].Value;
+                        }
+                    }
+                }
+
+                // Commit changes to draft orders
+                draftOrders[selectedIndex] = (order, details);
+
+                // Refresh draft orders
+                LoadDraftOrders();
+
+                MessageBox.Show("Draft order updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saving order: " + ex.Message);
+            }
+        }
+
+
+        //private void btnEditDraftOrder_Click(object sender, EventArgs e)
+        //{
+        //    if (dgvDraftOrders.SelectedRows.Count == 0)
+        //    {
+        //        MessageBox.Show("Please select a draft order to edit.");
+        //        return;
+        //    }
+
+        //    int selectedIndex = dgvDraftOrders.SelectedRows[0].Index;
+        //    if (selectedIndex < 0 || selectedIndex >= draftOrders.Count)
+        //    {
+        //        return;
+        //    }
+
+        //    var (order, details) = draftOrders[selectedIndex];
+
+        //    // Create a new popup form to edit order details
+        //    EditDraftOrderForm editForm = new EditDraftOrderForm(order, details);
+        //    if (editForm.ShowDialog() == DialogResult.OK)
+        //    {
+        //        // When the user clicks "OK", save the changes and refresh the draft orders
+        //        draftOrders[selectedIndex] = (editForm.EditedOrder, editForm.EditedDetails);
+        //        LoadDraftOrders(); // Refresh draft orders after editing
+        //        MessageBox.Show("Draft order updated successfully.");
+        //    }
+        //}
+
     }
 }
