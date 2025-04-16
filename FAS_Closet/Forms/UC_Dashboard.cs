@@ -13,7 +13,7 @@ namespace FASCloset.Forms
             LoadDashboardData();
         }
 
-        private void LoadDashboardData()
+        public void LoadDashboardData()
         {
             try
             {

@@ -29,6 +29,53 @@ namespace FASCloset.Forms
             this.Controls.Add(btnDeleteDraftOrder);
 
             productList.CellClick += productList_CellClick;  // Attach here
+
+            Button btnCancelOrder = new Button();
+            btnCancelOrder.Text = "Cancel Order";
+            btnCancelOrder.Location = new Point(530, 600); // Adjust the location as needed
+            btnCancelOrder.Click += btnCancelOrder_Click;
+            this.Controls.Add(btnCancelOrder);
+        }
+
+        private void btnCancelOrder_Click(object sender, EventArgs e)
+        {
+            if (dgvOrders.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select an order to cancel.");
+                return;
+            }
+
+            int selectedIndex = dgvOrders.SelectedRows[0].Index;
+            if (selectedIndex < 0 || selectedIndex >= dgvOrders.RowCount)
+            {
+                return;
+            }
+
+            // Get the OrderID of the selected order
+            int orderId = Convert.ToInt32(dgvOrders.Rows[selectedIndex].Cells["OrderID"].Value);
+
+            // Confirm deletion before proceeding
+            var confirmResult = MessageBox.Show("Are you sure you want to cancel this order? This action cannot be undone.",
+                                                 "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (confirmResult == DialogResult.Yes)
+            {
+                try
+                {
+                    // Delete the order
+                    OrderManager.DeleteOrder(orderId);
+
+                    // Refresh the orders grid
+                    LoadOrders();
+
+                    // Show confirmation message
+                    MessageBox.Show("Order has been canceled successfully.");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error canceling order: " + ex.Message);
+                }
+            }
         }
 
         private void productList_CellClick(object sender, DataGridViewCellEventArgs e)

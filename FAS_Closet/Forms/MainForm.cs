@@ -319,6 +319,8 @@ namespace FASCloset.Forms
                 ucDashboard = new UcDashboard();
             }
 
+            ucDashboard.LoadDashboardData();
+
             LoadUserControl(ucDashboard);
         }
 

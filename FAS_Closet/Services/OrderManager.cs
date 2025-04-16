@@ -124,18 +124,27 @@ namespace FASCloset.Services
             
             DataAccessHelper.ExecuteNonQuery(query, parameters);
         }
-        
+
         public static void DeleteOrder(int orderId)
         {
-            string query = "DELETE FROM Orders WHERE OrderID = @OrderID";
-            
+            // Step 1: Delete all related order details first
+            string deleteOrderDetailsQuery = "DELETE FROM OrderDetails WHERE OrderID = @OrderID";
+
             var parameters = new Dictionary<string, object>
             {
                 { "@OrderID", orderId }
             };
-            
-            DataAccessHelper.ExecuteNonQuery(query, parameters);
+
+            // Execute the query to delete the related order details
+            DataAccessHelper.ExecuteNonQuery(deleteOrderDetailsQuery, parameters);
+
+            // Step 2: Delete the order itself
+            string deleteOrderQuery = "DELETE FROM Orders WHERE OrderID = @OrderID";
+
+            // Execute the query to delete the order
+            DataAccessHelper.ExecuteNonQuery(deleteOrderQuery, parameters);
         }
+
 
         /// <summary>
         /// Creates a new order with details using a transaction
