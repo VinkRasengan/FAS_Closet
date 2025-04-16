@@ -270,6 +270,75 @@ namespace FASCloset.Forms
             productList.Columns["Total"].HeaderText = "Total";
         }
 
+        private void ShowOrderSuccessNotification()
+        {
+            // Remove any existing success notification
+            var existingToast = this.Controls.OfType<Panel>().FirstOrDefault(p => p.Name == "OrderSuccessToast");
+            if (existingToast != null) this.Controls.Remove(existingToast);
+
+            // Create the toast panel for the success message
+            var toast = new Panel
+            {
+                Name = "OrderSuccessToast",
+                Size = new Size(280, 100),
+                BackColor = Color.FromArgb(173, 255, 47), // Light green for success
+                BorderStyle = BorderStyle.FixedSingle,
+                Location = new Point(this.ClientSize.Width - 290, 10),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+
+            // Add a title label
+            var title = new Label
+            {
+                Text = "✔ Order Created Successfully!",
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                ForeColor = Color.DarkGreen,
+                Dock = DockStyle.Top,
+                Height = 30,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            toast.Controls.Add(title);
+
+            // Add a message label
+            var messageLabel = new Label
+            {
+                Text = "Your order has been processed successfully.",
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = Color.Black,
+                AutoSize = true,
+                Location = new Point(10, 40),
+                Cursor = Cursors.Hand
+            };
+            toast.Controls.Add(messageLabel);
+
+            // Close button on the toast
+            var closeButton = new Button
+            {
+                Text = "X",
+                BackColor = Color.Red,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Size = new Size(25, 25),
+                Location = new Point(toast.Width - 30, 5)
+            };
+            closeButton.FlatAppearance.BorderSize = 0;
+            closeButton.Click += (s, e) => this.Controls.Remove(toast);
+            toast.Controls.Add(closeButton);
+
+            // Add the toast to the form
+            this.Controls.Add(toast);
+            toast.BringToFront();
+
+            // Auto-close the notification after 4 seconds
+            var autoClose = new System.Windows.Forms.Timer { Interval = 4000 };
+            autoClose.Tick += (s, e) =>
+            {
+                if (this.Controls.Contains(toast))
+                    this.Controls.Remove(toast);
+                autoClose.Stop();
+            };
+            autoClose.Start();
+        }
 
 
 
@@ -555,9 +624,6 @@ namespace FASCloset.Forms
                     InventoryManager.UpdateStock(detail.ProductID, newStock);
                 }
 
-                // Show the success message
-                MessageBox.Show($"Order #{orderId} has been finalized and inventory updated.");
-
                 // Display order details in a custom popup form
                 string orderDetailsInfo = $"Order ID: {orderId}\n\n";
                 foreach (var detail in details)
@@ -571,6 +637,7 @@ namespace FASCloset.Forms
 
                 // Create and show the order details popup
                 MessageBox.Show(orderDetailsInfo, "Order Details", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ShowOrderSuccessNotification();
 
                 // Remove the finalized draft from the list
                 draftOrders.RemoveAt(selectedIndex);
