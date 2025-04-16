@@ -332,7 +332,7 @@ namespace FASCloset.Forms
             // MainForm
             // 
             BackColor = Color.WhiteSmoke;
-            ClientSize = new Size(1200, 700);
+            ClientSize = new Size(1200, 1200);
             Controls.Add(mainSplit);
             Controls.Add(headerPanel);
             Name = "MainForm";

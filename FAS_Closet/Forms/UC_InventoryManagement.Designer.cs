@@ -99,12 +99,9 @@ namespace FASCloset.Forms
             this.panel1 = new Panel();
             this.panel2 = new Panel();
             this.dataGridViewLowStock = new DataGridView();
-            this.lblLowStockTitle = new Label();
             this.txtProductId = new TextBox();
             this.txtStockQuantity = new TextBox();
             this.btnUpdateStock = new Button();
-            this.TxtSearchProductId = new TextBox();
-            this.btnSearch = new Button();
             this.btnTransferStock = new Button();
             this.btnViewProductsByCategory = new Button();
 
@@ -147,33 +144,6 @@ namespace FASCloset.Forms
             this.btnViewProductsByCategory.UseVisualStyleBackColor = true;
             this.btnViewProductsByCategory.Click += new EventHandler(this.btnViewProductsByCategory_Click);
 
-            this.lblLowStockTitle.AutoSize = true;
-            this.lblLowStockTitle.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point);
-            this.lblLowStockTitle.Location = new Point(12, 400);
-            this.lblLowStockTitle.Name = "lblLowStockTitle";
-            this.lblLowStockTitle.Size = new Size(165, 21);
-            this.lblLowStockTitle.TabIndex = 10;
-            this.lblLowStockTitle.Text = "Low Stock Products";
-
-            this.TxtSearchProductId.Location = new Point(592, 400);
-            this.TxtSearchProductId.Name = "TxtSearchProductId";
-            this.TxtSearchProductId.Size = new Size(100, 23);
-            this.TxtSearchProductId.TabIndex = 11;
-            this.TxtSearchProductId.PlaceholderText = "Search by ID...";
-            this.TxtSearchProductId.TextChanged += new EventHandler(this.TxtSearchProductId_TextChanged);
-
-            this.btnSearch.Location = new Point(698, 400);
-            this.btnSearch.Name = "btnSearch";
-            this.btnSearch.Size = new Size(90, 23);
-            this.btnSearch.TabIndex = 12;
-            this.btnSearch.Text = "Search";
-            this.btnSearch.UseVisualStyleBackColor = true;
-
-            this.dataGridViewLowStock.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridViewLowStock.Location = new Point(12, 450);
-            this.dataGridViewLowStock.Name = "dataGridViewLowStock";
-            this.dataGridViewLowStock.Size = new Size(776, 177);
-            this.dataGridViewLowStock.TabIndex = 13;
 
             this.Controls.Add(lblCategory);
             this.Controls.Add(this.dataGridViewCategories);
@@ -187,10 +157,6 @@ namespace FASCloset.Forms
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.btnViewProductsByCategory);
-            this.Controls.Add(this.lblLowStockTitle);
-            this.Controls.Add(this.TxtSearchProductId);
-            this.Controls.Add(this.btnSearch);
-            this.Controls.Add(this.dataGridViewLowStock);
 
             this.AutoScaleDimensions = new SizeF(7F, 15F);
             this.AutoScaleMode = AutoScaleMode.Font;
@@ -199,7 +165,6 @@ namespace FASCloset.Forms
         }
 
         public Label lblTitle;
-        public Label lblLowStockTitle;
         public Panel panel1;
         public Panel panel2;
         public DataGridView dataGridViewLowStock;
@@ -208,8 +173,6 @@ namespace FASCloset.Forms
         public Button btnUpdateStock;
         public Button btnTransferStock;
         public Button btnViewProductsByCategory;
-        public TextBox TxtSearchProductId;
-        public Button btnSearch;
 
         private DataGridView dataGridViewCategories;
         private TextBox txtCategoryName;

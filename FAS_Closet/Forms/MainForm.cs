@@ -99,7 +99,6 @@ namespace FASCloset.Forms
                     if (ucInventoryManagement != null)
                     {
                         ucInventoryManagement.txtProductId.Text = product.ProductID.ToString();
-                        ucInventoryManagement.TxtSearchProductId.Text = product.ProductID.ToString();
                     }
                     this.Controls.Remove(toast);
                 };
@@ -155,24 +154,6 @@ namespace FASCloset.Forms
             cmbWarehouses.DropDownStyle = ComboBoxStyle.DropDownList;
 
             // Load warehouses for this user
-        }
-
-
-        private void RefreshCurrentView()
-        {
-            // Determine which UserControl is active and reload its data
-            if (contentPanel.Controls.Count > 0 && contentPanel.Controls[0] is UserControl activeControl)
-            {
-                if (activeControl is UcInventoryManagement invManagement)
-                {
-                    invManagement.LoadLowStockProducts(); // Đã chuyển sang không còn dùng warehouseId
-                }
-                else if (activeControl is UcProductManagement prodManagement)
-                {
-                    prodManagement.LoadProducts(); // Cũng đã bỏ warehouseId
-                }
-                // Add more controls as needed
-            }
         }
 
 
@@ -238,7 +219,6 @@ namespace FASCloset.Forms
             {
                 ucInventoryManagement = new UcInventoryManagement();
                 ucInventoryManagement.dataGridViewLowStock = new DataGridView();
-                ucInventoryManagement.TxtSearchProductId = new TextBox();
             }
 
             ucInventoryManagement.LoadCategories();

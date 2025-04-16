@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using FASCloset.Models;
 using FASCloset.Services;
@@ -12,7 +12,6 @@ namespace FASCloset.Forms
         {
             InitializeComponent();
             LoadCategories();
-            LoadLowStockProducts(); // load ngay khi khởi tạo
         }
 
         public void LoadCategories()
@@ -135,7 +134,6 @@ namespace FASCloset.Forms
                 if (confirmResult != DialogResult.Yes) return;
 
                 InventoryManager.UpdateStock(productId, quantity);
-                LoadLowStockProducts();
 
                 txtProductId.Clear();
                 txtStockQuantity.Clear();
@@ -148,38 +146,9 @@ namespace FASCloset.Forms
             }
         }
 
-        public void LoadLowStockProducts()
-        {
-            try
-            {
-                var lowStockProducts = InventoryManager.GetLowStockProducts();
-                dataGridViewLowStock.DataSource = null;
-                dataGridViewLowStock.AutoGenerateColumns = true;
-                dataGridViewLowStock.DataSource = lowStockProducts;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading low stock products: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
         public void btnUpdateStock_Click(object? sender, EventArgs e) => UpdateProductStock();
 
-        private void btnLowStockWarning_Click(object? sender, EventArgs e) => LoadLowStockProducts();
-
-        private void TxtSearchProductId_TextChanged(object? sender, EventArgs e)
-        {
-            if (TxtSearchProductId == null || dataGridViewLowStock == null)
-                return;
-
-            var searchText = TxtSearchProductId.Text;
-            if (int.TryParse(searchText, out int productId))
-            {
-                var filteredProducts = ProductManager.GetProducts()
-                    .Where(p => p.ProductID == productId)
-                    .ToList();
-                dataGridViewLowStock.DataSource = new BindingSource { DataSource = filteredProducts };
-            }
-        }
+        
     }
 }

@@ -727,6 +727,24 @@ namespace FASCloset.Forms
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(TxtProductName.Text))
+                {
+                    MessageBox.Show("Product Name is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!decimal.TryParse(TxtPrice.Text, out decimal price) || price <= 0)
+                {
+                    MessageBox.Show("Please enter a valid price greater than 0.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!int.TryParse(TxtStock.Text, out int stock) || stock < 0)
+                {
+                    MessageBox.Show("Please enter a valid stock quantity (0 or more).", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 Product product = new Product
                 {
                     ProductName = TxtProductName.Text,
