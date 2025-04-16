@@ -35,7 +35,118 @@ namespace FASCloset.Forms
             btnCancelOrder.Location = new Point(530, 600); // Adjust the location as needed
             btnCancelOrder.Click += btnCancelOrder_Click;
             this.Controls.Add(btnCancelOrder);
+
+            Button btnViewOrderDetails = new Button();
+            btnViewOrderDetails.Text = "View Order Details";
+            btnViewOrderDetails.Location = new Point(530, 630); // Adjust the location as needed
+            btnViewOrderDetails.Click += btnViewOrderDetail_Click;
+            this.Controls.Add(btnViewOrderDetails);
         }
+
+        private void btnViewOrderDetail_Click(object sender, EventArgs e)
+        {
+            if (dgvOrders.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select an order to view details.");
+                return;
+            }
+
+            int selectedIndex = dgvOrders.SelectedRows[0].Index;
+            if (selectedIndex < 0 || selectedIndex >= dgvOrders.RowCount)
+            {
+                return;
+            }
+
+            // Get the OrderID of the selected order
+            int orderId = Convert.ToInt32(dgvOrders.Rows[selectedIndex].Cells["OrderID"].Value);
+
+            // Fetch the order details
+            var order = OrderManager.GetOrderById(orderId);
+            var orderDetails = OrderManager.GetOrderDetailsByOrderId(orderId);
+
+            // Show the popup with the order details
+            ShowOrderDetailPopup(order, orderDetails);
+        }
+
+        private void ShowOrderDetailPopup(Order order, List<OrderDetail> orderDetails)
+        {
+            // Create the popup form
+            Form popup = new Form
+            {
+                Text = "Order Details",
+                Size = new Size(600, 400),
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                StartPosition = FormStartPosition.CenterParent,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
+
+            // Add User Info (Customer Name, Order Date, etc.)
+            Label lblCustomerName = new Label
+            {
+                Text = $"Customer: {order.CustomerName}",
+                Location = new Point(20, 20),
+                Size = new Size(550, 30),
+                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
+                ForeColor = Color.DarkBlue
+            };
+            popup.Controls.Add(lblCustomerName);
+
+            Label lblOrderDate = new Label
+            {
+                Text = $"Order Date: {order.OrderDate.ToString("MMMM dd, yyyy")}",
+                Location = new Point(20, 60),
+                Size = new Size(550, 30),
+                Font = new Font("Segoe UI", 10F)
+            };
+            popup.Controls.Add(lblOrderDate);
+
+            Label lblTotalAmount = new Label
+            {
+                Text = $"Total Amount: {order.TotalAmount:C}",
+                Location = new Point(20, 100),
+                Size = new Size(550, 30),
+                Font = new Font("Segoe UI", 10F)
+            };
+            popup.Controls.Add(lblTotalAmount);
+
+            // Create a DataGridView to display the order details (products in the order)
+            DataGridView dgvOrderDetails = new DataGridView
+            {
+                Location = new Point(20, 140),
+                Size = new Size(550, 150),
+                ReadOnly = true,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+            };
+
+            // Set data for the DataGridView
+            dgvOrderDetails.DataSource = orderDetails.Select(d => new
+            {
+                ProductName = ProductManager.GetProductById(d.ProductID)?.ProductName ?? "Unknown",
+                d.Quantity,
+                d.UnitPrice,
+                Total = d.Quantity * d.UnitPrice
+            }).ToList();
+
+            // Add the DataGridView to the popup
+            popup.Controls.Add(dgvOrderDetails);
+
+            // Close button for the popup
+            Button btnClose = new Button
+            {
+                Text = "Close",
+                Location = new Point(500, 320),
+                Size = new Size(75, 30)
+            };
+            btnClose.Click += (s, ev) => popup.Close();
+            popup.Controls.Add(btnClose);
+
+            // Show the popup form
+            popup.ShowDialog();
+        }
+
+
+
 
         private void btnCancelOrder_Click(object sender, EventArgs e)
         {

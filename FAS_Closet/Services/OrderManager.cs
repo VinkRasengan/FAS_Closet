@@ -243,5 +243,29 @@ namespace FASCloset.Services
             }
         }
 
+        public static List<OrderDetail> GetOrderDetailsByOrderId(int orderId)
+        {
+            string query = @"
+        SELECT * 
+        FROM OrderDetails 
+        WHERE OrderID = @OrderID";
+
+            var parameters = new Dictionary<string, object>
+    {
+        { "@OrderID", orderId }
+    };
+
+            // Execute the query and map the results to a list of OrderDetail objects
+            return DataAccessHelper.ExecuteReader(query, reader => new OrderDetail
+            {
+                OrderDetailID = Convert.ToInt32(reader["OrderDetailID"]),
+                OrderID = Convert.ToInt32(reader["OrderID"]),
+                ProductID = Convert.ToInt32(reader["ProductID"]),
+                Quantity = Convert.ToInt32(reader["Quantity"]),
+                UnitPrice = Convert.ToDecimal(reader["UnitPrice"])
+            }, parameters);
+        }
+
+
     }
 }
