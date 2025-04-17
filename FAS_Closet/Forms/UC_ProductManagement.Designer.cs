@@ -16,6 +16,12 @@ namespace FASCloset.Forms
             toolTip.InitialDelay = 1000;
             toolTip.ReshowDelay = 500;
             
+            // Initialize button controls first to avoid null reference exceptions
+            btnAdd = new Button();
+            btnEdit = new Button(); 
+            btnDelete = new Button();
+            btnRefresh = new Button();
+            
             ProductDisplay = new DataGridView();
             TxtProductName = new TextBox();
             CmbCategory = new ComboBox();
@@ -27,11 +33,6 @@ namespace FASCloset.Forms
             AddEditPanel = new Panel();
             tableLayoutPanel = new TableLayoutPanel();
             flowButtons = new FlowLayoutPanel();
-            btnSave = new Button();
-            btnCancel = new Button();
-            btnAddCategory = new Button();
-            btnAddManufacturer = new Button();
-            btnDuplicate = new Button(); // Duplicate button for Add/Edit panel
             RightPanel = new Panel();
             TxtSearch = new TextBox();
             ChkShowInactive = new CheckBox(); // Checkbox for showing inactive products
@@ -180,61 +181,50 @@ namespace FASCloset.Forms
 
             // Button Panel
             tableLayoutPanel.SetColumnSpan(flowButtons, 2);
-            flowButtons.Controls.Add(btnSave);
-            flowButtons.Controls.Add(btnCancel);
-            flowButtons.Controls.Add(btnDuplicate);
-            flowButtons.Controls.Add(btnAddCategory);
-            flowButtons.Controls.Add(btnAddManufacturer);
+            flowButtons.Controls.Add(btnAdd);
+            flowButtons.Controls.Add(btnEdit);
+            flowButtons.Controls.Add(btnDelete);
+            flowButtons.Controls.Add(btnRefresh);
             flowButtons.Location = new Point(3, 235);
             flowButtons.Name = "flowButtons";
             flowButtons.Size = new Size(400, 40);
             flowButtons.TabIndex = 8;
 
-            // Save Button
-            btnSave.Location = new Point(3, 3);
-            btnSave.Name = "btnSave";
-            btnSave.Size = new Size(80, 30);
-            btnSave.TabIndex = 9;
-            btnSave.Text = "Save";
-            btnSave.UseVisualStyleBackColor = true;
-            btnSave.Click += btnSave_Click;
+            // Add Button
+            btnAdd.FlatStyle = FlatStyle.Flat;
+            btnAdd.BackColor = Color.FromArgb(0, 123, 255);
+            btnAdd.ForeColor = Color.White;
+            btnAdd.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnAdd.FlatAppearance.BorderSize = 0;
+            btnAdd.Cursor = Cursors.Hand;
+            btnAdd.Text = "Thêm";
 
-            // Cancel Button
-            btnCancel.Location = new Point(89, 3);
-            btnCancel.Name = "btnCancel";
-            btnCancel.Size = new Size(80, 30);
-            btnCancel.TabIndex = 10;
-            btnCancel.Text = "Cancel";
-            btnCancel.UseVisualStyleBackColor = true;
-            btnCancel.Click += btnCancel_Click;
-            
-            // Duplicate Button
-            btnDuplicate.Location = new Point(175, 3);
-            btnDuplicate.Name = "btnDuplicate";
-            btnDuplicate.Size = new Size(80, 30);
-            btnDuplicate.TabIndex = 11;
-            btnDuplicate.Text = "Duplicate";
-            btnDuplicate.UseVisualStyleBackColor = true;
-            btnDuplicate.Click += btnDuplicate_Click;
-            btnDuplicate.Visible = false; // Initially hidden, will be shown in edit mode
+            // Edit Button
+            btnEdit.FlatStyle = FlatStyle.Flat;
+            btnEdit.BackColor = Color.FromArgb(40, 167, 69);
+            btnEdit.ForeColor = Color.White;
+            btnEdit.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnEdit.FlatAppearance.BorderSize = 0;
+            btnEdit.Cursor = Cursors.Hand;
+            btnEdit.Text = "Sửa";
 
-            // Add Category Button
-            btnAddCategory.Location = new Point(261, 3);
-            btnAddCategory.Name = "btnAddCategory";
-            btnAddCategory.Size = new Size(100, 30);
-            btnAddCategory.TabIndex = 12;
-            btnAddCategory.Text = "Add Category";
-            btnAddCategory.UseVisualStyleBackColor = true;
-            btnAddCategory.Click += btnAddCategory_Click;
+            // Delete Button
+            btnDelete.FlatStyle = FlatStyle.Flat;
+            btnDelete.BackColor = Color.FromArgb(220, 53, 69);
+            btnDelete.ForeColor = Color.White;
+            btnDelete.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnDelete.FlatAppearance.BorderSize = 0;
+            btnDelete.Cursor = Cursors.Hand;
+            btnDelete.Text = "Xóa";
 
-            // Add Manufacturer Button
-            btnAddManufacturer.Location = new Point(3, 39);
-            btnAddManufacturer.Name = "btnAddManufacturer";
-            btnAddManufacturer.Size = new Size(120, 30);
-            btnAddManufacturer.TabIndex = 13;
-            btnAddManufacturer.Text = "Add Manufacturer";
-            btnAddManufacturer.UseVisualStyleBackColor = true;
-            btnAddManufacturer.Click += btnAddManufacturer_Click;
+            // Refresh Button
+            btnRefresh.FlatStyle = FlatStyle.Flat;
+            btnRefresh.BackColor = Color.FromArgb(108, 117, 125);
+            btnRefresh.ForeColor = Color.White;
+            btnRefresh.Font = new Font("Segoe UI", 10F);
+            btnRefresh.FlatAppearance.BorderSize = 0;
+            btnRefresh.Cursor = Cursors.Hand;
+            btnRefresh.Text = "Làm mới";
 
             // Right Panel
             RightPanel.Controls.Add(TxtSearch);
@@ -280,12 +270,7 @@ namespace FASCloset.Forms
         public System.Windows.Forms.Panel RightPanel;
         public System.Windows.Forms.TextBox TxtSearch;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel;
-        private System.Windows.Forms.Button btnSave;
-        private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.Button btnDuplicate;
         private System.Windows.Forms.ToolTip toolTip;
-        private System.Windows.Forms.Button btnAddCategory;
-        private System.Windows.Forms.Button btnAddManufacturer;
         private System.ComponentModel.IContainer components;
         private FlowLayoutPanel flowButtons;
         private ComboBox CmbFilterCategory;
@@ -299,6 +284,7 @@ namespace FASCloset.Forms
         public Button btnAdd;
         public Button btnEdit; 
         public Button btnDelete;
+        public Button btnRefresh;
 
         // Renamed method to avoid ambiguity
         private void OnTableLayoutPanelPaint(object sender, PaintEventArgs e)

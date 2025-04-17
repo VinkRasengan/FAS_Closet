@@ -1,4 +1,6 @@
-﻿// This file contains the designer code for the AuthForm, which handles user authentication.
+﻿using System.IO;
+
+// This file contains the designer code for the AuthForm, which handles user authentication.
 
 namespace FASCloset.Forms
 {
@@ -243,11 +245,12 @@ namespace FASCloset.Forms
             // 
             // btnLogin
             // 
-            btnLogin.BackColor = Color.FromArgb(0, 0, 192);
-            btnLogin.Cursor = Cursors.Hand;
             btnLogin.FlatStyle = FlatStyle.Flat;
-            btnLogin.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnLogin.BackColor = Color.FromArgb(0, 123, 255);
             btnLogin.ForeColor = Color.White;
+            btnLogin.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnLogin.FlatAppearance.BorderSize = 0;
+            btnLogin.Cursor = Cursors.Hand;
             btnLogin.Location = new Point(449, 326);
             btnLogin.Name = "btnLogin";
             btnLogin.Size = new Size(127, 40);
@@ -258,11 +261,12 @@ namespace FASCloset.Forms
             // 
             // btnSwitchToRegister
             // 
-            btnSwitchToRegister.BackColor = Color.LightSteelBlue;
-            btnSwitchToRegister.Cursor = Cursors.Hand;
             btnSwitchToRegister.FlatStyle = FlatStyle.Flat;
-            btnSwitchToRegister.Font = new Font("Segoe UI", 10F);
+            btnSwitchToRegister.BackColor = Color.FromArgb(108, 117, 125);
             btnSwitchToRegister.ForeColor = Color.White;
+            btnSwitchToRegister.Font = new Font("Segoe UI", 10F);
+            btnSwitchToRegister.FlatAppearance.BorderSize = 0;
+            btnSwitchToRegister.Cursor = Cursors.Hand;
             btnSwitchToRegister.Location = new Point(607, 326);
             btnSwitchToRegister.Name = "btnSwitchToRegister";
             btnSwitchToRegister.Size = new Size(127, 40);
@@ -487,11 +491,12 @@ namespace FASCloset.Forms
             // 
             // btnRegister
             // 
-            btnRegister.BackColor = Color.FromArgb(0, 0, 192);
-            btnRegister.Cursor = Cursors.Hand;
             btnRegister.FlatStyle = FlatStyle.Flat;
-            btnRegister.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnRegister.BackColor = Color.FromArgb(40, 167, 69);
             btnRegister.ForeColor = Color.White;
+            btnRegister.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnRegister.FlatAppearance.BorderSize = 0;
+            btnRegister.Cursor = Cursors.Hand;
             btnRegister.Location = new Point(446, 529);
             btnRegister.Name = "btnRegister";
             btnRegister.Size = new Size(117, 40);
@@ -502,11 +507,12 @@ namespace FASCloset.Forms
             // 
             // btnSwitchToLogin
             // 
-            btnSwitchToLogin.BackColor = Color.LightSteelBlue;
-            btnSwitchToLogin.Cursor = Cursors.Hand;
             btnSwitchToLogin.FlatStyle = FlatStyle.Flat;
-            btnSwitchToLogin.Font = new Font("Segoe UI", 10F);
+            btnSwitchToLogin.BackColor = Color.FromArgb(108, 117, 125);
             btnSwitchToLogin.ForeColor = Color.White;
+            btnSwitchToLogin.Font = new Font("Segoe UI", 10F);
+            btnSwitchToLogin.FlatAppearance.BorderSize = 0;
+            btnSwitchToLogin.Cursor = Cursors.Hand;
             btnSwitchToLogin.Location = new Point(604, 529);
             btnSwitchToLogin.Name = "btnSwitchToLogin";
             btnSwitchToLogin.Size = new Size(117, 40);
@@ -523,6 +529,14 @@ namespace FASCloset.Forms
             // 
             errorProviderRegister.BlinkStyle = ErrorBlinkStyle.NeverBlink;
             errorProviderRegister.ContainerControl = this;
+
+            // Đặt ToolTip cho các button chính
+            ToolTip toolTip = new ToolTip();
+            toolTip.SetToolTip(btnLogin, "Đăng nhập vào hệ thống");
+            toolTip.SetToolTip(btnSwitchToRegister, "Chuyển sang đăng ký tài khoản mới");
+            toolTip.SetToolTip(btnRegister, "Tạo tài khoản mới");
+            toolTip.SetToolTip(btnSwitchToLogin, "Quay lại màn hình đăng nhập");
+            toolTip.SetToolTip(lnkForgotPassword, "Lấy lại mật khẩu nếu bạn quên");
             // 
             // AuthForm
             // 

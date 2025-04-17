@@ -62,29 +62,60 @@ namespace FASCloset.Forms
                 Size = new Size(150, 23)
             };
 
-            btnAddCategory = new Button
+            btnAdd = new Button
             {
-                Text = "Add",
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                FlatAppearance = { BorderSize = 0 },
+                Cursor = Cursors.Hand,
+                Text = "Thêm",
                 Location = new Point(530, 110),
                 Size = new Size(80, 30)
             };
-            btnAddCategory.Click += BtnAddCategory_Click;
+            btnAdd.Click += BtnAddCategory_Click;
 
-            btnUpdateCategory = new Button
+            btnEdit = new Button
             {
-                Text = "Update",
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(40, 167, 69),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                FlatAppearance = { BorderSize = 0 },
+                Cursor = Cursors.Hand,
+                Text = "Sửa",
                 Location = new Point(620, 110),
                 Size = new Size(80, 30)
             };
-            btnUpdateCategory.Click += BtnUpdateCategory_Click;
+            btnEdit.Click += BtnUpdateCategory_Click;
 
-            btnDeleteCategory = new Button
+            btnDelete = new Button
             {
-                Text = "Delete",
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(220, 53, 69),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                FlatAppearance = { BorderSize = 0 },
+                Cursor = Cursors.Hand,
+                Text = "Xóa",
                 Location = new Point(710, 110),
                 Size = new Size(80, 30)
             };
-            btnDeleteCategory.Click += BtnDeleteCategory_Click;
+            btnDelete.Click += BtnDeleteCategory_Click;
+
+            btnRefresh = new Button
+            {
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(108, 117, 125),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10F),
+                FlatAppearance = { BorderSize = 0 },
+                Cursor = Cursors.Hand,
+                Text = "Làm mới",
+                Location = new Point(800, 110),
+                Size = new Size(80, 30)
+            };
 
             // INVENTORY SECTION
             this.lblTitle = new Label();
@@ -104,7 +135,6 @@ namespace FASCloset.Forms
             this.btnUpdateStock = new Button();
             this.btnTransferStock = new Button();
             this.btnViewProductsByCategory = new Button();
-
 
             this.panel1.BorderStyle = BorderStyle.FixedSingle;
             this.panel1.Controls.Add(new Label() { Text = "Product ID:", AutoSize = true, Location = new Point(10, 15) });
@@ -144,16 +174,16 @@ namespace FASCloset.Forms
             this.btnViewProductsByCategory.UseVisualStyleBackColor = true;
             this.btnViewProductsByCategory.Click += new EventHandler(this.btnViewProductsByCategory_Click);
 
-
             this.Controls.Add(lblCategory);
             this.Controls.Add(this.dataGridViewCategories);
             this.Controls.Add(lblCategoryName);
             this.Controls.Add(this.txtCategoryName);
             this.Controls.Add(lblCategoryDesc);
             this.Controls.Add(this.txtCategoryDescription);
-            this.Controls.Add(this.btnAddCategory);
-            this.Controls.Add(this.btnUpdateCategory);
-            this.Controls.Add(this.btnDeleteCategory);
+            this.Controls.Add(this.btnAdd);
+            this.Controls.Add(this.btnEdit);
+            this.Controls.Add(this.btnDelete);
+            this.Controls.Add(this.btnRefresh);
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.btnViewProductsByCategory);
@@ -177,8 +207,9 @@ namespace FASCloset.Forms
         private DataGridView dataGridViewCategories;
         private TextBox txtCategoryName;
         private TextBox txtCategoryDescription;
-        private Button btnAddCategory;
-        private Button btnUpdateCategory;
-        private Button btnDeleteCategory;
+        private Button btnAdd;
+        private Button btnEdit;
+        private Button btnDelete;
+        private Button btnRefresh;
     }
 }

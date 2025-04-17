@@ -55,17 +55,27 @@ namespace FASCloset.Forms
             cmbReportType.SelectedIndex = 0;
             
             // Action buttons
-            Button btnGenerateSalesReport = new Button();
-            btnGenerateSalesReport.Text = "Generate Report";
-            btnGenerateSalesReport.Location = new Point(20, 100);
-            btnGenerateSalesReport.Size = new Size(150, 30);
-            btnGenerateSalesReport.Click += btnGenerateSalesReport_Click;
+            Button btnExport = new Button();
+            btnExport.FlatStyle = FlatStyle.Flat;
+            btnExport.BackColor = Color.FromArgb(0, 123, 255);
+            btnExport.ForeColor = Color.White;
+            btnExport.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnExport.FlatAppearance.BorderSize = 0;
+            btnExport.Cursor = Cursors.Hand;
+            btnExport.Text = "Xuất báo cáo";
+            btnExport.Location = new Point(20, 100);
+            btnExport.Size = new Size(150, 30);
             
-            Button btnExportDetailedReport = new Button();
-            btnExportDetailedReport.Text = "Export to CSV";
-            btnExportDetailedReport.Location = new Point(180, 100);
-            btnExportDetailedReport.Size = new Size(150, 30);
-            btnExportDetailedReport.Click += btnExportDetailedReport_Click;
+            Button btnRefresh = new Button();
+            btnRefresh.FlatStyle = FlatStyle.Flat;
+            btnRefresh.BackColor = Color.FromArgb(108, 117, 125);
+            btnRefresh.ForeColor = Color.White;
+            btnRefresh.Font = new Font("Segoe UI", 10F);
+            btnRefresh.FlatAppearance.BorderSize = 0;
+            btnRefresh.Cursor = Cursors.Hand;
+            btnRefresh.Text = "Làm mới";
+            btnRefresh.Location = new Point(180, 100);
+            btnRefresh.Size = new Size(150, 30);
             
             // Progress bar
             ProgressBarReport = new ProgressBar();
@@ -139,16 +149,14 @@ namespace FASCloset.Forms
             this.Controls.Add(DateTimePickerEndDate);
             this.Controls.Add(lblReportType);
             this.Controls.Add(cmbReportType);
-            this.Controls.Add(btnGenerateSalesReport);
-            this.Controls.Add(btnExportDetailedReport);
+            this.Controls.Add(btnExport);
+            this.Controls.Add(btnRefresh);
             this.Controls.Add(ProgressBarReport);
             this.Controls.Add(summaryPanel);
             this.Controls.Add(DataGridViewReport);
             
             // Store references to controls needed in code-behind
             this.cmbReportType = cmbReportType;
-            this.btnGenerateSalesReport = btnGenerateSalesReport;
-            this.btnExportDetailedReport = btnExportDetailedReport;
             this.lblTotalRevenue = lblTotalRevenue;
             this.lblOrderCount = lblOrderCount;
             this.lblAverageOrder = lblAverageOrder;
@@ -159,8 +167,6 @@ namespace FASCloset.Forms
         public DataGridView DataGridViewReport;
         public ProgressBar ProgressBarReport;
         private ComboBox cmbReportType;
-        private Button btnGenerateSalesReport;
-        private Button btnExportDetailedReport;
         private Label lblTotalRevenue;
         private Label lblOrderCount;
         private Label lblAverageOrder;

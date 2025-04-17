@@ -16,9 +16,6 @@ namespace FASCloset.Forms
         private UcDashboard? ucDashboard = null;
         private UcNotificationSettings? ucNotificationSettings = null;
 
-        private System.Windows.Forms.Timer notificationTimer;
-
-
         public MainForm(User user)
         {
             InitializeComponent();
@@ -32,120 +29,12 @@ namespace FASCloset.Forms
 
             // Check for low stock items on startup (but don't show toast notifications)
             NotificationManager.CheckAndSendLowStockNotifications();
-            
-            // No longer show toast notifications - removed timer
-            // StartNotificationTimer();
 
             btnDashboard_Click(this, EventArgs.Empty);
         }
 
-        // Keeping this method for future reference but not using it anymore
-        private void StartNotificationTimer()
-        {
-            notificationTimer = new System.Windows.Forms.Timer();
-            notificationTimer.Interval = 10000; // 10 seconds
-            notificationTimer.Tick += (s, e) =>
-            {
-                var lowStock = InventoryManager.GetLowStockProducts();
-                if (lowStock.Count > 0)
-                {
-                    ShowToastNotification(lowStock);
-                    NotificationManager.CheckAndSendLowStockNotifications();
-                }
-            };
-            notificationTimer.Start();
-        }
-
-        private void ShowToastNotification(List<Product> lowStockItems)
-        {
-            if (lowStockItems == null || lowStockItems.Count == 0) return;
-
-            var existingToast = this.Controls.OfType<Panel>().FirstOrDefault(p => p.Name == "LowStockToast");
-            if (existingToast != null) this.Controls.Remove(existingToast);
-
-            var toast = new Panel
-            {
-                Name = "LowStockToast",
-                Size = new Size(280, 140),
-                BackColor = Color.FromArgb(255, 255, 192),
-                BorderStyle = BorderStyle.FixedSingle,
-                Location = new Point(this.ClientSize.Width - 290, 10),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
-            };
-
-            var title = new Label
-            {
-                Text = "⚠ Low Stock Alert",
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                ForeColor = Color.DarkRed,
-                Dock = DockStyle.Top,
-                Height = 30,
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            toast.Controls.Add(title);
-
-            int yOffset = 35;
-            foreach (var product in lowStockItems.Take(3))
-            {
-                var link = new LinkLabel
-                {
-                    Text = $"- {product.ProductName} ({product.Stock})",
-                    Font = new Font("Segoe UI", 9F),
-                    AutoSize = true,
-                    Location = new Point(10, yOffset),
-                    Cursor = Cursors.Hand
-                };
-
-                link.LinkClicked += (s, e) =>
-                {
-                    NavigateToInventoryManagement(product.ProductID);
-                    this.Controls.Remove(toast);
-                };
-
-                toast.Controls.Add(link);
-                yOffset += 22;
-            }
-
-            if (lowStockItems.Count > 3)
-            {
-                var moreLabel = new Label
-                {
-                    Text = $"+{lowStockItems.Count - 3} more...",
-                    Location = new Point(10, yOffset),
-                    Font = new Font("Segoe UI", 8F, FontStyle.Italic),
-                    AutoSize = true
-                };
-                toast.Controls.Add(moreLabel);
-            }
-
-            var closeButton = new Button
-            {
-                Text = "X",
-                BackColor = Color.Red,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Size = new Size(25, 25),
-                Location = new Point(toast.Width - 30, 5)
-            };
-            closeButton.FlatAppearance.BorderSize = 0;
-            closeButton.Click += (s, e) => this.Controls.Remove(toast);
-            toast.Controls.Add(closeButton);
-
-            this.Controls.Add(toast);
-            toast.BringToFront();
-
-            var autoClose = new System.Windows.Forms.Timer { Interval = 6000 };
-            autoClose.Tick += (s, e) =>
-            {
-                if (this.Controls.Contains(toast))
-                    this.Controls.Remove(toast);
-                autoClose.Stop();
-            };
-            autoClose.Start();
-        }
-
         private User CurrentUser { get; set; }
-        private int CurrentWarehouseID { get; set; } = 1; // Default to main warehouse
+        private int CurrentWarehouseID { get; set; } = 1;
 
         private void InitializeWarehouseSelector()
         {
@@ -154,7 +43,6 @@ namespace FASCloset.Forms
 
             // Load warehouses for this user
         }
-
 
         // Sự kiện cho nút Logout
         private void btnLogout_Click(object sender, EventArgs e)
@@ -170,14 +58,7 @@ namespace FASCloset.Forms
             if (ucProductManagement == null)
             {
                 ucProductManagement = new UcProductManagement();
-
-                // Create the action buttons here for the toolbar rather than in the user control
-                ucProductManagement.btnAdd = new Button();
-                ucProductManagement.btnAdd.Text = "Thêm";
-                ucProductManagement.btnEdit = new Button();
-                ucProductManagement.btnEdit.Text = "Sửa";
-                ucProductManagement.btnDelete = new Button();
-                ucProductManagement.btnDelete.Text = "Xóa";
+                // KHÔNG gán lại btnAdd, btnEdit, btnDelete ở đây nữa
             }
 
             ucProductManagement.LoadCategories();
@@ -222,7 +103,6 @@ namespace FASCloset.Forms
 
             ucInventoryManagement.LoadCategories();
 
-
             LoadUserControl(ucInventoryManagement);
         }
 
@@ -242,38 +122,46 @@ namespace FASCloset.Forms
 
         private void btnCustomerManagement_Click(object sender, EventArgs e)
         {
-            UpdateFeatureToolbar(new string[] { "Thêm khách hàng", "Chỉnh sửa thông tin khách hàng", "Xóa khách hàng" });
+            UpdateFeatureToolbar(new string[] { "Thêm khách hàng", "Chỉnh sửa thông tin khách hàng", "Xóa khách hàng", "Làm mới" });
 
             if (ucCustomerManagement == null)
             {
                 ucCustomerManagement = new UcCustomerManagement();
 
-                ucCustomerManagement.btnAddCustomer = new Button();
-                ucCustomerManagement.btnAddCustomer.Text = "Thêm khách hàng";
+                ucCustomerManagement.btnAdd = new Button();
+                ucCustomerManagement.btnAdd.Text = "Thêm khách hàng";
                 ucCustomerManagement.btnDelete = new Button();
                 ucCustomerManagement.btnDelete.Text = "Xóa khách hàng";
+                ucCustomerManagement.btnRefresh = new Button();
+                ucCustomerManagement.btnRefresh.Text = "Làm mới";
             }
 
             LoadUserControl(ucCustomerManagement);
-            ucCustomerManagement.AddNewCustomer();
         }
 
-        private void HandelCustomerAdd(object? sender, EventArgs e)
+        private void HandleCustomerAdd(object? sender, EventArgs e)
         {
             if (ucCustomerManagement != null)
-                ucCustomerManagement.btnAddCustomer_Click(sender ?? this, e);
+                ucCustomerManagement.btnAdd.PerformClick();
             else
-                MessageBox.Show("Vui lòng chọn.");
+                MessageBox.Show("Vui lòng chọn Quản lý khách hàng trước.");
         }
 
         private void HandleCustomerDelete(object? sender, EventArgs e)
         {
             if (ucCustomerManagement != null)
-                ucCustomerManagement.btnDeleteCustomer_Click(sender ?? this, e);
+                ucCustomerManagement.btnDelete.PerformClick();
             else
                 MessageBox.Show("Vui lòng chọn khách hàng cần xóa.");
         }
 
+        private void HandleCustomerRefresh(object? sender, EventArgs e)
+        {
+            if (ucCustomerManagement != null)
+                ucCustomerManagement.btnRefresh.PerformClick();
+            else
+                MessageBox.Show("Vui lòng chọn Quản lý khách hàng trước.");
+        }
 
         private void btnRevenueReport_Click(object sender, EventArgs e)
         {
@@ -374,10 +262,13 @@ namespace FASCloset.Forms
                     btn.Click += (s, e) => HandleInventoryUpdate(s, e);
                     break;
                 case "Thêm khách hàng":
-                    btn.Click += (s, e) => HandelCustomerAdd(s, e);
-                    break;                
+                    btn.Click += (s, e) => HandleCustomerAdd(s, e);
+                    break;
                 case "Xóa khách hàng":
                     btn.Click += (s, e) => HandleCustomerDelete(s, e);
+                    break;
+                case "Làm mới":
+                    btn.Click += (s, e) => HandleCustomerRefresh(s, e);
                     break;
                 default:
                     btn.Click += (s, e) => MessageBox.Show("Chức năng: " + feature);
@@ -405,7 +296,7 @@ namespace FASCloset.Forms
         public void NavigateToInventoryManagement(int productId = 0)
         {
             btnInventoryManagement_Click(this, EventArgs.Empty);
-            
+
             // If a product ID was provided, set it in the inventory management UI
             if (productId > 0 && ucInventoryManagement != null)
             {

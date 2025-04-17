@@ -13,15 +13,13 @@ namespace FASCloset.Forms
         private System.Windows.Forms.SplitContainer mainSplit;
         private System.Windows.Forms.FlowLayoutPanel leftPanel;
         private System.Windows.Forms.Button btnProductManagement;
-        private System.Windows.Forms.Button btnInventoryManagement;
         private System.Windows.Forms.Button btnOrderManagement;
         private System.Windows.Forms.Button btnCustomerManagement;
         private System.Windows.Forms.Button btnRevenueReport;
         private System.Windows.Forms.Button btnDashboard;
         private System.Windows.Forms.Button btnNotificationSettings;
-        private System.Windows.Forms.Button btnWarehouseManagement;
         private System.Windows.Forms.Panel contentPanel;
-        private System.Windows.Forms.FlowLayoutPanel featureToolbarPanel; // Thêm dòng này
+        private System.Windows.Forms.FlowLayoutPanel featureToolbarPanel;
         private System.Windows.Forms.Panel warehousePanel;
         private System.Windows.Forms.Label lblWarehouse;
         private System.Windows.Forms.ComboBox cmbWarehouses;
@@ -48,7 +46,6 @@ namespace FASCloset.Forms
             mainSplit = new SplitContainer();
             leftPanel = new FlowLayoutPanel();
             btnProductManagement = new Button();
-            btnInventoryManagement = new Button();
             btnOrderManagement = new Button();
             btnCustomerManagement = new Button();
             btnRevenueReport = new Button();
@@ -56,7 +53,6 @@ namespace FASCloset.Forms
             contentPanel = new Panel();
             featureToolbarPanel = new FlowLayoutPanel();
             btnNotificationSettings = new Button();
-            btnWarehouseManagement = new Button();
             headerPanel.SuspendLayout();
             warehousePanel.SuspendLayout();
             ((ISupportInitialize)mainSplit).BeginInit();
@@ -143,16 +139,21 @@ namespace FASCloset.Forms
             // 
             // btnLogout
             // 
-            btnLogout.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnLogout.BackColor = Color.FromArgb(220, 53, 69);
             btnLogout.FlatStyle = FlatStyle.Flat;
-            btnLogout.Font = new Font("Segoe UI", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnLogout.BackColor = Color.FromArgb(220, 53, 69);
             btnLogout.ForeColor = Color.White;
-            btnLogout.Location = new Point(15, 313);
+            btnLogout.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnLogout.FlatAppearance.BorderSize = 0;
+            btnLogout.Cursor = Cursors.Hand;
+            btnLogout.Text = "🚪 Đăng xuất";
+            btnLogout.TextAlign = ContentAlignment.MiddleLeft;
+            btnLogout.Padding = new Padding(15, 0, 0, 0);
+            btnLogout.ImageAlign = ContentAlignment.MiddleLeft;
+            btnLogout.Location = new Point(15, 350);
+            btnLogout.Margin = new Padding(5, 20, 5, 5);
             btnLogout.Name = "btnLogout";
-            btnLogout.Size = new Size(222, 41);
+            btnLogout.Size = new Size(260, 45);
             btnLogout.TabIndex = 1;
-            btnLogout.Text = "Logout";
             btnLogout.UseVisualStyleBackColor = false;
             btnLogout.Click += btnLogout_Click;
             // 
@@ -177,162 +178,167 @@ namespace FASCloset.Forms
             // leftPanel
             // 
             leftPanel.AutoScroll = true;
-            leftPanel.BackColor = Color.FromArgb(250, 250, 250);
+            leftPanel.BackColor = Color.FromArgb(248, 249, 250);
             leftPanel.Controls.Add(btnDashboard);
             leftPanel.Controls.Add(btnProductManagement);
-            leftPanel.Controls.Add(btnInventoryManagement);
             leftPanel.Controls.Add(btnOrderManagement);
             leftPanel.Controls.Add(btnCustomerManagement);
             leftPanel.Controls.Add(btnRevenueReport);
+            leftPanel.Controls.Add(btnNotificationSettings);
             leftPanel.Controls.Add(btnLogout);
             leftPanel.Dock = DockStyle.Fill;
             leftPanel.FlowDirection = FlowDirection.TopDown;
             leftPanel.Location = new Point(0, 0);
             leftPanel.Name = "leftPanel";
-            leftPanel.Padding = new Padding(10);
+            leftPanel.Padding = new Padding(10, 15, 10, 15);
             leftPanel.Size = new Size(300, 634);
             leftPanel.TabIndex = 0;
             leftPanel.WrapContents = false;
             // 
             // btnProductManagement
             // 
-            btnProductManagement.BackColor = Color.CornflowerBlue;
             btnProductManagement.FlatStyle = FlatStyle.Flat;
-            btnProductManagement.Font = new Font("Segoe UI", 11.25F, FontStyle.Bold);
-            btnProductManagement.ForeColor = Color.White;
-            btnProductManagement.Location = new Point(15, 65);
+            btnProductManagement.BackColor = Color.FromArgb(248, 249, 250);
+            btnProductManagement.ForeColor = Color.FromArgb(52, 58, 64);
+            btnProductManagement.Font = new Font("Segoe UI", 11F, FontStyle.Regular);
+            btnProductManagement.FlatAppearance.BorderSize = 0;
+            btnProductManagement.Cursor = Cursors.Hand;
+            btnProductManagement.Text = "📦 Quản lý sản phẩm";
+            btnProductManagement.TextAlign = ContentAlignment.MiddleLeft;
+            btnProductManagement.Padding = new Padding(15, 0, 0, 0);
+            btnProductManagement.ImageAlign = ContentAlignment.MiddleLeft;
+            btnProductManagement.Location = new Point(15, 75);
             btnProductManagement.Margin = new Padding(5);
             btnProductManagement.Name = "btnProductManagement";
-            btnProductManagement.Size = new Size(220, 40);
+            btnProductManagement.Size = new Size(260, 45);
             btnProductManagement.TabIndex = 0;
-            btnProductManagement.Text = "Quản lý sản phẩm";
             btnProductManagement.UseVisualStyleBackColor = false;
             btnProductManagement.Click += btnProductManagement_Click;
             // 
-            // btnInventoryManagement
-            // 
-            btnInventoryManagement.BackColor = Color.CornflowerBlue;
-            btnInventoryManagement.FlatStyle = FlatStyle.Flat;
-            btnInventoryManagement.Font = new Font("Segoe UI", 11.25F, FontStyle.Bold);
-            btnInventoryManagement.ForeColor = Color.White;
-            btnInventoryManagement.Location = new Point(15, 115);
-            btnInventoryManagement.Margin = new Padding(5);
-            btnInventoryManagement.Name = "btnInventoryManagement";
-            btnInventoryManagement.Size = new Size(220, 40);
-            btnInventoryManagement.TabIndex = 1;
-            btnInventoryManagement.Text = "Quản lý kho hàng";
-            btnInventoryManagement.UseVisualStyleBackColor = false;
-            btnInventoryManagement.Click += btnInventoryManagement_Click;
-            // 
             // btnOrderManagement
             // 
-            btnOrderManagement.BackColor = Color.CornflowerBlue;
             btnOrderManagement.FlatStyle = FlatStyle.Flat;
-            btnOrderManagement.Font = new Font("Segoe UI", 11.25F, FontStyle.Bold);
-            btnOrderManagement.ForeColor = Color.White;
-            btnOrderManagement.Location = new Point(15, 165);
+            btnOrderManagement.BackColor = Color.FromArgb(248, 249, 250);
+            btnOrderManagement.ForeColor = Color.FromArgb(52, 58, 64);
+            btnOrderManagement.Font = new Font("Segoe UI", 11F, FontStyle.Regular);
+            btnOrderManagement.FlatAppearance.BorderSize = 0;
+            btnOrderManagement.Cursor = Cursors.Hand;
+            btnOrderManagement.Text = "🛒 Đơn hàng";
+            btnOrderManagement.TextAlign = ContentAlignment.MiddleLeft;
+            btnOrderManagement.Padding = new Padding(15, 0, 0, 0);
+            btnOrderManagement.ImageAlign = ContentAlignment.MiddleLeft;
+            btnOrderManagement.Location = new Point(15, 130);
             btnOrderManagement.Margin = new Padding(5);
             btnOrderManagement.Name = "btnOrderManagement";
-            btnOrderManagement.Size = new Size(220, 40);
-            btnOrderManagement.TabIndex = 2;
-            btnOrderManagement.Text = "Quản lý đơn hàng";
+            btnOrderManagement.Size = new Size(260, 45);
+            btnOrderManagement.TabIndex = 1;
             btnOrderManagement.UseVisualStyleBackColor = false;
             btnOrderManagement.Click += btnOrderManagement_Click;
             // 
             // btnCustomerManagement
             // 
-            btnCustomerManagement.BackColor = Color.CornflowerBlue;
             btnCustomerManagement.FlatStyle = FlatStyle.Flat;
-            btnCustomerManagement.Font = new Font("Segoe UI", 11.25F, FontStyle.Bold);
-            btnCustomerManagement.ForeColor = Color.White;
-            btnCustomerManagement.Location = new Point(15, 215);
+            btnCustomerManagement.BackColor = Color.FromArgb(248, 249, 250);
+            btnCustomerManagement.ForeColor = Color.FromArgb(52, 58, 64);
+            btnCustomerManagement.Font = new Font("Segoe UI", 11F, FontStyle.Regular);
+            btnCustomerManagement.FlatAppearance.BorderSize = 0;
+            btnCustomerManagement.Cursor = Cursors.Hand;
+            btnCustomerManagement.Text = "👥 Khách hàng";
+            btnCustomerManagement.TextAlign = ContentAlignment.MiddleLeft;
+            btnCustomerManagement.Padding = new Padding(15, 0, 0, 0);
+            btnCustomerManagement.ImageAlign = ContentAlignment.MiddleLeft;
+            btnCustomerManagement.Location = new Point(15, 185);
             btnCustomerManagement.Margin = new Padding(5);
             btnCustomerManagement.Name = "btnCustomerManagement";
-            btnCustomerManagement.Size = new Size(220, 40);
-            btnCustomerManagement.TabIndex = 3;
-            btnCustomerManagement.Text = "Quản lý khách hàng";
+            btnCustomerManagement.Size = new Size(260, 45);
+            btnCustomerManagement.TabIndex = 2;
             btnCustomerManagement.UseVisualStyleBackColor = false;
             btnCustomerManagement.Click += btnCustomerManagement_Click;
             // 
             // btnRevenueReport
             // 
-            btnRevenueReport.BackColor = Color.CornflowerBlue;
             btnRevenueReport.FlatStyle = FlatStyle.Flat;
-            btnRevenueReport.Font = new Font("Segoe UI", 11.25F, FontStyle.Bold);
-            btnRevenueReport.ForeColor = Color.White;
-            btnRevenueReport.Location = new Point(15, 265);
+            btnRevenueReport.BackColor = Color.FromArgb(248, 249, 250);
+            btnRevenueReport.ForeColor = Color.FromArgb(52, 58, 64);
+            btnRevenueReport.Font = new Font("Segoe UI", 11F, FontStyle.Regular);
+            btnRevenueReport.FlatAppearance.BorderSize = 0;
+            btnRevenueReport.Cursor = Cursors.Hand;
+            btnRevenueReport.Text = "📈 Báo cáo";
+            btnRevenueReport.TextAlign = ContentAlignment.MiddleLeft;
+            btnRevenueReport.Padding = new Padding(15, 0, 0, 0);
+            btnRevenueReport.ImageAlign = ContentAlignment.MiddleLeft;
+            btnRevenueReport.Location = new Point(15, 240);
             btnRevenueReport.Margin = new Padding(5);
             btnRevenueReport.Name = "btnRevenueReport";
-            btnRevenueReport.Size = new Size(220, 40);
-            btnRevenueReport.TabIndex = 4;
-            btnRevenueReport.Text = "Báo cáo doanh thu";
+            btnRevenueReport.Size = new Size(260, 45);
+            btnRevenueReport.TabIndex = 3;
             btnRevenueReport.UseVisualStyleBackColor = false;
             btnRevenueReport.Click += btnRevenueReport_Click;
             // 
             // btnDashboard
             // 
-            btnDashboard.BackColor = Color.CornflowerBlue;
             btnDashboard.FlatStyle = FlatStyle.Flat;
-            btnDashboard.Font = new Font("Segoe UI", 11.25F, FontStyle.Bold);
+            btnDashboard.BackColor = Color.FromArgb(0, 123, 255);
             btnDashboard.ForeColor = Color.White;
-            btnDashboard.Location = new Point(15, 15);
+            btnDashboard.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnDashboard.FlatAppearance.BorderSize = 0;
+            btnDashboard.Cursor = Cursors.Hand;
+            btnDashboard.Text = "📊 Dashboard";
+            btnDashboard.TextAlign = ContentAlignment.MiddleLeft;
+            btnDashboard.Padding = new Padding(15, 0, 0, 0);
+            btnDashboard.ImageAlign = ContentAlignment.MiddleLeft;
+            btnDashboard.Location = new Point(15, 20);
             btnDashboard.Margin = new Padding(5);
             btnDashboard.Name = "btnDashboard";
-            btnDashboard.Size = new Size(220, 40);
+            btnDashboard.Size = new Size(260, 45);
             btnDashboard.TabIndex = 5;
-            btnDashboard.Text = "Dashboard";
             btnDashboard.UseVisualStyleBackColor = false;
             btnDashboard.Click += btnDashboard_Click;
+            // 
+            // btnNotificationSettings
+            // 
+            btnNotificationSettings.FlatStyle = FlatStyle.Flat;
+            btnNotificationSettings.BackColor = Color.FromArgb(248, 249, 250);
+            btnNotificationSettings.ForeColor = Color.FromArgb(52, 58, 64);
+            btnNotificationSettings.Font = new Font("Segoe UI", 11F, FontStyle.Regular);
+            btnNotificationSettings.FlatAppearance.BorderSize = 0;
+            btnNotificationSettings.Cursor = Cursors.Hand;
+            btnNotificationSettings.Text = "⚙️ Cài đặt";
+            btnNotificationSettings.TextAlign = ContentAlignment.MiddleLeft;
+            btnNotificationSettings.Padding = new Padding(15, 0, 0, 0);
+            btnNotificationSettings.ImageAlign = ContentAlignment.MiddleLeft;
+            btnNotificationSettings.Location = new Point(15, 295);
+            btnNotificationSettings.Margin = new Padding(5);
+            btnNotificationSettings.Name = "btnNotificationSettings";
+            btnNotificationSettings.Size = new Size(260, 45);
+            btnNotificationSettings.TabIndex = 6;
+            btnNotificationSettings.UseVisualStyleBackColor = false;
+            btnNotificationSettings.Click += btnNotificationSettings_Click;
             // 
             // contentPanel
             // 
             contentPanel.BackColor = Color.White;
             contentPanel.Dock = DockStyle.Fill;
-            contentPanel.Location = new Point(0, 50);
+            contentPanel.Location = new Point(0, 55);
             contentPanel.Name = "contentPanel";
-            contentPanel.Size = new Size(896, 584);
+            contentPanel.Padding = new Padding(10);
+            contentPanel.Size = new Size(896, 579);
             contentPanel.TabIndex = 0;
             // 
             // featureToolbarPanel
             // 
-            featureToolbarPanel.BackColor = SystemColors.GradientInactiveCaption;
+            featureToolbarPanel.BackColor = Color.FromArgb(233, 236, 239);
             featureToolbarPanel.Dock = DockStyle.Top;
             featureToolbarPanel.Location = new Point(0, 0);
             featureToolbarPanel.Name = "featureToolbarPanel";
-            featureToolbarPanel.Padding = new Padding(5);
-            featureToolbarPanel.Size = new Size(896, 50);
+            featureToolbarPanel.Padding = new Padding(10, 5, 10, 5);
+            featureToolbarPanel.Size = new Size(896, 55);
             featureToolbarPanel.TabIndex = 1;
-            // 
-            // btnNotificationSettings
-            // 
-            btnNotificationSettings.BackColor = Color.FromArgb(0, 123, 255);
-            btnNotificationSettings.FlatStyle = FlatStyle.Flat;
-            btnNotificationSettings.ForeColor = Color.White;
-            btnNotificationSettings.Location = new Point(15, 315);
-            btnNotificationSettings.Margin = new Padding(5);
-            btnNotificationSettings.Name = "btnNotificationSettings";
-            btnNotificationSettings.Size = new Size(220, 40);
-            btnNotificationSettings.TabIndex = 6;
-            btnNotificationSettings.Text = "Notification Settings";
-            btnNotificationSettings.UseVisualStyleBackColor = false;
-            // 
-            // btnWarehouseManagement
-            // 
-            btnWarehouseManagement.BackColor = Color.FromArgb(0, 123, 255);
-            btnWarehouseManagement.FlatStyle = FlatStyle.Flat;
-            btnWarehouseManagement.ForeColor = Color.White;
-            btnWarehouseManagement.Location = new Point(15, 365);
-            btnWarehouseManagement.Margin = new Padding(5);
-            btnWarehouseManagement.Name = "btnWarehouseManagement";
-            btnWarehouseManagement.Size = new Size(220, 40);
-            btnWarehouseManagement.TabIndex = 7;
-            btnWarehouseManagement.Text = "Warehouse Management";
-            btnWarehouseManagement.UseVisualStyleBackColor = false;
             // 
             // MainForm
             // 
             BackColor = Color.WhiteSmoke;
-            ClientSize = new Size(1200, 1200);
+            ClientSize = new Size(1200, 700);
             Controls.Add(mainSplit);
             Controls.Add(headerPanel);
             Name = "MainForm";

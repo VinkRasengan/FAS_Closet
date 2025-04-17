@@ -13,13 +13,16 @@ namespace FASCloset.Forms
     {
         private enum Mode { View, Add, Edit, Duplicate }
         private Mode currentMode = Mode.View;
-        private List<Product> products = new List<Product>();
         private bool showInactiveProducts = false;
         private bool showOnlyLowStock = false;
         private Product? selectedProduct = null; // Add this line to track selected product
-        
+
         // Use a BindingSource to manage the data binding
         private BindingSource productsBindingSource = new BindingSource();
+
+        // Định nghĩa hằng cho các literal lặp lại nhiều lần
+        private const string DataLoadingError = "Data Loading Error";
+        private const string ErrorLiteral = "Error";
 
         public UcProductManagement()
         {
@@ -235,7 +238,7 @@ namespace FASCloset.Forms
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in LoadProducts: {ex.Message}");
-                MessageBox.Show($"Error loading products: {ex.Message}", "Data Loading Error",
+                MessageBox.Show($"Error loading products: {ex.Message}", DataLoadingError,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -251,7 +254,7 @@ namespace FASCloset.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading products by category: {ex.Message}", "Data Loading Error", 
+                MessageBox.Show($"Error loading products by category: {ex.Message}", DataLoadingError, 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -281,7 +284,7 @@ namespace FASCloset.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading categories: {ex.Message}", "Data Loading Error", 
+                MessageBox.Show($"Error loading categories: {ex.Message}", DataLoadingError, 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -297,7 +300,7 @@ namespace FASCloset.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading manufacturers: {ex.Message}", "Data Loading Error", 
+                MessageBox.Show($"Error loading manufacturers: {ex.Message}", DataLoadingError, 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -311,7 +314,6 @@ namespace FASCloset.Forms
             currentMode = Mode.Add;
             InitializeAddProductUI();
             ShowAddEditPanel();
-            btnDuplicate.Visible = false;
         }
 
         public void btnEdit_Click(object sender, EventArgs e)
@@ -324,7 +326,6 @@ namespace FASCloset.Forms
                 {
                     FillAddEditPanel(selectedProduct);
                     ShowAddEditPanel();
-                    btnDuplicate.Visible = true;
                 }
             }
             else
@@ -334,40 +335,26 @@ namespace FASCloset.Forms
             }
         }
 
-        private void btnDuplicate_Click(object sender, EventArgs e)
-        {
-            if (currentMode == Mode.Edit && ProductDisplay.SelectedRows.Count > 0)
-            {
-                currentMode = Mode.Duplicate;
-                
-                // Update UI to indicate we're duplicating
-                this.Text = "Duplicate Product";
-                
-                // Change visibility of controls if needed
-                btnDuplicate.Visible = false;
-            }
-        }
-
         public void btnDelete_Click(object sender, EventArgs e)
         {
             if (ProductDisplay.SelectedRows.Count > 0)
             {
-                var selectedProduct = ProductDisplay.SelectedRows[0].DataBoundItem as Product;
-                if (selectedProduct != null)
+                var selectedToDelete = ProductDisplay.SelectedRows[0].DataBoundItem as Product;
+                if (selectedToDelete != null)
                 {
                     if (MessageBox.Show("Are you sure you want to archive this product? It will be marked as inactive but not permanently deleted.", 
                         "Confirm Archive", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         try
                         {
-                            ProductManager.DeleteProduct(selectedProduct.ProductID);
+                            ProductManager.DeleteProduct(selectedToDelete.ProductID);
                             LoadProducts();
                             MessageBox.Show("Product has been archived successfully.", "Success", 
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show($"Error archiving product: {ex.Message}", "Error", 
+                            MessageBox.Show($"Error archiving product: {ex.Message}", ErrorLiteral, 
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
@@ -418,41 +405,9 @@ namespace FASCloset.Forms
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in category change: {ex.Message}");
-                MessageBox.Show($"Error loading products by category: {ex.Message}", "Error",
+                MessageBox.Show($"Error loading products by category: {ex.Message}", ErrorLiteral,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-
-        // Helper method to get current warehouse ID from parent form
-        private int GetCurrentWarehouseId()
-        {
-            // Default to warehouse ID 1
-            int warehouseId = 1;
-            
-            try
-            {
-                // Try to get the current warehouse ID from MainForm if this control is hosted in it
-                if (ParentForm is MainForm mainForm && mainForm.GetType().GetProperty("CurrentWarehouseID") != null)
-                {
-                    // Get warehouse ID using reflection to avoid direct dependency
-                    var property = mainForm.GetType().GetProperty("CurrentWarehouseID");
-                    if (property != null)
-                    {
-                        var value = property.GetValue(mainForm);
-                        if (value != null)
-                        {
-                            warehouseId = (int)value;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error getting current warehouse ID: {ex.Message}");
-            }
-            
-            return warehouseId;
         }
 
         private void ChkShowInactive_CheckedChanged(object sender, EventArgs e)
@@ -624,7 +579,7 @@ namespace FASCloset.Forms
             }
 
             // Allow only one decimal point
-            if (e.KeyChar == '.' && (sender as TextBox).Text.IndexOf('.') > -1)
+            if (e.KeyChar == '.' && sender is TextBox txt && txt.Text.IndexOf('.') > -1)
             {
                 e.Handled = true;
             }
@@ -672,8 +627,7 @@ namespace FASCloset.Forms
             // Find the category in the combo box
             for (int i = 0; i < CmbCategory.Items.Count; i++)
             {
-                var category = (Category)CmbCategory.Items[i];
-                if (category.CategoryID == product.CategoryID)
+                if (CmbCategory.Items[i] is Category category && category.CategoryID == product.CategoryID)
                 {
                     CmbCategory.SelectedIndex = i;
                     break;
@@ -685,8 +639,7 @@ namespace FASCloset.Forms
             {
                 for (int i = 0; i < CmbManufacturer.Items.Count; i++)
                 {
-                    var manufacturer = (Manufacturer)CmbManufacturer.Items[i];
-                    if (manufacturer.ManufacturerID == product.ManufacturerID)
+                    if (CmbManufacturer.Items[i] is Manufacturer manufacturer && manufacturer.ManufacturerID == product.ManufacturerID)
                     {
                         CmbManufacturer.SelectedIndex = i;
                         break;
@@ -732,7 +685,7 @@ namespace FASCloset.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error performing search: {ex.Message}", "Search Error", 
+                MessageBox.Show($"Error performing search: {ex.Message}", ErrorLiteral, 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -762,7 +715,7 @@ namespace FASCloset.Forms
                 Product product = new Product
                 {
                     ProductName = TxtProductName.Text,
-                    CategoryID = ((Category)CmbCategory.SelectedItem).CategoryID,
+                    CategoryID = CmbCategory.SelectedItem is Category cat ? cat.CategoryID : 0,
                     Price = decimal.Parse(TxtPrice.Text),
                     Stock = int.Parse(TxtStock.Text),
                     Description = TxtDescription.Text,
@@ -786,24 +739,15 @@ namespace FASCloset.Forms
                     // We'll need to search for the product after reloading
                     productIdToSelect = null; // Will select by name later
                 }
-                else if (currentMode == Mode.Edit || currentMode == Mode.Duplicate)
+                else if (currentMode == Mode.Edit)
                 {
-                    if (currentMode == Mode.Edit && selectedProduct != null)
+                    if (selectedProduct != null)
                     {
                         // Update existing product
                         product.ProductID = selectedProduct.ProductID;
                         ProductManager.UpdateProduct(product);
                         productIdToSelect = selectedProduct.ProductID;
                         MessageBox.Show("Product updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        // Duplicate product (save as new)
-                        ProductManager.AddProduct(product);
-                        MessageBox.Show("Product duplicated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        
-                        // We'll need to search for the product after reloading
-                        productIdToSelect = null; // Will select by name later
                     }
                 }
                 
@@ -835,7 +779,7 @@ namespace FASCloset.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving product: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error saving product: {ex.Message}", ErrorLiteral, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -924,7 +868,7 @@ namespace FASCloset.Forms
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error adding category: {ex.Message}", "Error", 
+                        MessageBox.Show($"Error adding category: {ex.Message}", ErrorLiteral, 
                             MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
@@ -983,7 +927,7 @@ namespace FASCloset.Forms
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error adding manufacturer: {ex.Message}", "Error", 
+                        MessageBox.Show($"Error adding manufacturer: {ex.Message}", ErrorLiteral, 
                             MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
@@ -1007,10 +951,9 @@ namespace FASCloset.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading low stock products: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error loading low stock products: {ex.Message}", ErrorLiteral, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
 
         #endregion
     }

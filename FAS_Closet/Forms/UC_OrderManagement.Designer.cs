@@ -6,7 +6,7 @@
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
-        
+
         // UI Controls
         public TextBox txtTotalAmount;
         public ComboBox cmbPaymentMethod;
@@ -15,11 +15,14 @@
         public TextBox txtQuantity;
         private List<OrderDetail> orderDetails = new List<OrderDetail>();
         public ComboBox cmbCustomer;
-        private Button btnCreateCustomer;
         private DataGridView productList;
         private DataGridView dgvDraftOrders;
         private Label lblSuccessOrder;
 
+        private Button btnAdd;
+        private Button btnEdit;
+        private Button btnDelete;
+        private Button btnRefresh;
 
         /// <summary> 
         /// Clean up any resources being used.
@@ -43,20 +46,12 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            
+
             this.cmbCustomer = new ComboBox();
             this.cmbCustomer.Location = new System.Drawing.Point(120, 20);
             this.cmbCustomer.Name = "cmbCustomer";
             this.cmbCustomer.Size = new System.Drawing.Size(150, 23);
             this.cmbCustomer.DropDownStyle = ComboBoxStyle.DropDownList;
-
-            btnCreateCustomer = new Button();
-            btnCreateCustomer.Location = new Point(270, 20); // cạnh cmbCustomer
-            btnCreateCustomer.Size = new Size(25, 23);
-            btnCreateCustomer.Text = "+";
-            btnCreateCustomer.Name = "btnCreateCustomer";
-            btnCreateCustomer.Click += new EventHandler(this.HandleCustomerAdd);
-            this.Controls.Add(btnCreateCustomer);
 
             Label lblProductDetails = new Label();
             lblProductDetails.Text = "Order Product Detail";
@@ -108,8 +103,7 @@
             this.cmbPaymentMethod.Name = "cmbPaymentMethod";
             this.cmbPaymentMethod.Size = new System.Drawing.Size(150, 23);
             this.cmbPaymentMethod.DropDownStyle = ComboBoxStyle.DropDownList;
-           
-            
+
             // Orders Grid
             this.dgvOrders = new DataGridView();
             this.dgvOrders.Location = new System.Drawing.Point(20, 600);
@@ -119,24 +113,6 @@
             this.dgvOrders.AllowUserToAddRows = false;
             this.dgvOrders.ReadOnly = true;
             this.dgvOrders.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            
-            // Print Invoice Button
-            Button btnPrintInvoice = new Button();
-            btnPrintInvoice.Location = new System.Drawing.Point(20, 530);
-            btnPrintInvoice.Name = "btnPrintInvoice";
-            btnPrintInvoice.Size = new System.Drawing.Size(150, 30);
-            btnPrintInvoice.Text = "Print Invoice";
-            btnPrintInvoice.UseVisualStyleBackColor = true;
-            btnPrintInvoice.Click += new System.EventHandler(this.btnPrintInvoice_Click);
-
-            // Create Order Button
-            Button btnCreateOrder = new Button();
-            btnCreateOrder.Location = new System.Drawing.Point(20, 300);
-            btnCreateOrder.Name = "btnCreateOrder";
-            btnCreateOrder.Size = new System.Drawing.Size(150, 30);
-            btnCreateOrder.Text = "Create Order";
-            btnCreateOrder.UseVisualStyleBackColor = true;
-            btnCreateOrder.Click += new System.EventHandler(this.btnCreateOrder_Click);
 
             this.lblSuccessOrder = new Label();
             this.lblSuccessOrder.Name = "lblSuccessOrder";
@@ -153,13 +129,13 @@
             lblCustomerId.Location = new System.Drawing.Point(20, 23);
             lblCustomerId.Size = new System.Drawing.Size(100, 23);
             lblCustomerId.Text = "Customer ID:";
-            
+
             Label lblTotalAmount = new Label();
             lblTotalAmount.Location = new Point(20, 80);
             lblTotalAmount.Size = new Size(100, 23);
             lblTotalAmount.Text = "Total Amount:";
 
-            // Total Amount TextBox (mới)
+            // Total Amount TextBox
             this.txtTotalAmount = new TextBox();
             this.txtTotalAmount.Location = new Point(120, 80);
             this.txtTotalAmount.Size = new Size(150, 23);
@@ -170,7 +146,7 @@
             // Add vào form
             this.Controls.Add(lblTotalAmount);
             this.Controls.Add(this.txtTotalAmount);
-            
+
             Label lblPaymentMethod = new Label();
             lblPaymentMethod.Location = new System.Drawing.Point(20, 53);
             lblPaymentMethod.Size = new System.Drawing.Size(100, 23);
@@ -218,17 +194,67 @@
             this.Controls.Add(this.txtQuantity);
             this.Controls.Add(btnAddProduct);
 
-            
             // Add controls
             this.Controls.Add(lblCustomerId);
             this.Controls.Add(this.cmbCustomer);
 
             this.Controls.Add(lblPaymentMethod);
             this.Controls.Add(this.cmbPaymentMethod);
-            this.Controls.Add(btnCreateOrder);
             this.Controls.Add(this.dgvOrders);
-            this.Controls.Add(btnPrintInvoice);
-            
+
+            // Main action buttons
+            this.btnAdd = new Button();
+            this.btnAdd.Location = new Point(20, 300);
+            this.btnAdd.Name = "btnAdd";
+            this.btnAdd.Size = new Size(100, 30);
+            this.btnAdd.FlatStyle = FlatStyle.Flat;
+            this.btnAdd.BackColor = Color.FromArgb(0, 123, 255);
+            this.btnAdd.ForeColor = Color.White;
+            this.btnAdd.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            this.btnAdd.FlatAppearance.BorderSize = 0;
+            this.btnAdd.Cursor = Cursors.Hand;
+            this.btnAdd.Text = "Thêm";
+            this.Controls.Add(this.btnAdd);
+
+            this.btnEdit = new Button();
+            this.btnEdit.Location = new Point(130, 300);
+            this.btnEdit.Name = "btnEdit";
+            this.btnEdit.Size = new Size(100, 30);
+            this.btnEdit.FlatStyle = FlatStyle.Flat;
+            this.btnEdit.BackColor = Color.FromArgb(40, 167, 69);
+            this.btnEdit.ForeColor = Color.White;
+            this.btnEdit.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            this.btnEdit.FlatAppearance.BorderSize = 0;
+            this.btnEdit.Cursor = Cursors.Hand;
+            this.btnEdit.Text = "Sửa";
+            this.Controls.Add(this.btnEdit);
+
+            this.btnDelete = new Button();
+            this.btnDelete.Location = new Point(240, 300);
+            this.btnDelete.Name = "btnDelete";
+            this.btnDelete.Size = new Size(100, 30);
+            this.btnDelete.FlatStyle = FlatStyle.Flat;
+            this.btnDelete.BackColor = Color.FromArgb(220, 53, 69);
+            this.btnDelete.ForeColor = Color.White;
+            this.btnDelete.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            this.btnDelete.FlatAppearance.BorderSize = 0;
+            this.btnDelete.Cursor = Cursors.Hand;
+            this.btnDelete.Text = "Xóa";
+            this.Controls.Add(this.btnDelete);
+
+            this.btnRefresh = new Button();
+            this.btnRefresh.Location = new Point(350, 300);
+            this.btnRefresh.Name = "btnRefresh";
+            this.btnRefresh.Size = new Size(100, 30);
+            this.btnRefresh.FlatStyle = FlatStyle.Flat;
+            this.btnRefresh.BackColor = Color.FromArgb(108, 117, 125);
+            this.btnRefresh.ForeColor = Color.White;
+            this.btnRefresh.Font = new Font("Segoe UI", 10F);
+            this.btnRefresh.FlatAppearance.BorderSize = 0;
+            this.btnRefresh.Cursor = Cursors.Hand;
+            this.btnRefresh.Text = "Làm mới";
+            this.Controls.Add(this.btnRefresh);
+
             this.Name = "UcOrderManagement";
             this.Size = new System.Drawing.Size(550, 400);
         }
