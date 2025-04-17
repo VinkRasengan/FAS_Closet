@@ -347,7 +347,7 @@ namespace FASCloset.Forms
                 cmbPaymentMethod.SelectedIndex = 0;
         }
 
-        private void LoadProducts()
+        public void LoadProducts()
         {
             var products = ProductManager.GetProducts(); // Danh sách Product
 
@@ -356,7 +356,7 @@ namespace FASCloset.Forms
             cmbProduct.ValueMember = "ProductID";
         }
 
-        private void LoadCustomers()
+        public void LoadCustomers()
         {
             var customers = CustomerManager.GetCustomers(); // danh sách Customer
 
