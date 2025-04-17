@@ -5,6 +5,7 @@ using System.IO;
 using System.Windows.Forms;
 using FASCloset.Services;
 using System.ComponentModel;
+using FASCloset.Models;
 
 namespace FASCloset.Forms
 {
@@ -81,36 +82,42 @@ namespace FASCloset.Forms
 
         private void ProcessGenerateSalesReport(DoWorkEventArgs e, DateTime startDate, DateTime endDate)
         {
-            DataTable reportData;
-            
-            // Get report based on selected type
-            switch (cmbReportType.SelectedIndex)
-            {
-                case 1: // Product Sales
-                case 2: // Customer Orders
-                    reportData = ReportManager.GenerateDetailedSalesReport(startDate, endDate);
-                    break;
-                default: // Sales Summary or fallback
-                    reportData = ReportManager.GenerateSalesReport(startDate, endDate);
-                    break;
-            }
-            
-            e.Result = new object[] { "Report", reportData };
-        }
+            DataTable reportData = null;
 
-        private void ProcessExportDetailedReport(DoWorkEventArgs e, DateTime startDate, DateTime endDate)
-        {
-            var reportData = ReportManager.GenerateDetailedSalesReport(startDate, endDate);
-            
-            string fileName = $"SalesReport_{startDate:yyyyMMdd}_to_{endDate:yyyyMMdd}.csv";
-            
-            using (var writer = new StringWriter())
+            // Make sure this runs on the UI thread
+            if (cmbReportType.InvokeRequired)
             {
-                WriteReportHeader(writer, reportData);
-                WriteReportData(writer, reportData);
-                
-                e.Result = new object[] { "Export", fileName, writer.ToString() };
+                // Use Invoke to access the UI control from the UI thread
+                cmbReportType.Invoke(new Action(() => {
+                    // Now you can safely access the SelectedIndex
+                    switch (cmbReportType.SelectedIndex)
+                    {
+                        case 1: // Product Sales
+                        case 2: // Customer Orders
+                            reportData = ReportManager.GenerateDetailedSalesReport(startDate, endDate);
+                            break;
+                        default: // Sales Summary or fallback
+                            reportData = ReportManager.GenerateSalesReport(startDate, endDate);
+                            break;
+                    }
+                }));
             }
+            else
+            {
+                // You are on the UI thread, so you can directly access the control
+                switch (cmbReportType.SelectedIndex)
+                {
+                    case 1: // Product Sales
+                    case 2: // Customer Orders
+                        reportData = ReportManager.GenerateDetailedSalesReport(startDate, endDate);
+                        break;
+                    default: // Sales Summary or fallback
+                        reportData = ReportManager.GenerateSalesReport(startDate, endDate);
+                        break;
+                }
+            }
+
+            e.Result = new object[] { "Report", reportData };
         }
 
         // Make methods static since they don't use instance data
@@ -148,25 +155,37 @@ namespace FASCloset.Forms
             }
         }
 
-        private void BackgroundWorker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
+        private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             ProgressBarReport.Visible = false;
-            
+
             if (e.Error != null)
             {
-                MessageBox.Show($"An error occurred: {e.Error.Message}", "Error", 
+                MessageBox.Show($"An error occurred: {e.Error.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            
+
             if (e.Result is object[] result && result[0] is string actionType)
             {
                 if (actionType == "Report" && result[1] is DataTable reportData)
                 {
-                    DataGridViewReport.DataSource = reportData;
-                    UpdateSummary(reportData);
+                    // Use Invoke to update the DataGridView on the UI thread
+                    if (DataGridViewReport.InvokeRequired)
+                    {
+                        DataGridViewReport.Invoke(new Action(() =>
+                        {
+                            DataGridViewReport.DataSource = reportData;
+                            UpdateSummary(reportData);
+                        }));
+                    }
+                    else
+                    {
+                        DataGridViewReport.DataSource = reportData;
+                        UpdateSummary(reportData);
+                    }
                 }
-                else if (actionType == "Export" && result.Length > 2 && 
+                else if (actionType == "Export" && result.Length > 2 &&
                          result[1] is string fileName && result[2] is string fileContent)
                 {
                     HandleExport(fileName, fileContent);
@@ -174,30 +193,7 @@ namespace FASCloset.Forms
             }
         }
 
-        private void HandleExport(string fileName, string fileContent)
-        {
-            SaveFileDialog saveFileDialog = new SaveFileDialog
-            {
-                Filter = "CSV Files (*.csv)|*.csv",
-                Title = "Save Report",
-                FileName = fileName
-            };
-            
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    File.WriteAllText(saveFileDialog.FileName, fileContent);
-                    MessageBox.Show($"Report successfully exported to {saveFileDialog.FileName}", 
-                        "Export Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error saving file: {ex.Message}", "Export Error", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
+
         
         private void UpdateSummary(DataTable reportData)
         {
@@ -270,5 +266,95 @@ namespace FASCloset.Forms
             DataTable detailedReport = ReportManager.GenerateDetailedSalesReport(startDate, endDate);
             DataGridViewReport.DataSource = detailedReport;
         }
+
+        private void ProcessExportDetailedReport(DoWorkEventArgs e, DateTime startDate, DateTime endDate)
+        {
+            // Generate detailed report
+            var reportData = ReportManager.GenerateDetailedSalesReport(startDate, endDate);
+
+            // Define file name
+            string fileName = $"SalesReport_{startDate:yyyyMMdd}_to_{endDate:yyyyMMdd}.csv";
+
+            using (var writer = new StringWriter())
+            {
+                // Write header
+                WriteCsvHeader(writer, reportData);
+
+                // Write data rows
+                WriteCsvData(writer, reportData);
+
+                // Return the result
+                e.Result = new object[] { "Export", fileName, writer.ToString() };
+            }
+        }
+
+        private static void WriteCsvHeader(StringWriter writer, DataTable reportData)
+        {
+            // Write the headers (column names)
+            for (int i = 0; i < reportData.Columns.Count; i++)
+            {
+                writer.Write(reportData.Columns[i].ColumnName);
+                if (i < reportData.Columns.Count - 1)
+                    writer.Write(",");
+            }
+            writer.WriteLine(); // New line after header
+        }
+
+        private static void WriteCsvData(StringWriter writer, DataTable reportData)
+        {
+            // Loop through each row and write its data
+            foreach (DataRow row in reportData.Rows)
+            {
+                for (int i = 0; i < reportData.Columns.Count; i++)
+                {
+                    var value = row[i].ToString();
+
+                    // If the value contains commas or quotes, escape it
+                    if (value.Contains(",") || value.Contains("\""))
+                    {
+                        value = "\"" + value.Replace("\"", "\"\"") + "\""; // Escape double quotes by doubling them
+                    }
+
+                    writer.Write(value);
+
+                    // Separate with commas for each column except the last one
+                    if (i < reportData.Columns.Count - 1)
+                        writer.Write(",");
+                }
+                writer.WriteLine(); // New line after each row
+            }
+        }
+
+        private void HandleExport(string fileName, string fileContent)
+        {
+            // Show SaveFileDialog for user to choose location to save the CSV file
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "CSV Files (*.csv)|*.csv",
+                Title = "Save Report",
+                FileName = fileName
+            };
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    // Write the content to the selected file
+                    File.WriteAllText(saveFileDialog.FileName, fileContent);
+
+                    // Notify user of success
+                    MessageBox.Show($"Report successfully exported to {saveFileDialog.FileName}",
+                        "Export Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error saving file: {ex.Message}", "Export Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+
+
     }
 }
