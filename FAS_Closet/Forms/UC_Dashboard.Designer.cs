@@ -116,7 +116,7 @@ namespace FASCloset.Forms
             dgvVIPCustomers = new DataGridView
             {
                 Location = new Point(20, 520),  // Position below the title label
-                Size = new Size(600, 160),
+                Size = new Size(600, 200),
                 ReadOnly = true,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 AllowUserToAddRows = false,

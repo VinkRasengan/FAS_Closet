@@ -145,20 +145,49 @@ namespace FASCloset.Forms
             btnManageLoyaltyPoints.Size = new Size(120, 30);
             btnManageLoyaltyPoints.Click += btnManageLoyaltyPoints_Click;
 
-            // Configure DataGridViews
+            // Adjusted width for dgvCustomers
             dgvCustomers.Location = new Point(20, 230);
-            dgvCustomers.Size = new Size(280, 200);
+            dgvCustomers.Size = new Size(400, 200); // Increase the width to 400
             dgvCustomers.AllowUserToAddRows = false;
             dgvCustomers.ReadOnly = true;
             dgvCustomers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvCustomers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvCustomers.SelectionChanged += dgvCustomers_SelectionChanged;
 
-            dataGridViewPurchaseHistory.Location = new Point(320, 230);
-            dataGridViewPurchaseHistory.Size = new Size(300, 200);
+            // Apply modern styling for dgvCustomers
+            dgvCustomers.BorderStyle = BorderStyle.None;
+            dgvCustomers.BackgroundColor = Color.White;
+            dgvCustomers.GridColor = Color.FromArgb(230, 230, 230);
+            dgvCustomers.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(93, 64, 150); // Dark Purple
+            dgvCustomers.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dgvCustomers.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
+            dgvCustomers.ColumnHeadersHeight = 40;
+            dgvCustomers.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
+            dgvCustomers.RowTemplate.Height = 35;
+            dgvCustomers.RowsDefaultCellStyle.BackColor = Color.White;
+            dgvCustomers.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
+            dgvCustomers.RowHeadersVisible = false;
+
+            // Adjusted width for dataGridViewPurchaseHistory
+            dataGridViewPurchaseHistory.Location = new Point(440, 230); // Adjust position to match new size
+            dataGridViewPurchaseHistory.Size = new Size(400, 200); // Increase the width to 400
             dataGridViewPurchaseHistory.AllowUserToAddRows = false;
             dataGridViewPurchaseHistory.ReadOnly = true;
             dataGridViewPurchaseHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            // Apply modern styling for dataGridViewPurchaseHistory
+            dataGridViewPurchaseHistory.BorderStyle = BorderStyle.None;
+            dataGridViewPurchaseHistory.BackgroundColor = Color.White;
+            dataGridViewPurchaseHistory.GridColor = Color.FromArgb(230, 230, 230);
+            dataGridViewPurchaseHistory.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(93, 64, 150); // Dark Purple
+            dataGridViewPurchaseHistory.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dataGridViewPurchaseHistory.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
+            dataGridViewPurchaseHistory.ColumnHeadersHeight = 40;
+            dataGridViewPurchaseHistory.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
+            dataGridViewPurchaseHistory.RowTemplate.Height = 35;
+            dataGridViewPurchaseHistory.RowsDefaultCellStyle.BackColor = Color.White;
+            dataGridViewPurchaseHistory.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
+            dataGridViewPurchaseHistory.RowHeadersVisible = false;
 
             // Add controls to form
             this.Controls.Add(lblCustomerName);
@@ -505,12 +534,29 @@ namespace FASCloset.Forms
                 return;
             }
 
+            // Check if required fields are filled
             if (string.IsNullOrWhiteSpace(txtCustomerName.Text) ||
                 string.IsNullOrWhiteSpace(txtCustomerEmail.Text) ||
                 string.IsNullOrWhiteSpace(txtCustomerPhone.Text) ||
                 string.IsNullOrWhiteSpace(txtCustomerAddress.Text))
             {
-                MessageBox.Show("All fields are required");
+                MessageBox.Show("All fields are required.");
+                return;
+            }
+
+            // Validate email format using regex
+            string email = txtCustomerEmail.Text.Trim();
+            if (!IsValidEmail(email))
+            {
+                MessageBox.Show("Please enter a valid email address.", "Invalid Email", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Validate phone number format (basic validation, e.g., for 10 digits)
+            string phone = txtCustomerPhone.Text.Trim();
+            if (!IsValidPhoneNumber(phone))
+            {
+                MessageBox.Show("Please enter a valid phone number.", "Invalid Phone", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -519,8 +565,8 @@ namespace FASCloset.Forms
                 var customer = new Customer
                 {
                     Name = txtCustomerName.Text,
-                    Email = txtCustomerEmail.Text,
-                    Phone = txtCustomerPhone.Text,
+                    Email = email,
+                    Phone = phone,
                     Address = txtCustomerAddress.Text
                 };
 
@@ -529,23 +575,38 @@ namespace FASCloset.Forms
                     // Update existing customer
                     customer.CustomerID = customerId;
                     CustomerManager.UpdateCustomer(customer);
-                    MessageBox.Show("Customer updated successfully");
+                    MessageBox.Show("Customer updated successfully.");
                 }
                 else
                 {
                     // Add new customer
                     CustomerManager.AddCustomer(customer);
-                    MessageBox.Show("Customer added successfully");
-                    ClearForm();
+                    MessageBox.Show("Customer added successfully.");
+                    ClearForm();  // Clear form after saving
                 }
 
-                LoadCustomers();
+                LoadCustomers();  // Reload customers list
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving customer: {ex.Message}");
+                MessageBox.Show($"Error saving customer: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        // Validate email using regular expression
+        private bool IsValidEmail(string email)
+        {
+            var emailRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
+            return emailRegex.IsMatch(email);
+        }
+
+        // Validate phone number (basic validation for 10 digits)
+        private bool IsValidPhoneNumber(string phone)
+        {
+            var phoneRegex = new System.Text.RegularExpressions.Regex(@"^\d{10}$");  // Basic validation: exactly 10 digits
+            return phoneRegex.IsMatch(phone);
+        }
+
 
         private void btnViewPurchaseHistory_Click(object? sender, EventArgs e)
         {
