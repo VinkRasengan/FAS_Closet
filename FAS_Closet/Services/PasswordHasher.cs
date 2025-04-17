@@ -4,6 +4,12 @@ using System.Text;
 
 namespace FASCloset.Services
 {
+    public class PasswordCredentials
+    {
+        public string Hash { get; set; }
+        public string Salt { get; set; }
+    }
+
     public static class PasswordHasher
     {
         /// <summary>
@@ -47,6 +53,48 @@ namespace FASCloset.Services
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Verifies a password against a stored hash and salt
+        /// </summary>
+        /// <param name="password">The password to verify</param>
+        /// <param name="storedHash">The stored hash (Base64 encoded)</param>
+        /// <param name="storedSalt">The stored salt (Base64 encoded)</param>
+        /// <returns>True if the password matches the hash</returns>
+        public static bool VerifyPassword(string password, string storedHash, string storedSalt)
+        {
+            byte[] hashBytes = Convert.FromBase64String(storedHash);
+            byte[] saltBytes = Convert.FromBase64String(storedSalt);
+            
+            using (var hmac = new HMACSHA512(saltBytes))
+            {
+                byte[] computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+                
+                // Compare the computed hash with the stored hash
+                for (int i = 0; i < computedHash.Length; i++)
+                {
+                    if (computedHash[i] != hashBytes[i]) return false;
+                }
+            }
+            
+            return true;
+        }
+
+        /// <summary>
+        /// Creates random password credentials for demo users
+        /// </summary>
+        /// <param name="password">Optional password to use, otherwise a default is used</param>
+        /// <returns>PasswordCredentials containing hash and salt</returns>
+        public static PasswordCredentials CreateRandomPasswordCredentials(string password = "admin123")
+        {
+            CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
+            
+            return new PasswordCredentials
+            {
+                Hash = Convert.ToBase64String(passwordHash),
+                Salt = Convert.ToBase64String(passwordSalt)
+            };
         }
     }
 }

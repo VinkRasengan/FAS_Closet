@@ -1,5 +1,3 @@
-// This file defines the OrderManager class, which handles order-related operations.
-
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -9,39 +7,40 @@ using FASCloset.Models;
 
 namespace FASCloset.Services
 {
-    public class OrderManager
+    public static class OrderManager
     {
-        private static string GetConnectionString()
-        {
-            return DatabaseConnection.GetConnectionString();
-        }
-
+        /// <summary>
+        /// Gets all orders from the database
+        /// </summary>
+        /// <returns>A list of orders</returns>
         public static List<Order> GetOrders()
         {
             string query = @"
-                SELECT o.*, c.Name as CustomerName
-                FROM Orders o
-                JOIN Customer c ON o.CustomerID = c.CustomerID
-                ORDER BY o.OrderDate DESC";
+                SELECT OrderID, CustomerID, OrderDate, TotalAmount, PaymentMethod 
+                FROM Orders
+                ORDER BY OrderDate DESC";
                 
             return DataAccessHelper.ExecuteReader(query, reader => new Order
             {
-                OrderID = Convert.ToInt32(reader["OrderID"]),
-                CustomerID = Convert.ToInt32(reader["CustomerID"]),
-                CustomerName = reader["CustomerName"].ToString(),
-                OrderDate = Convert.ToDateTime(reader["OrderDate"]),
-                TotalAmount = Convert.ToDecimal(reader["TotalAmount"]),
-                PaymentMethod = reader["PaymentMethod"].ToString()
+                OrderID = reader.GetInt32(0),
+                CustomerID = reader.GetInt32(1),
+                OrderDate = reader.GetDateTime(2),
+                TotalAmount = reader.GetDecimal(3),
+                PaymentMethod = reader.GetString(4)
             });
         }
         
+        /// <summary>
+        /// Gets an order by its ID
+        /// </summary>
+        /// <param name="orderId">The order ID</param>
+        /// <returns>The order or null if not found</returns>
         public static Order GetOrderById(int orderId)
         {
             string query = @"
-                SELECT o.*, c.Name as CustomerName
-                FROM Orders o
-                JOIN Customer c ON o.CustomerID = c.CustomerID
-                WHERE o.OrderID = @OrderID";
+                SELECT OrderID, CustomerID, OrderDate, TotalAmount, PaymentMethod 
+                FROM Orders 
+                WHERE OrderID = @OrderID";
                 
             var parameters = new Dictionary<string, object>
             {
@@ -50,23 +49,26 @@ namespace FASCloset.Services
             
             return DataAccessHelper.ExecuteReaderSingle(query, reader => new Order
             {
-                OrderID = Convert.ToInt32(reader["OrderID"]),
-                CustomerID = Convert.ToInt32(reader["CustomerID"]),
-                CustomerName = reader["CustomerName"].ToString(),
-                OrderDate = Convert.ToDateTime(reader["OrderDate"]),
-                TotalAmount = Convert.ToDecimal(reader["TotalAmount"]),
-                PaymentMethod = reader["PaymentMethod"].ToString()
+                OrderID = reader.GetInt32(0),
+                CustomerID = reader.GetInt32(1),
+                OrderDate = reader.GetDateTime(2),
+                TotalAmount = reader.GetDecimal(3),
+                PaymentMethod = reader.GetString(4)
             }, parameters);
         }
         
+        /// <summary>
+        /// Gets all orders for a customer
+        /// </summary>
+        /// <param name="customerId">The customer ID</param>
+        /// <returns>A list of orders</returns>
         public static List<Order> GetOrdersByCustomerId(int customerId)
         {
             string query = @"
-                SELECT o.*, c.Name as CustomerName
-                FROM Orders o
-                JOIN Customer c ON o.CustomerID = c.CustomerID
-                WHERE o.CustomerID = @CustomerID
-                ORDER BY o.OrderDate DESC";
+                SELECT OrderID, CustomerID, OrderDate, TotalAmount, PaymentMethod 
+                FROM Orders 
+                WHERE CustomerID = @CustomerID
+                ORDER BY OrderDate DESC";
                 
             var parameters = new Dictionary<string, object>
             {
@@ -75,16 +77,20 @@ namespace FASCloset.Services
             
             return DataAccessHelper.ExecuteReader(query, reader => new Order
             {
-                OrderID = Convert.ToInt32(reader["OrderID"]),
-                CustomerID = Convert.ToInt32(reader["CustomerID"]),
-                CustomerName = reader["CustomerName"].ToString(),
-                OrderDate = Convert.ToDateTime(reader["OrderDate"]),
-                TotalAmount = Convert.ToDecimal(reader["TotalAmount"]),
-                PaymentMethod = reader["PaymentMethod"].ToString()
+                OrderID = reader.GetInt32(0),
+                CustomerID = reader.GetInt32(1),
+                OrderDate = reader.GetDateTime(2),
+                TotalAmount = reader.GetDecimal(3),
+                PaymentMethod = reader.GetString(4)
             }, parameters);
         }
         
-        public static void AddOrder(Order order)
+        /// <summary>
+        /// Adds a new order to the database
+        /// </summary>
+        /// <param name="order">The order to add</param>
+        /// <returns>The ID of the newly added order</returns>
+        public static int AddOrder(Order order)
         {
             string query = @"
                 INSERT INTO Orders (CustomerID, OrderDate, TotalAmount, PaymentMethod)
@@ -101,8 +107,13 @@ namespace FASCloset.Services
             
             int orderId = DataAccessHelper.ExecuteScalar<int>(query, parameters);
             order.OrderID = orderId;
+            return orderId;
         }
         
+        /// <summary>
+        /// Updates an existing order
+        /// </summary>
+        /// <param name="order">The order to update</param>
         public static void UpdateOrder(Order order)
         {
             string query = @"
@@ -125,6 +136,10 @@ namespace FASCloset.Services
             DataAccessHelper.ExecuteNonQuery(query, parameters);
         }
 
+        /// <summary>
+        /// Deletes an order and its details
+        /// </summary>
+        /// <param name="orderId">The ID of the order to delete</param>
         public static void DeleteOrder(int orderId)
         {
             // Step 1: Delete all related order details first
@@ -145,89 +160,78 @@ namespace FASCloset.Services
             DataAccessHelper.ExecuteNonQuery(deleteOrderQuery, parameters);
         }
 
-
         /// <summary>
         /// Creates a new order with details using a transaction
         /// </summary>
+        /// <param name="order">The order to create</param>
+        /// <param name="orderDetails">The order details</param>
+        /// <returns>The ID of the newly created order</returns>
         public static int CreateOrderWithDetails(Order order, List<OrderDetail> orderDetails)
         {
-            int orderId = 0;
-            
-            try
+            return DatabaseConnection.ExecuteWithTransaction<int>((connection, transaction) =>
             {
-                // Use the helper method from DatabaseConnection
-                DatabaseConnection.ExecuteDbOperation(connection =>
+                try
                 {
-                    using (var transaction = connection.BeginTransaction())
+                    // Insert the order
+                    string orderQuery = @"
+                        INSERT INTO Orders (CustomerID, OrderDate, TotalAmount, PaymentMethod)
+                        VALUES (@CustomerID, @OrderDate, @TotalAmount, @PaymentMethod);
+                        SELECT last_insert_rowid();";
+                    
+                    using (var orderCmd = new SqliteCommand(orderQuery, connection, transaction))
                     {
-                        try
+                        orderCmd.Parameters.AddWithValue("@CustomerID", order.CustomerID);
+                        orderCmd.Parameters.AddWithValue("@OrderDate", order.OrderDate);
+                        orderCmd.Parameters.AddWithValue("@TotalAmount", order.TotalAmount);
+                        orderCmd.Parameters.AddWithValue("@PaymentMethod", order.PaymentMethod);
+                        
+                        int orderId = Convert.ToInt32(orderCmd.ExecuteScalar());
+                        order.OrderID = orderId;
+                        
+                        // Insert each order detail
+                        string detailQuery = @"
+                            INSERT INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice)
+                            VALUES (@OrderID, @ProductID, @Quantity, @UnitPrice)";
+                        
+                        foreach (var detail in orderDetails)
                         {
-                            // Insert the order
-                            string orderQuery = @"
-                                INSERT INTO Orders (CustomerID, OrderDate, TotalAmount, PaymentMethod) 
-                                VALUES (@CustomerID, @OrderDate, @TotalAmount, @PaymentMethod);
-                                SELECT last_insert_rowid();";
-                                
-                            using (var command = new SqliteCommand(orderQuery, connection, transaction))
+                            using (var detailCmd = new SqliteCommand(detailQuery, connection, transaction))
                             {
-                                command.Parameters.AddWithValue("@CustomerID", order.CustomerID);
-                                command.Parameters.AddWithValue("@OrderDate", order.OrderDate);
-                                command.Parameters.AddWithValue("@TotalAmount", order.TotalAmount);
-                                command.Parameters.AddWithValue("@PaymentMethod", order.PaymentMethod);
-                                
-                                // Get the inserted order ID
-                                orderId = Convert.ToInt32(command.ExecuteScalar());
+                                detailCmd.Parameters.AddWithValue("@OrderID", orderId);
+                                detailCmd.Parameters.AddWithValue("@ProductID", detail.ProductID);
+                                detailCmd.Parameters.AddWithValue("@Quantity", detail.Quantity);
+                                detailCmd.Parameters.AddWithValue("@UnitPrice", detail.UnitPrice);
+                                detailCmd.ExecuteNonQuery();
                             }
                             
-                            // Insert order details
-                            string detailQuery = @"
-                                INSERT INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice)
-                                VALUES (@OrderID, @ProductID, @Quantity, @UnitPrice)";
-                                
-                            using (var command = new SqliteCommand(detailQuery, connection, transaction))
-                            {
-                                foreach (var detail in orderDetails)
-                                {
-                                    command.Parameters.Clear();
-                                    command.Parameters.AddWithValue("@OrderID", orderId);
-                                    command.Parameters.AddWithValue("@ProductID", detail.ProductID);
-                                    command.Parameters.AddWithValue("@Quantity", detail.Quantity);
-                                    command.Parameters.AddWithValue("@UnitPrice", detail.UnitPrice);
-                                    command.ExecuteNonQuery();
-                                    // Update inventory
-                                    UpdateProductStock(connection, transaction, detail.ProductID, detail.Quantity);
-                                }
-                            }
-                            
-                            // Commit the transaction
-                            transaction.Commit();
+                            // Update product stock
+                            UpdateProductStock(connection, transaction, detail.ProductID, detail.Quantity);
                         }
-                        catch
-                        {
-                            // Rollback on error
-                            transaction.Rollback();
-                            throw;
-                        }
+                        
+                        return orderId;
                     }
-                });
-                
-                return orderId;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Failed to create order with details", ex);
-            }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error creating order with details: {ex.Message}");
+                    throw new InvalidOperationException($"Error creating order: {ex.Message}", ex);
+                }
+            });
         }
-
+        
         /// <summary>
         /// Updates inventory after an order is placed
         /// </summary>
+        /// <param name="connection">The DB connection</param>
+        /// <param name="transaction">The transaction</param>
+        /// <param name="productId">The product ID</param>
+        /// <param name="quantity">The quantity to reduce</param>
         private static void UpdateProductStock(SqliteConnection connection, SqliteTransaction transaction, int productId, int quantity)
         {
             string query = @"
-        UPDATE Product 
-        SET Stock = Stock - @Quantity 
-        WHERE ProductID = @ProductID AND Stock >= @Quantity";
+                UPDATE Product 
+                SET Stock = Stock - @Quantity 
+                WHERE ProductID = @ProductID AND Stock >= @Quantity";
 
             using (var command = new SqliteCommand(query, connection, transaction))
             {
@@ -243,29 +247,53 @@ namespace FASCloset.Services
             }
         }
 
-        public static List<OrderDetail> GetOrderDetailsByOrderId(int orderId)
+        /// <summary>
+        /// Gets all order details for a specific order
+        /// </summary>
+        /// <param name="orderId">The order ID</param>
+        /// <returns>A list of order details</returns>
+        public static List<OrderDetail> GetOrderDetails(int orderId)
         {
             string query = @"
-        SELECT * 
-        FROM OrderDetails 
-        WHERE OrderID = @OrderID";
-
+                SELECT od.OrderDetailID, od.OrderID, od.ProductID, od.Quantity, od.UnitPrice, 
+                       p.ProductName, p.Stock, p.Description
+                FROM OrderDetails od
+                JOIN Product p ON od.ProductID = p.ProductID
+                WHERE od.OrderID = @OrderID";
+                
             var parameters = new Dictionary<string, object>
-    {
-        { "@OrderID", orderId }
-    };
-
-            // Execute the query and map the results to a list of OrderDetail objects
-            return DataAccessHelper.ExecuteReader(query, reader => new OrderDetail
             {
-                OrderDetailID = Convert.ToInt32(reader["OrderDetailID"]),
-                OrderID = Convert.ToInt32(reader["OrderID"]),
-                ProductID = Convert.ToInt32(reader["ProductID"]),
-                Quantity = Convert.ToInt32(reader["Quantity"]),
-                UnitPrice = Convert.ToDecimal(reader["UnitPrice"])
+                { "@OrderID", orderId }
+            };
+            
+            return DataAccessHelper.ExecuteReader(query, reader => {
+                var detail = new OrderDetail
+                {
+                    OrderDetailID = reader.GetInt32(0),
+                    OrderID = reader.GetInt32(1),
+                    ProductID = reader.GetInt32(2),
+                    Quantity = reader.GetInt32(3),
+                    UnitPrice = reader.GetDecimal(4),
+                };
+                
+                // Add product details if available
+                if (!reader.IsDBNull(5))
+                    detail.ProductName = reader.GetString(5);
+                
+                return detail;
             }, parameters);
         }
 
-
+        /// <summary>
+        /// Gets all order details for a specific order (alias method for GetOrderDetails)
+        /// </summary>
+        /// <param name="orderId">The order ID</param>
+        /// <returns>A list of order details</returns>
+        public static List<OrderDetail> GetOrderDetailsByOrderId(int orderId)
+        {
+            // This is an alias method that calls the existing GetOrderDetails method
+            // Added to maintain compatibility with code that expects this method name
+            return GetOrderDetails(orderId);
+        }
     }
 }

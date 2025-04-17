@@ -1,6 +1,7 @@
 // This file defines the DatabaseConnection class, which handles the database connection.
 
 using System;
+using System.Data;
 using System.IO;
 using Microsoft.Data.Sqlite;
 using FASCloset.Config;
@@ -9,51 +10,26 @@ namespace FASCloset.Services
 {
     public static class DatabaseConnection
     {
+        /// <summary>
+        /// Gets the connection string to the database
+        /// </summary>
+        /// <returns>The connection string</returns>
         public static string GetConnectionString()
         {
-            string databasePath;
-            
-            // Always prioritize the project's Data directory path
-            string dataDirectoryPath = @"c:\Project\FAS_Closet\FAS_Closet\Data";
-            string defaultPath = Path.Combine(dataDirectoryPath, "FASClosetDB.sqlite");
-            
-            if (!Directory.Exists(dataDirectoryPath))
+            // Ensure database directory exists
+            string dbDirectory = Path.GetDirectoryName(AppSettings.DatabasePath);
+            if (!Directory.Exists(dbDirectory) && !string.IsNullOrEmpty(dbDirectory))
             {
-                try
-                {
-                    Directory.CreateDirectory(dataDirectoryPath);
-                }
-                catch
-                {
-                    // If creating directory fails, fall back to other options
-                }
+                Directory.CreateDirectory(dbDirectory);
             }
             
-            if (File.Exists(defaultPath))
-            {
-                databasePath = defaultPath;
-            }
-            else
-            {
-                // Fall back to configured path if needed
-                try
-                {
-                    databasePath = AppSettings.DatabasePath;
-                    if (!File.Exists(databasePath))
-                    {
-                        databasePath = defaultPath;
-                    }
-                }
-                catch
-                {
-                    databasePath = defaultPath;
-                }
-            }
-            
-            // Return the SQLite connection string
-            return $"Data Source={databasePath}";
+            return $"Data Source={AppSettings.DatabasePath}";
         }
         
+        /// <summary>
+        /// Tests the database connection
+        /// </summary>
+        /// <returns>True if the connection is successful</returns>
         public static bool TestConnection()
         {
             try
@@ -61,11 +37,12 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    return true;
+                    return connection.State == ConnectionState.Open;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Database connection error: {ex.Message}");
                 return false;
             }
         }
@@ -78,24 +55,23 @@ namespace FASCloset.Services
         /// <returns>The result of the operation</returns>
         public static T ExecuteDbOperation<T>(Func<SqliteConnection, T> databaseOperation)
         {
-            try
+            using (var connection = new SqliteConnection(GetConnectionString()))
             {
-                string connectionString = GetConnectionString();
-                Console.WriteLine($"Connection string: {connectionString}");
-                
-                using (var connection = new SqliteConnection(connectionString))
+                try
                 {
-                    Console.WriteLine("Opening database connection...");
                     connection.Open();
-                    Console.WriteLine("Connection opened successfully");
                     return databaseOperation(connection);
                 }
-            }
-            catch (SqliteException ex)
-            {
-                string message = $"Database operation failed: {ex.Message}";
-                Console.WriteLine(message);
-                throw new InvalidOperationException(message, ex);
+                catch (SqliteException ex)
+                {
+                    Console.WriteLine($"SQLite error: {ex.Message}");
+                    throw new InvalidOperationException($"Database error: {ex.Message}", ex);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error in database operation: {ex.Message}");
+                    throw;
+                }
             }
         }
         
@@ -105,38 +81,78 @@ namespace FASCloset.Services
         /// <param name="databaseOperation">The operation to execute</param>
         public static void ExecuteDbOperation(Action<SqliteConnection> databaseOperation)
         {
-            try
+            using (var connection = new SqliteConnection(GetConnectionString()))
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
+                try
                 {
                     connection.Open();
                     databaseOperation(connection);
                 }
-            }
-            catch (SqliteException ex)
-            {
-                string message = $"Database operation failed: {ex.Message}";
-                Console.WriteLine(message);
-                throw new InvalidOperationException(message, ex);
+                catch (SqliteException ex)
+                {
+                    Console.WriteLine($"SQLite error: {ex.Message}");
+                    throw new InvalidOperationException($"Database error: {ex.Message}", ex);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error in database operation: {ex.Message}");
+                    throw;
+                }
             }
         }
 
-        // Execute database operations within a transaction
-        public static void ExecuteWithTransaction(Action<SqliteConnection, SqliteTransaction> operations)
+        /// <summary>
+        /// Executes a database operation within a transaction
+        /// </summary>
+        /// <typeparam name="T">The return type of the operation</typeparam>
+        /// <param name="transactionOperation">The operation to execute within a transaction</param>
+        /// <returns>The result of the operation</returns>
+        public static T ExecuteWithTransaction<T>(Func<SqliteConnection, SqliteTransaction, T> transactionOperation)
         {
-            using var connection = new SqliteConnection(GetConnectionString());
-            connection.Open();
-            
-            using var transaction = connection.BeginTransaction();
-            try
+            using (var connection = new SqliteConnection(GetConnectionString()))
             {
-                operations(connection, transaction);
-                transaction.Commit();
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        T result = transactionOperation(connection, transaction);
+                        transaction.Commit();
+                        return result;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Transaction error: {ex.Message}");
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
             }
-            catch
+        }
+
+        /// <summary>
+        /// Executes a database operation within a transaction (void version)
+        /// </summary>
+        /// <param name="transactionOperation">The operation to execute within a transaction</param>
+        public static void ExecuteWithTransaction(Action<SqliteConnection, SqliteTransaction> transactionOperation)
+        {
+            using (var connection = new SqliteConnection(GetConnectionString()))
             {
-                transaction.Rollback();
-                throw;
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        transactionOperation(connection, transaction);
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Transaction error: {ex.Message}");
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
             }
         }
     }

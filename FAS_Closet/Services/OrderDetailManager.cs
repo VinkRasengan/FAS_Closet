@@ -4,156 +4,149 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.Sqlite;
+using FASCloset.Data;
 using FASCloset.Models;
 
 namespace FASCloset.Services
 {
     public static class OrderDetailManager
     {
-        private static string GetConnectionString()
-        {
-            return DatabaseConnection.GetConnectionString();
-        }
-
-        public static void AddOrderDetail(OrderDetail orderDetail)
+        /// <summary>
+        /// Adds a new order detail
+        /// </summary>
+        /// <param name="orderDetail">The order detail to add</param>
+        /// <returns>The ID of the newly added order detail</returns>
+        public static int AddOrderDetail(OrderDetail orderDetail)
         {
             try
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
+                string query = @"
+                    INSERT INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice)
+                    VALUES (@OrderID, @ProductID, @Quantity, @UnitPrice);
+                    SELECT last_insert_rowid();";
+                    
+                var parameters = new Dictionary<string, object>
                 {
-                    connection.Open();
-                    string query = "INSERT INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice) VALUES (@OrderID, @ProductID, @Quantity, @UnitPrice)";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@OrderID", orderDetail.OrderID);
-                        command.Parameters.AddWithValue("@ProductID", orderDetail.ProductID);
-                        command.Parameters.AddWithValue("@Quantity", orderDetail.Quantity);
-                        command.Parameters.AddWithValue("@UnitPrice", orderDetail.UnitPrice);
-                        command.ExecuteNonQuery();
-                    }
-                }
+                    { "@OrderID", orderDetail.OrderID },
+                    { "@ProductID", orderDetail.ProductID },
+                    { "@Quantity", orderDetail.Quantity },
+                    { "@UnitPrice", orderDetail.UnitPrice }
+                };
+                
+                int orderDetailId = DataAccessHelper.ExecuteScalar<int>(query, parameters);
+                orderDetail.OrderDetailID = orderDetailId;
+                return orderDetailId;
             }
-            catch (SqliteException ex)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error adding order detail: {ex.Message}");
                 throw new InvalidOperationException("Database error occurred while adding order detail.", ex);
             }
         }
 
+        /// <summary>
+        /// Updates an existing order detail
+        /// </summary>
+        /// <param name="orderDetail">The order detail to update</param>
         public static void UpdateOrderDetail(OrderDetail orderDetail)
         {
             try
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
+                string query = @"
+                    UPDATE OrderDetails 
+                    SET OrderID = @OrderID, 
+                        ProductID = @ProductID, 
+                        Quantity = @Quantity, 
+                        UnitPrice = @UnitPrice 
+                    WHERE OrderDetailID = @OrderDetailID";
+                    
+                var parameters = new Dictionary<string, object>
                 {
-                    connection.Open();
-                    string query = "UPDATE OrderDetails SET OrderID = @OrderID, ProductID = @ProductID, Quantity = @Quantity, UnitPrice = @UnitPrice WHERE OrderDetailID = @OrderDetailID";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@OrderID", orderDetail.OrderID);
-                        command.Parameters.AddWithValue("@ProductID", orderDetail.ProductID);
-                        command.Parameters.AddWithValue("@Quantity", orderDetail.Quantity);
-                        command.Parameters.AddWithValue("@UnitPrice", orderDetail.UnitPrice);
-                        command.Parameters.AddWithValue("@OrderDetailID", orderDetail.OrderDetailID);
-                        command.ExecuteNonQuery();
-                    }
-                }
+                    { "@OrderDetailID", orderDetail.OrderDetailID },
+                    { "@OrderID", orderDetail.OrderID },
+                    { "@ProductID", orderDetail.ProductID },
+                    { "@Quantity", orderDetail.Quantity },
+                    { "@UnitPrice", orderDetail.UnitPrice }
+                };
+                
+                DataAccessHelper.ExecuteNonQuery(query, parameters);
             }
-            catch (SqliteException ex)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error updating order detail: {ex.Message}");
                 throw new InvalidOperationException("Database error occurred while updating order detail.", ex);
             }
         }
 
+        /// <summary>
+        /// Deletes an order detail
+        /// </summary>
+        /// <param name="orderDetailId">The ID of the order detail to delete</param>
         public static void DeleteOrderDetail(int orderDetailId)
         {
             try
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
+                string query = "DELETE FROM OrderDetails WHERE OrderDetailID = @OrderDetailID";
+                
+                var parameters = new Dictionary<string, object>
                 {
-                    connection.Open();
-                    string query = "DELETE FROM OrderDetails WHERE OrderDetailID = @OrderDetailID";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@OrderDetailID", orderDetailId);
-                        command.ExecuteNonQuery();
-                    }
-                }
+                    { "@OrderDetailID", orderDetailId }
+                };
+                
+                DataAccessHelper.ExecuteNonQuery(query, parameters);
             }
-            catch (SqliteException ex)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error deleting order detail: {ex.Message}");
                 throw new InvalidOperationException("Database error occurred while deleting order detail.", ex);
             }
         }
 
-        public static List<OrderDetail> GetOrderDetails(int orderId)
-        {
-            var orderDetails = new List<OrderDetail>();
-            try
-            {
-                using (var connection = new SqliteConnection(GetConnectionString()))
-                {
-                    connection.Open();
-                    string query = "SELECT OrderDetailID, OrderID, ProductID, Quantity, UnitPrice FROM OrderDetails WHERE OrderID = @OrderID";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@OrderID", orderId);
-                        using (var reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                orderDetails.Add(new OrderDetail
-                                {
-                                    OrderDetailID = reader.GetInt32(0),
-                                    OrderID = reader.GetInt32(1),
-                                    ProductID = reader.GetInt32(2),
-                                    Quantity = reader.GetInt32(3),
-                                    UnitPrice = reader.GetDecimal(4)
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SqliteException ex)
-            {
-                throw new InvalidOperationException("Database error occurred while retrieving order details.", ex);
-            }
-            return orderDetails;
-        }
-
-        public static OrderDetail? GetOrderDetailById(int orderDetailId)
+        /// <summary>
+        /// Gets a specific order detail by ID
+        /// </summary>
+        /// <param name="orderDetailId">The order detail ID</param>
+        /// <returns>The order detail or null if not found</returns>
+        public static OrderDetail GetOrderDetailById(int orderDetailId)
         {
             try
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
+                string query = @"
+                    SELECT OrderDetailID, OrderID, ProductID, Quantity, UnitPrice 
+                    FROM OrderDetails 
+                    WHERE OrderDetailID = @OrderDetailID";
+                    
+                var parameters = new Dictionary<string, object>
                 {
-                    connection.Open();
-                    string query = "SELECT OrderDetailID, OrderID, ProductID, Quantity, UnitPrice FROM OrderDetail WHERE OrderDetailID = @OrderDetailID";
-                    using (var command = new SqliteCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@OrderDetailID", orderDetailId);
-                        using (var reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                return new OrderDetail
-                                {
-                                    OrderDetailID = reader.GetInt32(0),
-                                    OrderID = reader.GetInt32(1),
-                                    ProductID = reader.GetInt32(2),
-                                    Quantity = reader.GetInt32(3),
-                                    UnitPrice = reader.GetDecimal(4)
-                                };
-                            }
-                        }
-                    }
-                }
+                    { "@OrderDetailID", orderDetailId }
+                };
+                
+                return DataAccessHelper.ExecuteReaderSingle(query, reader => new OrderDetail
+                {
+                    OrderDetailID = reader.GetInt32(0),
+                    OrderID = reader.GetInt32(1),
+                    ProductID = reader.GetInt32(2),
+                    Quantity = reader.GetInt32(3),
+                    UnitPrice = reader.GetDecimal(4)
+                }, parameters);
             }
-            catch (SqliteException ex)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error getting order detail: {ex.Message}");
                 throw new InvalidOperationException("Database error occurred while retrieving order detail.", ex);
             }
-            return null;
+        }
+        
+        /// <summary>
+        /// Gets all order details for a specific order, redirecting to OrderManager
+        /// to maintain a single source of truth
+        /// </summary>
+        /// <param name="orderId">The order ID</param>
+        /// <returns>A list of order details</returns>
+        public static List<OrderDetail> GetOrderDetails(int orderId)
+        {
+            // This method now delegates to OrderManager to maintain a single source of truth
+            return OrderManager.GetOrderDetails(orderId);
         }
     }
 }

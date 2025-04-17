@@ -385,18 +385,18 @@ namespace FASCloset.Services
 
         private static void EnsureCategoriesTableExists(SqliteConnection connection)
         {
-            string checkTableQuery = "SELECT name FROM sqlite_master WHERE type='table' AND name='Categories';";
+            string checkTableQuery = "SELECT name FROM sqlite_master WHERE type='table' AND name='Category';";
             using (var command = new SqliteCommand(checkTableQuery, connection))
             {
                 if (command.ExecuteScalar() == null)
                 {
                     using (var createCommand = new SqliteCommand(@"
-                        CREATE TABLE Categories (
+                        CREATE TABLE IF NOT EXISTS Category (
                             CategoryID INTEGER PRIMARY KEY AUTOINCREMENT,
-                            CategoryName TEXT NOT NULL,
+                            CategoryName TEXT NOT NULL UNIQUE,
                             Description TEXT,
-                            IsActive INTEGER NOT NULL,
-                            CreatedDate DATETIME NOT NULL
+                            IsActive INTEGER NOT NULL DEFAULT 1,
+                            CreatedDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
                         );", connection))
                     {
                         createCommand.ExecuteNonQuery();

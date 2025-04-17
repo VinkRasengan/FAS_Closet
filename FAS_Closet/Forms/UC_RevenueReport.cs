@@ -3,8 +3,9 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using FASCloset.Services;
+using System.Collections.Generic;
 using System.ComponentModel;
+using FASCloset.Services;
 using FASCloset.Models;
 
 namespace FASCloset.Forms
@@ -120,8 +121,8 @@ namespace FASCloset.Forms
             e.Result = new object[] { "Report", reportData };
         }
 
-        // Make methods static since they don't use instance data
-        private static void WriteReportHeader(StringWriter writer, DataTable reportData)
+        // Static helper methods for CSV export
+        public static void WriteReportHeader(StringWriter writer, DataTable reportData)
         {
             for (int i = 0; i < reportData.Columns.Count; i++)
             {
@@ -132,8 +133,7 @@ namespace FASCloset.Forms
             writer.WriteLine();
         }
 
-        // Make methods static since they don't use instance data
-        private static void WriteReportData(StringWriter writer, DataTable reportData)
+        public static void WriteReportData(StringWriter writer, DataTable reportData)
         {
             foreach (DataRow row in reportData.Rows)
             {
@@ -192,8 +192,6 @@ namespace FASCloset.Forms
                 }
             }
         }
-
-
         
         private void UpdateSummary(DataTable reportData)
         {
@@ -230,8 +228,8 @@ namespace FASCloset.Forms
             }
         }
         
-        // Make methods static since they don't use instance data
-        private static int FindTotalAmountColumnIndex(DataTable reportData)
+        // Static helpers
+        public static int FindTotalAmountColumnIndex(DataTable reportData)
         {
             foreach (DataColumn column in reportData.Columns)
             {
@@ -243,10 +241,22 @@ namespace FASCloset.Forms
             return -1;
         }
 
-        // Make this method static to fix warning S2325
-        private static void ProcessExportDetailedReport(string filePath, List<ReportData> reportData)
+        public static void ProcessExportDetailedReport(string filePath, List<ReportData> reportData)
         {
-            // ... existing implementation ...
+            // Implementation would go here - this is a placeholder
+            using (StreamWriter writer = new StreamWriter(filePath))
+            {
+                // Write headers
+                writer.WriteLine("Date,OrderID,CustomerID,CustomerName,TotalAmount,PaymentMethod");
+                
+                // Write data
+                foreach (var item in reportData)
+                {
+                    writer.WriteLine(
+                        $"{item.OrderDate:yyyy-MM-dd},{item.OrderID},{item.CustomerID}," +
+                        $"{item.CustomerName},{item.TotalAmount},{item.PaymentMethod}");
+                }
+            }
         }
 
         private void btnGenerateReport_Click(object sender, EventArgs e)
@@ -288,7 +298,7 @@ namespace FASCloset.Forms
             }
         }
 
-        private static void WriteCsvHeader(StringWriter writer, DataTable reportData)
+        public static void WriteCsvHeader(StringWriter writer, DataTable reportData)
         {
             // Write the headers (column names)
             for (int i = 0; i < reportData.Columns.Count; i++)
@@ -300,7 +310,7 @@ namespace FASCloset.Forms
             writer.WriteLine(); // New line after header
         }
 
-        private static void WriteCsvData(StringWriter writer, DataTable reportData)
+        public static void WriteCsvData(StringWriter writer, DataTable reportData)
         {
             // Loop through each row and write its data
             foreach (DataRow row in reportData.Rows)
@@ -353,8 +363,5 @@ namespace FASCloset.Forms
                 }
             }
         }
-
-
-
     }
 }

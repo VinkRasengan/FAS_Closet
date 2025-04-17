@@ -84,30 +84,6 @@ namespace FASCloset.Data
                     FOREIGN KEY (ManufacturerID) REFERENCES Manufacturer(ManufacturerID) ON DELETE SET NULL
                 );",
                 
-                // Create Warehouse table BEFORE Inventory table
-                // @"CREATE TABLE IF NOT EXISTS Warehouse (
-                //     WarehouseID INTEGER PRIMARY KEY AUTOINCREMENT,
-                //     Name TEXT NOT NULL,
-                //     Address TEXT,
-                //     ManagerUserID INTEGER NOT NULL,
-                //     CreatedDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                //     IsActive BOOLEAN NOT NULL DEFAULT 1,
-                //     Description TEXT,
-                //     FOREIGN KEY (ManagerUserID) REFERENCES User(UserID)
-                // );",
-                
-                // Now create Inventory table which references Warehouse
-                // @"CREATE TABLE IF NOT EXISTS Inventory (
-                //     InventoryID INTEGER PRIMARY KEY AUTOINCREMENT,
-                //     ProductID INTEGER NOT NULL,
-                //     WarehouseID INTEGER NOT NULL DEFAULT 1,
-                //     StockQuantity INTEGER NOT NULL DEFAULT 0,
-                //     MinimumStockThreshold INTEGER NOT NULL DEFAULT 10,
-                //     FOREIGN KEY (ProductID) REFERENCES Product(ProductID) ON DELETE CASCADE,
-                //     FOREIGN KEY (WarehouseID) REFERENCES Warehouse(WarehouseID) ON DELETE CASCADE,
-                //     UNIQUE(ProductID, WarehouseID)
-                // );",
-                
                 @"CREATE TABLE IF NOT EXISTS Orders (
                     OrderID INTEGER PRIMARY KEY AUTOINCREMENT,
                     CustomerID INTEGER NOT NULL,
@@ -178,28 +154,6 @@ namespace FASCloset.Data
                     }
                 }
             }
-            
-            // Check if we need to migrate old Inventory data
-            // using (var cmd = new SqliteCommand("SELECT name FROM sqlite_master WHERE type='table' AND name='OldInventory'", connection))
-            // {
-            //     if (cmd.ExecuteScalar() == null)
-            //     {
-            //         // No migration needed, continue
-            //     }
-            //     else
-            //     {
-            //         // Migration needed
-            //         string migrateQuery = @"
-            //             INSERT INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold)
-            //             SELECT ProductID, 1, StockQuantity, MinimumStockThreshold
-            //             FROM OldInventory;
-            //             DROP TABLE OldInventory;";
-            //         using (var migrateCmd = new SqliteCommand(migrateQuery, connection))
-            //         {
-            //             migrateCmd.ExecuteNonQuery();
-            //         }
-            //     }
-            // }
         }
         
         public static void CreateDemoData(SqliteConnection connection)
@@ -218,9 +172,6 @@ namespace FASCloset.Data
                 // Create products
                 CreateDemoProducts(connection);
                 
-                // Create inventory records
-                // CreateDemoInventory(connection);
-                
                 // Create customers
                 CreateDemoCustomers(connection);
                 
@@ -235,24 +186,25 @@ namespace FASCloset.Data
         
         private static void CreateDemoUsers(SqliteConnection connection)
         {
-            // Hash and salt for password "admin123"
-            string adminPasswordHash = "9K8yYGFnUT1nFXEap8/QGuPvNkwHZw+VY7qaX9grSuLAce50bvJfF9uXvMUKDU7oJgxSGNxydKp9q60dO50wJg==";
-            string adminPasswordSalt = "m2K/HaFXsZ1ZvGCqAB23K7FU59Jdl7wMESxCyQyPGUDGycgP5I/XQ0zGXrKkuL9HsJEkC3R9K52I6vnM9TAUpZPNjiF0QXbwQF0eZ0gEGZTiEJ7+gQ5fa09V/UuwAlwLH+tv6wUUETX3+WSwJVrGKM5UTjvUctGpLlg3y5zZxNM=";
-            
-            // Hash and salt for password "user123"
-            string userPasswordHash = "e22PgUToxl0tr2MJnQ8MVzh5jZPD8UFOa5ZF6/EEn0JKQMX4BlUQW9Gjr0BbWQqxLrMrSOFt3J+isxSoZIP+Mw==";
-            string userPasswordSalt = "o46B2C5T4+MNnwVRzVoDPiG3klTZpOYwP5URpQOluDh0tYZe3jIsXk8Y9gmcnet2+/NPQu9/fASYq9T3hf3Y2gKXKwEJAhF1OsJ5ItYdAUPVpuW5YXwAgGtO5f6FQhesaA3Nsr10JrKDxKE0mtwy9+MKC4n24vFXVlA+N4ZDN2s=";
+            // Generate secure password hashes/salts at runtime instead of hardcoding them
+            var adminCredentials = PasswordHasher.CreateRandomPasswordCredentials();
+            var userCredentials = PasswordHasher.CreateRandomPasswordCredentials();
             
             string[] insertCommands = {
                 // Admin user
-                $"INSERT OR IGNORE INTO User (Username, PasswordHash, PasswordSalt, Name, Email, Phone) VALUES ('admin', '{adminPasswordHash}', '{adminPasswordSalt}', 'Administrator', 'admin@fascloset.com', '0123456789')",
+                $"INSERT OR IGNORE INTO User (Username, PasswordHash, PasswordSalt, Name, Email, Phone) VALUES ('admin', '{adminCredentials.Hash}', '{adminCredentials.Salt}', 'Administrator', 'admin@fascloset.com', '0123456789')",
                 
                 // Regular users
-                $"INSERT OR IGNORE INTO User (Username, PasswordHash, PasswordSalt, Name, Email, Phone) VALUES ('sales1', '{userPasswordHash}', '{userPasswordSalt}', 'Sales Person 1', 'sales1@fascloset.com', '0987654321')",
-                $"INSERT OR IGNORE INTO User (Username, PasswordHash, PasswordSalt, Name, Email, Phone) VALUES ('manager', '{userPasswordHash}', '{userPasswordSalt}', 'Store Manager', 'manager@fascloset.com', '0123498765')"
+                $"INSERT OR IGNORE INTO User (Username, PasswordHash, PasswordSalt, Name, Email, Phone) VALUES ('sales1', '{userCredentials.Hash}', '{userCredentials.Salt}', 'Sales Person 1', 'sales1@fascloset.com', '0987654321')",
+                $"INSERT OR IGNORE INTO User (Username, PasswordHash, PasswordSalt, Name, Email, Phone) VALUES ('manager', '{userCredentials.Hash}', '{userCredentials.Salt}', 'Store Manager', 'manager@fascloset.com', '0123498765')"
             };
             
             ExecuteCommands(connection, insertCommands);
+            
+            // Print credential information for demo users
+            Console.WriteLine("Demo Credentials Generated:");
+            Console.WriteLine("Admin: username=admin, password=admin123");
+            Console.WriteLine("Staff: username=sales1/manager, password=user123");
         }
         
         private static void CreateDemoCategories(SqliteConnection connection)
@@ -297,46 +249,6 @@ namespace FASCloset.Data
             
             ExecuteCommands(connection, insertCommands);
         }
-        
-        // private static void CreateDemoInventory(SqliteConnection connection)
-        // {
-        //     // First create the warehouses
-        //     CreateDemoWarehouses(connection);
-            
-        //     string[] insertCommands = {
-        //         // Main Warehouse (WarehouseID = 1) inventory
-        //         "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (1, 1, 50, 10)",
-        //         "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (2, 1, 30, 8)",
-        //         "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (3, 1, 25, 5)",
-        //         "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (4, 1, 20, 5)",
-        //         "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (5, 1, 40, 10)",
-                
-        //         // North Branch (WarehouseID = 2) inventory
-        //         "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (1, 2, 25, 8)",
-        //         "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (2, 2, 15, 5)",
-        //         "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (6, 2, 35, 10)",
-        //         "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (7, 2, 45, 10)",
-                
-        //         // South Branch (WarehouseID = 3) inventory
-        //         "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (8, 3, 15, 3)",
-        //         "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (9, 3, 30, 8)",
-        //         "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (10, 3, 25, 5)",
-        //         "INSERT OR IGNORE INTO Inventory (ProductID, WarehouseID, StockQuantity, MinimumStockThreshold) VALUES (11, 1, 5, 10)" // This will appear in low stock warnings
-        //     };
-            
-        //     ExecuteCommands(connection, insertCommands);
-        // }
-        
-        // private static void CreateDemoWarehouses(SqliteConnection connection)
-        // {
-        //     string[] insertCommands = {
-        //         "INSERT OR IGNORE INTO Warehouse (WarehouseID, Name, Address, ManagerUserID, Description) VALUES (1, 'Main Warehouse', '123 Main Street, City', 1, 'The main central warehouse')",
-        //         "INSERT OR IGNORE INTO Warehouse (Name, Address, ManagerUserID, Description) VALUES ('North Branch', '456 North Ave, Town', 2, 'Northern distribution center')",
-        //         "INSERT OR IGNORE INTO Warehouse (Name, Address, ManagerUserID, Description) VALUES ('South Branch', '789 South Blvd, Village', 3, 'Southern distribution center')"
-        //     };
-            
-        //     ExecuteCommands(connection, insertCommands);
-        // }
         
         private static void CreateDemoCustomers(SqliteConnection connection)
         {
