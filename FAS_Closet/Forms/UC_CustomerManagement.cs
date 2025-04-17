@@ -180,6 +180,140 @@ namespace FASCloset.Forms
             this.Controls.Add(dataGridViewPurchaseHistory);
         }
 
+        private void btnManageLoyaltyPoints_Click(object? sender, EventArgs e)
+        {
+            if (dgvCustomers.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a customer first.");
+                return;
+            }
+
+            int selectedCustomerId = Convert.ToInt32(dgvCustomers.SelectedRows[0].Cells["CustomerID"].Value);
+            try
+            {
+                // Get loyalty points of the selected customer
+                int loyaltyPoints = GetLoyaltyPointsByCustomerId(selectedCustomerId);
+
+                // Fetch customer details
+                var selectedCustomer = CustomerManager.GetCustomerById(selectedCustomerId);
+
+                // Create and display the loyalty points info popup
+                Form loyaltyPointsPopup = new Form
+                {
+                    Text = $"Loyalty Points for {selectedCustomer.Name}",
+                    Size = new Size(420, 360),
+                    StartPosition = FormStartPosition.CenterParent,
+                    FormBorderStyle = FormBorderStyle.FixedDialog,
+                    MaximizeBox = false,
+                    MinimizeBox = false,
+                    BackColor = Color.White
+                };
+
+                // Set background color for the form to light blue
+                loyaltyPointsPopup.BackColor = Color.FromArgb(173, 216, 230); // Light blue color
+
+                // Create a panel for better control grouping
+                Panel panel = new Panel
+                {
+                    Size = new Size(380, 300),
+                    Location = new Point(10, 10),
+                    BackColor = Color.FromArgb(255, 255, 255), // White background for content
+                    BorderStyle = BorderStyle.FixedSingle,
+                    Padding = new Padding(10)
+                };
+                loyaltyPointsPopup.Controls.Add(panel);
+
+                // Add custom-styled labels for customer info and loyalty points
+                Label lblTitle = new Label
+                {
+                    Text = $"Loyalty Points for {selectedCustomer.Name}",
+                    Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(25, 118, 210),  // Light blue color for title
+                    Location = new Point(10, 10),
+                    AutoSize = true
+                };
+                panel.Controls.Add(lblTitle);
+
+                // Customer Name
+                Label lblCustomerName = new Label
+                {
+                    Text = $"Customer Name: {selectedCustomer.Name}",
+                    Font = new Font("Segoe UI", 10),
+                    Location = new Point(10, 50),
+                    ForeColor = Color.Black,
+                    AutoSize = true
+                };
+                panel.Controls.Add(lblCustomerName);
+
+                // Customer Email
+                Label lblCustomerEmail = new Label
+                {
+                    Text = $"Email: {selectedCustomer.Email}",
+                    Font = new Font("Segoe UI", 10),
+                    Location = new Point(10, 80),
+                    ForeColor = Color.Black,
+                    AutoSize = true
+                };
+                panel.Controls.Add(lblCustomerEmail);
+
+                // Customer Phone
+                Label lblCustomerPhone = new Label
+                {
+                    Text = $"Phone: {selectedCustomer.Phone}",
+                    Font = new Font("Segoe UI", 10),
+                    Location = new Point(10, 110),
+                    ForeColor = Color.Black,
+                    AutoSize = true
+                };
+                panel.Controls.Add(lblCustomerPhone);
+
+                // Customer Address
+                Label lblCustomerAddress = new Label
+                {
+                    Text = $"Address: {selectedCustomer.Address}",
+                    Font = new Font("Segoe UI", 10),
+                    Location = new Point(10, 140),
+                    ForeColor = Color.Black,
+                    AutoSize = true
+                };
+                panel.Controls.Add(lblCustomerAddress);
+
+                // Loyalty Points
+                Label lblLoyaltyPoints = new Label
+                {
+                    Text = $"Loyalty Points: {loyaltyPoints}",
+                    Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                    Location = new Point(10, 180),
+                    ForeColor = Color.FromArgb(0, 122, 204),  // Blue color for loyalty points
+                    AutoSize = true
+                };
+                panel.Controls.Add(lblLoyaltyPoints);
+
+                // Add a colorful button to close the popup
+                Button btnClose = new Button
+                {
+                    Text = "Close",
+                    Font = new Font("Segoe UI", 10),
+                    Location = new Point(300, 240),
+                    Size = new Size(75, 30),
+                    BackColor = Color.FromArgb(25, 118, 210),  // Blue color for close button
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat
+                };
+                btnClose.Click += (s, ev) => loyaltyPointsPopup.Close();
+                panel.Controls.Add(btnClose);
+
+                // Show the popup
+                loyaltyPointsPopup.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error managing loyalty points: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
+
 
         public void btnAddCustomer_Click(object sender, EventArgs e)
         {
@@ -253,7 +387,8 @@ namespace FASCloset.Forms
                 {
                     DataPropertyName = "CustomerID",
                     HeaderText = "Mã KH",
-                    Width = 60
+                    Width = 60,
+                    Name = "CustomerID"
                 });
                 
                 dgvCustomers.Columns.Add(new DataGridViewTextBoxColumn
@@ -431,15 +566,18 @@ namespace FASCloset.Forms
             }
         }
 
-        private void btnManageLoyaltyPoints_Click(object? sender, EventArgs e)
+        public static int GetLoyaltyPointsByCustomerId(int customerId)
         {
-            if (string.IsNullOrEmpty(txtCustomerId!.Text) || !int.TryParse(txtCustomerId.Text, out int _))
-            {
-                MessageBox.Show("Please select a customer first");
-                return;
-            }
+            // Step 1: Get all orders by the customer
+            var orders = OrderManager.GetOrdersByCustomerId(customerId);
 
-            MessageBox.Show("Loyalty points management feature is coming soon");
+            // Step 2: Sum the TotalAmount of all orders
+            decimal totalAmountSpent = orders.Sum(o => o.TotalAmount);
+
+            // Step 3: Calculate loyalty points (1 point for every $10 spent)
+            int loyaltyPoints = (int)(totalAmountSpent / 10); // Integer division
+
+            return loyaltyPoints;
         }
 
         private void ClearForm()
