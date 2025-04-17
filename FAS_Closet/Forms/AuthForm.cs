@@ -52,6 +52,11 @@ namespace FASCloset.Forms
             progressBarPasswordStrength.Value = 0;
             lblPasswordStrength.Text = "Độ mạnh mật khẩu: Chưa nhập";
             progressBarPasswordStrength.ForeColor = Color.Gray;
+            
+            // Hide tab control headers
+            tabControlAuth.ItemSize = new Size(0, 1);
+            tabControlAuth.SizeMode = TabSizeMode.Fixed;
+            tabControlAuth.Appearance = TabAppearance.FlatButtons;
         }
 
         private void AuthForm_FormClosing(object? sender, FormClosingEventArgs e)
@@ -78,179 +83,63 @@ namespace FASCloset.Forms
             Color secondaryColor = Color.FromArgb(108, 117, 125);
             Color successColor = Color.FromArgb(40, 167, 69);
             
-            // Style login button
-            btnLogin.BackColor = primaryColor;
-            btnLogin.ForeColor = Color.White;
-            btnLogin.FlatStyle = FlatStyle.Flat;
-            btnLogin.FlatAppearance.BorderSize = 0;
-            btnLogin.Font = new Font("Segoe UI Semibold", 10F);
-            btnLogin.Height = 45;
-            btnLogin.Cursor = Cursors.Hand;
+            // Apply rounded corners to all buttons and text boxes
+            ApplyRoundedCorners(btnLogin, 8);
+            ApplyRoundedCorners(btnSwitchToRegister, 8);
+            ApplyRoundedCorners(btnRegister, 8);
+            ApplyRoundedCorners(btnSwitchToLogin, 8);
             
-            // Style register button on login page
-            btnSwitchToRegister.BackColor = secondaryColor;
-            btnSwitchToRegister.ForeColor = Color.White;
-            btnSwitchToRegister.FlatStyle = FlatStyle.Flat;
-            btnSwitchToRegister.FlatAppearance.BorderSize = 0;
-            btnSwitchToRegister.Font = new Font("Segoe UI", 10F);
-            btnSwitchToRegister.Height = 45;
-            btnSwitchToRegister.Cursor = Cursors.Hand;
+            ApplyRoundedCorners(txtLoginUsername, 6);
+            ApplyRoundedCorners(txtLoginPassword, 6);
+            ApplyRoundedCorners(txtRegUsername, 6);
+            ApplyRoundedCorners(txtRegPassword, 6);
+            ApplyRoundedCorners(txtRegConfirmPassword, 6);
+            ApplyRoundedCorners(txtRegName, 6);
+            ApplyRoundedCorners(txtRegEmail, 6);
+            ApplyRoundedCorners(txtRegPhone, 6);
             
-            // Style main register button
-            btnRegister.BackColor = successColor;
-            btnRegister.ForeColor = Color.White;
-            btnRegister.FlatStyle = FlatStyle.Flat;
-            btnRegister.FlatAppearance.BorderSize = 0;
-            btnRegister.Font = new Font("Segoe UI Semibold", 10F);
-            btnRegister.Height = 45;
-            btnRegister.Cursor = Cursors.Hand;
+            // Style progress bar
+            progressBarPasswordStrength.Height = 8;
             
-            // Style switch to login button
-            btnSwitchToLogin.BackColor = secondaryColor;
-            btnSwitchToLogin.ForeColor = Color.White;
-            btnSwitchToLogin.FlatStyle = FlatStyle.Flat;
-            btnSwitchToLogin.FlatAppearance.BorderSize = 0;
-            btnSwitchToLogin.Font = new Font("Segoe UI", 10F);
-            btnSwitchToLogin.Height = 45;
-            btnSwitchToLogin.Cursor = Cursors.Hand;
-
-            // Style headers
-            lblLoginHeader.Font = new Font("Segoe UI", 22, FontStyle.Bold);
-            lblLoginHeader.ForeColor = primaryColor;
-            
-            lblRegisterHeader.Font = new Font("Segoe UI", 22, FontStyle.Bold);
-            lblRegisterHeader.ForeColor = primaryColor;
-            
-            // Style input fields - Login
-            ApplyInputFieldStyle(txtLoginUsername);
-            ApplyInputFieldStyle(txtLoginPassword);
-            
-            // Style input fields - Registration
-            ApplyInputFieldStyle(txtRegUsername);
-            ApplyInputFieldStyle(txtRegPassword);
-            ApplyInputFieldStyle(txtRegConfirmPassword);
-            ApplyInputFieldStyle(txtRegName);
-            ApplyInputFieldStyle(txtRegEmail);
-            ApplyInputFieldStyle(txtRegPhone);
-            
-            // Style checkbox and link
-            chkRememberMe.Font = new Font("Segoe UI", 9F);
-            lnkForgotPassword.Font = new Font("Segoe UI", 9F);
-            lnkForgotPassword.LinkColor = primaryColor;
-            
-            // Style error messages
-            lblLoginError.ForeColor = Color.Red;
-            lblLoginError.Font = new Font("Segoe UI", 9F);
-            lblRegisterError.ForeColor = Color.Red;
-            lblRegisterError.Font = new Font("Segoe UI", 9F);
-            
-            // Style success message
-            lblRegisterSuccess.ForeColor = successColor;
-            lblRegisterSuccess.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            
-            // Add FAS Closet logo to both forms
-            AddLogoToForms();
-            
-            // Set tab control styling
-            tabControlAuth.BackColor = Color.White;
-            tabControlAuth.Font = new Font("Segoe UI", 10F);
-            tabControlAuth.ItemSize = new Size(100, 30);
+            // Apply text box styling
+            ApplyTextBoxStyling(txtLoginUsername, "Tên đăng nhập");
+            ApplyTextBoxStyling(txtLoginPassword, "Mật khẩu");
+            ApplyTextBoxStyling(txtRegUsername, "Tên đăng nhập");
+            ApplyTextBoxStyling(txtRegPassword, "Mật khẩu");
+            ApplyTextBoxStyling(txtRegConfirmPassword, "Xác nhận mật khẩu");
+            ApplyTextBoxStyling(txtRegName, "Họ và tên");
+            ApplyTextBoxStyling(txtRegEmail, "Email");
+            ApplyTextBoxStyling(txtRegPhone, "Số điện thoại");
         }
 
-        private void ApplyInputFieldStyle(TextBox textBox)
+        private void ApplyTextBoxStyling(TextBox textBox, string placeholder)
         {
-            textBox.Height = 35;
-            textBox.Font = new Font("Segoe UI", 10F);
             textBox.BorderStyle = BorderStyle.FixedSingle;
-            textBox.Padding = new Padding(10, 5, 5, 5);
+            textBox.Font = new Font("Segoe UI", 11F);
+            textBox.Height = 35;
+            textBox.PlaceholderText = placeholder;
+            textBox.Padding = new Padding(8);
         }
 
-        private void AddLogoToForms()
+        private void ApplyRoundedCorners(Control control, int radius)
         {
-            try
+            using (GraphicsPath path = new GraphicsPath())
             {
-                // Add logo to login form
-                PictureBox logoLogin = new PictureBox
-                {
-                    Size = new Size(200, 100),
-                    Location = new Point(510, 20),
-                    SizeMode = PictureBoxSizeMode.Zoom,
-                    BackColor = Color.White
-                };
+                path.AddArc(0, 0, radius * 2, radius * 2, 180, 90);
+                path.AddArc(control.Width - radius * 2, 0, radius * 2, radius * 2, 270, 90);
+                path.AddArc(control.Width - radius * 2, control.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+                path.AddArc(0, control.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+                path.CloseAllFigures();
                 
-                // Add logo to register form
-                PictureBox logoRegister = new PictureBox
+                if (control is Button button)
                 {
-                    Size = new Size(120, 60),
-                    Location = new Point(590, 20),
-                    SizeMode = PictureBoxSizeMode.Zoom,
-                    BackColor = Color.FromArgb(248, 249, 250)
-                };
-                
-                // Try to load from project Assets folder or embedded resources
-                string logoPath = Path.Combine(Application.StartupPath, @"..\..\..\..\Assets\logo.png");
-                if (File.Exists(logoPath))
-                {
-                    using (var stream = File.OpenRead(logoPath))
-                    {
-                        logoLogin.Image = Image.FromStream(stream);
-                    }
-                    
-                    using (var stream = File.OpenRead(logoPath))
-                    {
-                        logoRegister.Image = Image.FromStream(stream);
-                    }
+                    button.Region = new Region(path);
                 }
                 else
                 {
-                    // Try to create a text-based logo as fallback
-                    Bitmap textLogo = CreateTextLogo("FAS CLOSET", 200, 100);
-                    logoLogin.Image = textLogo;
-                    logoRegister.Image = textLogo;
-                }
-                
-                // Add logos to forms
-                tabPageLogin.Controls.Add(logoLogin);
-                logoLogin.BringToFront();
-                
-                tabPageRegister.Controls.Add(logoRegister);
-                logoRegister.BringToFront();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error adding logo: {ex.Message}");
-            }
-        }
-
-        private Bitmap CreateTextLogo(string text, int width, int height)
-        {
-            Bitmap bitmap = new Bitmap(width, height);
-            using (Graphics g = Graphics.FromImage(bitmap))
-            {
-                g.Clear(Color.White);
-                
-                // Create gradient brush for text
-                Rectangle rect = new Rectangle(0, 0, width, height);
-                using (LinearGradientBrush brush = new LinearGradientBrush(
-                    rect, 
-                    Color.FromArgb(0, 123, 255),
-                    Color.FromArgb(70, 160, 255),
-                    LinearGradientMode.Horizontal))
-                {
-                    // Draw text
-                    using (Font font = new Font("Arial", 20, FontStyle.Bold))
-                    {
-                        // Center text
-                        StringFormat format = new StringFormat();
-                        format.Alignment = StringAlignment.Center;
-                        format.LineAlignment = StringAlignment.Center;
-                        
-                        g.DrawString(text, font, brush, rect, format);
-                    }
+                    control.Region = new Region(path);
                 }
             }
-            
-            return bitmap;
         }
 
         #region Login Tab Events and Validation

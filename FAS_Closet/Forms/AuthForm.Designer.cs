@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Drawing.Drawing2D;
 
 // This file contains the designer code for the AuthForm, which handles user authentication.
 
@@ -13,8 +14,6 @@ namespace FASCloset.Forms
         
         // Controls cho Login Tab
         private System.Windows.Forms.Label lblLoginHeader;
-        private System.Windows.Forms.Label lblLoginUsername;
-        private System.Windows.Forms.Label lblLoginPassword;
         private System.Windows.Forms.TextBox txtLoginUsername;
         private System.Windows.Forms.TextBox txtLoginPassword;
         private System.Windows.Forms.Button btnLogin;
@@ -26,12 +25,6 @@ namespace FASCloset.Forms
 
         // Controls cho Register Tab
         private System.Windows.Forms.Label lblRegisterHeader;
-        private System.Windows.Forms.Label lblRegUsername;
-        private System.Windows.Forms.Label lblRegPassword;
-        private System.Windows.Forms.Label lblRegConfirmPassword;
-        private System.Windows.Forms.Label lblRegName;
-        private System.Windows.Forms.Label lblRegEmail;
-        private System.Windows.Forms.Label lblRegPhone;
         private System.Windows.Forms.TextBox txtRegUsername;
         private System.Windows.Forms.TextBox txtRegPassword;
         private System.Windows.Forms.TextBox txtRegConfirmPassword;
@@ -48,6 +41,8 @@ namespace FASCloset.Forms
         private PictureBox pictureBox1;
         private PictureBox pictureBox2;
         private PictureBox pictureBox3;
+        private Panel pnlLoginForm;
+        private Panel pnlRegisterForm;
 
         protected override void Dispose(bool disposing)
         {
@@ -62,11 +57,10 @@ namespace FASCloset.Forms
             ComponentResourceManager resources = new ComponentResourceManager(typeof(AuthForm));
             tabControlAuth = new TabControl();
             tabPageLogin = new TabPage();
+            pnlLoginForm = new Panel();
             pictureBox1 = new PictureBox();
             lblLoginHeader = new Label();
-            lblLoginUsername = new Label();
             txtLoginUsername = new TextBox();
-            lblLoginPassword = new Label();
             txtLoginPassword = new TextBox();
             chkRememberMe = new CheckBox();
             lnkForgotPassword = new LinkLabel();
@@ -75,21 +69,16 @@ namespace FASCloset.Forms
             btnSwitchToRegister = new Button();
             pictureBox2 = new PictureBox();
             tabPageRegister = new TabPage();
+            pnlRegisterForm = new Panel();
             pictureBox3 = new PictureBox();
             lblRegisterHeader = new Label();
-            lblRegUsername = new Label();
             txtRegUsername = new TextBox();
-            lblRegPassword = new Label();
             txtRegPassword = new TextBox();
             progressBarPasswordStrength = new ProgressBar();
             lblPasswordStrength = new Label();
-            lblRegConfirmPassword = new Label();
             txtRegConfirmPassword = new TextBox();
-            lblRegName = new Label();
             txtRegName = new TextBox();
-            lblRegEmail = new Label();
             txtRegEmail = new TextBox();
-            lblRegPhone = new Label();
             txtRegPhone = new TextBox();
             lblRegisterError = new Label();
             lblRegisterSuccess = new Label();
@@ -99,9 +88,11 @@ namespace FASCloset.Forms
             errorProviderRegister = new ErrorProvider(components);
             tabControlAuth.SuspendLayout();
             tabPageLogin.SuspendLayout();
+            pnlLoginForm.SuspendLayout();
             ((ISupportInitialize)pictureBox1).BeginInit();
             ((ISupportInitialize)pictureBox2).BeginInit();
             tabPageRegister.SuspendLayout();
+            pnlRegisterForm.SuspendLayout();
             ((ISupportInitialize)pictureBox3).BeginInit();
             ((ISupportInitialize)errorProviderLogin).BeginInit();
             ((ISupportInitialize)errorProviderRegister).BeginInit();
@@ -117,103 +108,91 @@ namespace FASCloset.Forms
             tabControlAuth.SelectedIndex = 0;
             tabControlAuth.Size = new Size(787, 500);
             tabControlAuth.TabIndex = 0;
+            tabControlAuth.ItemSize = new Size(0, 1);
+            tabControlAuth.SizeMode = TabSizeMode.Fixed;
+            tabControlAuth.Appearance = TabAppearance.FlatButtons;
             // 
             // tabPageLogin
             // 
-            tabPageLogin.BackColor = Color.FromArgb(0, 0, 80);
-            tabPageLogin.BackgroundImageLayout = ImageLayout.Center;
+            tabPageLogin.BackColor = Color.White;
+            tabPageLogin.Controls.Add(pnlLoginForm);
             tabPageLogin.Controls.Add(pictureBox1);
-            tabPageLogin.Controls.Add(lblLoginHeader);
-            tabPageLogin.Controls.Add(lblLoginUsername);
-            tabPageLogin.Controls.Add(txtLoginUsername);
-            tabPageLogin.Controls.Add(lblLoginPassword);
-            tabPageLogin.Controls.Add(txtLoginPassword);
-            tabPageLogin.Controls.Add(chkRememberMe);
-            tabPageLogin.Controls.Add(lnkForgotPassword);
-            tabPageLogin.Controls.Add(lblLoginError);
-            tabPageLogin.Controls.Add(btnLogin);
-            tabPageLogin.Controls.Add(btnSwitchToRegister);
-            tabPageLogin.Controls.Add(pictureBox2);
-            tabPageLogin.ForeColor = SystemColors.ControlText;
-            tabPageLogin.Location = new Point(4, 24);
+            tabPageLogin.Location = new Point(4, 5);
             tabPageLogin.Name = "tabPageLogin";
-            tabPageLogin.Padding = new Padding(15);
             tabPageLogin.Size = new Size(779, 472);
             tabPageLogin.TabIndex = 0;
-            tabPageLogin.Text = "Đăng Nhập";
+            tabPageLogin.Text = "";
+            // 
+            // pnlLoginForm
+            // 
+            pnlLoginForm.BackColor = Color.White;
+            pnlLoginForm.Controls.Add(lblLoginHeader);
+            pnlLoginForm.Controls.Add(txtLoginUsername);
+            pnlLoginForm.Controls.Add(txtLoginPassword);
+            pnlLoginForm.Controls.Add(chkRememberMe);
+            pnlLoginForm.Controls.Add(lnkForgotPassword);
+            pnlLoginForm.Controls.Add(lblLoginError);
+            pnlLoginForm.Controls.Add(btnLogin);
+            pnlLoginForm.Controls.Add(btnSwitchToRegister);
+            pnlLoginForm.Dock = DockStyle.Right;
+            pnlLoginForm.Location = new Point(399, 0);
+            pnlLoginForm.Name = "pnlLoginForm";
+            pnlLoginForm.Size = new Size(380, 472);
+            pnlLoginForm.TabIndex = 12;
+            pnlLoginForm.Padding = new Padding(30);
             // 
             // pictureBox1
             //
             string imagePath = Path.Combine(Application.StartupPath, @"..\..\..\..\Assets\Images\loginbg.jpg");
-            pictureBox1.BackgroundImage = Image.FromFile(imagePath);
-            pictureBox1.Location = new Point(-4, 0);
+            pictureBox1.Image = Image.FromFile(imagePath);
+            pictureBox1.Dock = DockStyle.Left;
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(407, 472);
-            pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
+            pictureBox1.Size = new Size(399, 472);
+            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox1.TabIndex = 10;
             pictureBox1.TabStop = false;
             // 
             // lblLoginHeader
             // 
             lblLoginHeader.AutoSize = true;
-            lblLoginHeader.BackColor = Color.White;
-            lblLoginHeader.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-            lblLoginHeader.ForeColor = Color.FromArgb(0, 0, 192);
-            lblLoginHeader.Location = new Point(441, 80);
+            lblLoginHeader.Font = new Font("Segoe UI", 22F, FontStyle.Bold);
+            lblLoginHeader.ForeColor = Color.FromArgb(0, 123, 255);
+            lblLoginHeader.Location = new Point(33, 50);
             lblLoginHeader.Name = "lblLoginHeader";
             lblLoginHeader.Size = new Size(161, 32);
             lblLoginHeader.TabIndex = 0;
             lblLoginHeader.Text = "ĐĂNG NHẬP";
             // 
-            // lblLoginUsername
-            // 
-            lblLoginUsername.AutoSize = true;
-            lblLoginUsername.BackColor = Color.White;
-            lblLoginUsername.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblLoginUsername.Location = new Point(449, 130);
-            lblLoginUsername.Name = "lblLoginUsername";
-            lblLoginUsername.Size = new Size(102, 17);
-            lblLoginUsername.TabIndex = 1;
-            lblLoginUsername.Text = "Tên đăng nhập:";
-            // 
             // txtLoginUsername
             // 
             txtLoginUsername.BorderStyle = BorderStyle.FixedSingle;
-            txtLoginUsername.Font = new Font("Segoe UI", 10F);
-            txtLoginUsername.Location = new Point(449, 155);
+            txtLoginUsername.Font = new Font("Segoe UI", 11F);
+            txtLoginUsername.Location = new Point(33, 120);
             txtLoginUsername.Name = "txtLoginUsername";
-            txtLoginUsername.Size = new Size(285, 25);
+            txtLoginUsername.Size = new Size(314, 30);
             txtLoginUsername.TabIndex = 2;
-            // 
-            // lblLoginPassword
-            // 
-            lblLoginPassword.AutoSize = true;
-            lblLoginPassword.BackColor = Color.White;
-            lblLoginPassword.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblLoginPassword.Location = new Point(449, 192);
-            lblLoginPassword.Name = "lblLoginPassword";
-            lblLoginPassword.Size = new Size(69, 17);
-            lblLoginPassword.TabIndex = 3;
-            lblLoginPassword.Text = "Mật khẩu:";
+            txtLoginUsername.PlaceholderText = "Tên đăng nhập";
+            txtLoginUsername.Padding = new Padding(8);
             // 
             // txtLoginPassword
             // 
             txtLoginPassword.BorderStyle = BorderStyle.FixedSingle;
-            txtLoginPassword.Font = new Font("Segoe UI", 10F);
-            txtLoginPassword.Location = new Point(449, 217);
+            txtLoginPassword.Font = new Font("Segoe UI", 11F);
+            txtLoginPassword.Location = new Point(33, 170);
             txtLoginPassword.Name = "txtLoginPassword";
             txtLoginPassword.PasswordChar = '●';
-            txtLoginPassword.Size = new Size(285, 25);
+            txtLoginPassword.Size = new Size(314, 30);
             txtLoginPassword.TabIndex = 4;
+            txtLoginPassword.PlaceholderText = "Mật khẩu";
+            txtLoginPassword.Padding = new Padding(8);
             // 
             // chkRememberMe
             // 
             chkRememberMe.AutoSize = true;
-            chkRememberMe.BackColor = Color.White;
-            chkRememberMe.Font = new Font("Segoe UI", 9F);
-            chkRememberMe.Location = new Point(449, 253);
+            chkRememberMe.Font = new Font("Segoe UI", 10F);
+            chkRememberMe.Location = new Point(33, 220);
             chkRememberMe.Name = "chkRememberMe";
-            chkRememberMe.Size = new Size(66, 19);
+            chkRememberMe.Size = new Size(80, 19);
             chkRememberMe.TabIndex = 5;
             chkRememberMe.Text = "Nhớ tôi";
             chkRememberMe.UseVisualStyleBackColor = false;
@@ -221,26 +200,24 @@ namespace FASCloset.Forms
             // lnkForgotPassword
             // 
             lnkForgotPassword.AutoSize = true;
-            lnkForgotPassword.BackColor = Color.White;
-            lnkForgotPassword.Font = new Font("Segoe UI", 9F);
-            lnkForgotPassword.LinkColor = Color.FromArgb(0, 0, 192);
-            lnkForgotPassword.Location = new Point(640, 257);
+            lnkForgotPassword.Font = new Font("Segoe UI", 10F);
+            lnkForgotPassword.LinkColor = Color.FromArgb(0, 123, 255);
+            lnkForgotPassword.Location = new Point(235, 220);
             lnkForgotPassword.Name = "lnkForgotPassword";
-            lnkForgotPassword.Size = new Size(94, 15);
+            lnkForgotPassword.Size = new Size(112, 19);
             lnkForgotPassword.TabIndex = 6;
             lnkForgotPassword.TabStop = true;
             lnkForgotPassword.Text = "Quên mật khẩu?";
             // 
             // lblLoginError
             // 
-            lblLoginError.BackColor = Color.White;
-            lblLoginError.Font = new Font("Segoe UI", 9F);
+            lblLoginError.Font = new Font("Segoe UI", 9.5F);
             lblLoginError.ForeColor = Color.Red;
-            lblLoginError.Location = new Point(449, 275);
+            lblLoginError.Location = new Point(33, 250);
             lblLoginError.Name = "lblLoginError";
-            lblLoginError.Size = new Size(285, 40);
+            lblLoginError.Size = new Size(314, 40);
             lblLoginError.TabIndex = 7;
-            lblLoginError.TextAlign = ContentAlignment.MiddleCenter;
+            lblLoginError.TextAlign = ContentAlignment.MiddleLeft;
             lblLoginError.Visible = false;
             // 
             // btnLogin
@@ -248,12 +225,12 @@ namespace FASCloset.Forms
             btnLogin.FlatStyle = FlatStyle.Flat;
             btnLogin.BackColor = Color.FromArgb(0, 123, 255);
             btnLogin.ForeColor = Color.White;
-            btnLogin.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnLogin.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             btnLogin.FlatAppearance.BorderSize = 0;
             btnLogin.Cursor = Cursors.Hand;
-            btnLogin.Location = new Point(449, 326);
+            btnLogin.Location = new Point(33, 300);
             btnLogin.Name = "btnLogin";
-            btnLogin.Size = new Size(127, 40);
+            btnLogin.Size = new Size(314, 45);
             btnLogin.TabIndex = 8;
             btnLogin.Text = "Đăng nhập";
             btnLogin.UseVisualStyleBackColor = false;
@@ -262,231 +239,189 @@ namespace FASCloset.Forms
             // btnSwitchToRegister
             // 
             btnSwitchToRegister.FlatStyle = FlatStyle.Flat;
-            btnSwitchToRegister.BackColor = Color.FromArgb(108, 117, 125);
-            btnSwitchToRegister.ForeColor = Color.White;
+            btnSwitchToRegister.BackColor = Color.FromArgb(240, 240, 240);
+            btnSwitchToRegister.ForeColor = Color.FromArgb(60, 60, 60);
             btnSwitchToRegister.Font = new Font("Segoe UI", 10F);
-            btnSwitchToRegister.FlatAppearance.BorderSize = 0;
+            btnSwitchToRegister.FlatAppearance.BorderSize = 1;
+            btnSwitchToRegister.FlatAppearance.BorderColor = Color.FromArgb(200, 200, 200);
             btnSwitchToRegister.Cursor = Cursors.Hand;
-            btnSwitchToRegister.Location = new Point(607, 326);
+            btnSwitchToRegister.Location = new Point(33, 360);
             btnSwitchToRegister.Name = "btnSwitchToRegister";
-            btnSwitchToRegister.Size = new Size(127, 40);
+            btnSwitchToRegister.Size = new Size(314, 45);
             btnSwitchToRegister.TabIndex = 9;
-            btnSwitchToRegister.Text = "Đăng ký";
+            btnSwitchToRegister.Text = "Chưa có tài khoản? Đăng ký";
             btnSwitchToRegister.UseVisualStyleBackColor = false;
             // 
             // pictureBox2
             // 
             pictureBox2.BackColor = Color.White;
-            pictureBox2.Location = new Point(399, 0);
-            pictureBox2.Name = "pictureBox2";
-            pictureBox2.Size = new Size(384, 476);
-            pictureBox2.TabIndex = 11;
-            pictureBox2.TabStop = false;
+            pictureBox2.Visible = false;
             // 
             // tabPageRegister
             // 
             tabPageRegister.AutoScroll = true;
-            tabPageRegister.BackColor = Color.FromArgb(248, 249, 250);
+            tabPageRegister.BackColor = Color.White;
+            tabPageRegister.Controls.Add(pnlRegisterForm);
             tabPageRegister.Controls.Add(pictureBox3);
-            tabPageRegister.Controls.Add(lblRegisterHeader);
-            tabPageRegister.Controls.Add(lblRegUsername);
-            tabPageRegister.Controls.Add(txtRegUsername);
-            tabPageRegister.Controls.Add(lblRegPassword);
-            tabPageRegister.Controls.Add(txtRegPassword);
-            tabPageRegister.Controls.Add(progressBarPasswordStrength);
-            tabPageRegister.Controls.Add(lblPasswordStrength);
-            tabPageRegister.Controls.Add(lblRegConfirmPassword);
-            tabPageRegister.Controls.Add(txtRegConfirmPassword);
-            tabPageRegister.Controls.Add(lblRegName);
-            tabPageRegister.Controls.Add(txtRegName);
-            tabPageRegister.Controls.Add(lblRegEmail);
-            tabPageRegister.Controls.Add(txtRegEmail);
-            tabPageRegister.Controls.Add(lblRegPhone);
-            tabPageRegister.Controls.Add(txtRegPhone);
-            tabPageRegister.Controls.Add(lblRegisterError);
-            tabPageRegister.Controls.Add(lblRegisterSuccess);
-            tabPageRegister.Controls.Add(btnRegister);
-            tabPageRegister.Controls.Add(btnSwitchToLogin);
-            tabPageRegister.Location = new Point(4, 24);
+            tabPageRegister.Location = new Point(4, 5);
             tabPageRegister.Name = "tabPageRegister";
-            tabPageRegister.Padding = new Padding(15);
             tabPageRegister.Size = new Size(779, 472);
             tabPageRegister.TabIndex = 1;
-            tabPageRegister.Text = "Đăng Ký";
+            tabPageRegister.Text = "";
+            // 
+            // pnlRegisterForm
+            // 
+            pnlRegisterForm.AutoScroll = true;
+            pnlRegisterForm.BackColor = Color.White;
+            pnlRegisterForm.Controls.Add(lblRegisterHeader);
+            pnlRegisterForm.Controls.Add(txtRegUsername);
+            pnlRegisterForm.Controls.Add(txtRegPassword);
+            pnlRegisterForm.Controls.Add(progressBarPasswordStrength);
+            pnlRegisterForm.Controls.Add(lblPasswordStrength);
+            pnlRegisterForm.Controls.Add(txtRegConfirmPassword);
+            pnlRegisterForm.Controls.Add(txtRegName);
+            pnlRegisterForm.Controls.Add(txtRegEmail);
+            pnlRegisterForm.Controls.Add(txtRegPhone);
+            pnlRegisterForm.Controls.Add(lblRegisterError);
+            pnlRegisterForm.Controls.Add(lblRegisterSuccess);
+            pnlRegisterForm.Controls.Add(btnRegister);
+            pnlRegisterForm.Controls.Add(btnSwitchToLogin);
+            pnlRegisterForm.Dock = DockStyle.Right;
+            pnlRegisterForm.Location = new Point(399, 0);
+            pnlRegisterForm.Name = "pnlRegisterForm";
+            pnlRegisterForm.Size = new Size(380, 472);
+            pnlRegisterForm.TabIndex = 20;
+            pnlRegisterForm.Padding = new Padding(30);
+            pnlRegisterForm.AutoScroll = true;
             // 
             // pictureBox3
             // 
             string imagePathSignup = Path.Combine(Application.StartupPath, @"..\..\..\..\Assets\Images\signupbg.jpg");
-            pictureBox3.BackgroundImage = Image.FromFile(imagePathSignup); pictureBox3.Location = new Point(-4, 3);
+            pictureBox3.Image = Image.FromFile(imagePathSignup);
+            pictureBox3.Dock = DockStyle.Left;
             pictureBox3.Name = "pictureBox3";
-            pictureBox3.Size = new Size(407, 568);
+            pictureBox3.Size = new Size(399, 472);
+            pictureBox3.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox3.TabIndex = 19;
             pictureBox3.TabStop = false;
             // 
             // lblRegisterHeader
             // 
             lblRegisterHeader.AutoSize = true;
-            lblRegisterHeader.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-            lblRegisterHeader.ForeColor = Color.FromArgb(0, 0, 192);
-            lblRegisterHeader.Location = new Point(444, 15);
+            lblRegisterHeader.Font = new Font("Segoe UI", 20F, FontStyle.Bold);
+            lblRegisterHeader.ForeColor = Color.FromArgb(0, 123, 255);
+            lblRegisterHeader.Location = new Point(33, 30);
             lblRegisterHeader.Name = "lblRegisterHeader";
             lblRegisterHeader.Size = new Size(263, 32);
             lblRegisterHeader.TabIndex = 0;
             lblRegisterHeader.Text = "ĐĂNG KÝ TÀI KHOẢN";
             // 
-            // lblRegUsername
-            // 
-            lblRegUsername.AutoSize = true;
-            lblRegUsername.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
-            lblRegUsername.Location = new Point(444, 67);
-            lblRegUsername.Name = "lblRegUsername";
-            lblRegUsername.Size = new Size(102, 17);
-            lblRegUsername.TabIndex = 1;
-            lblRegUsername.Text = "Tên đăng nhập:";
-            // 
             // txtRegUsername
             // 
             txtRegUsername.BorderStyle = BorderStyle.FixedSingle;
-            txtRegUsername.Font = new Font("Segoe UI", 10F);
-            txtRegUsername.Location = new Point(444, 92);
+            txtRegUsername.Font = new Font("Segoe UI", 11F);
+            txtRegUsername.Location = new Point(33, 80);
             txtRegUsername.Name = "txtRegUsername";
-            txtRegUsername.Size = new Size(277, 25);
+            txtRegUsername.Size = new Size(314, 30);
             txtRegUsername.TabIndex = 2;
-            // 
-            // lblRegPassword
-            // 
-            lblRegPassword.AutoSize = true;
-            lblRegPassword.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
-            lblRegPassword.Location = new Point(444, 132);
-            lblRegPassword.Name = "lblRegPassword";
-            lblRegPassword.Size = new Size(69, 17);
-            lblRegPassword.TabIndex = 3;
-            lblRegPassword.Text = "Mật khẩu:";
+            txtRegUsername.PlaceholderText = "Tên đăng nhập";
+            txtRegUsername.Padding = new Padding(8);
             // 
             // txtRegPassword
             // 
             txtRegPassword.BorderStyle = BorderStyle.FixedSingle;
-            txtRegPassword.Font = new Font("Segoe UI", 10F);
-            txtRegPassword.Location = new Point(444, 157);
+            txtRegPassword.Font = new Font("Segoe UI", 11F);
+            txtRegPassword.Location = new Point(33, 130);
             txtRegPassword.Name = "txtRegPassword";
             txtRegPassword.PasswordChar = '●';
-            txtRegPassword.Size = new Size(277, 25);
+            txtRegPassword.Size = new Size(314, 30);
             txtRegPassword.TabIndex = 4;
+            txtRegPassword.PlaceholderText = "Mật khẩu";
+            txtRegPassword.Padding = new Padding(8);
             // 
             // progressBarPasswordStrength
             // 
-            progressBarPasswordStrength.Location = new Point(444, 192);
+            progressBarPasswordStrength.Location = new Point(33, 170);
             progressBarPasswordStrength.Name = "progressBarPasswordStrength";
-            progressBarPasswordStrength.Size = new Size(277, 10);
+            progressBarPasswordStrength.Size = new Size(314, 10);
             progressBarPasswordStrength.TabIndex = 5;
             // 
             // lblPasswordStrength
             // 
             lblPasswordStrength.AutoSize = true;
-            lblPasswordStrength.Font = new Font("Segoe UI", 8F);
-            lblPasswordStrength.Location = new Point(444, 207);
+            lblPasswordStrength.Font = new Font("Segoe UI", 9F);
+            lblPasswordStrength.Location = new Point(33, 185);
             lblPasswordStrength.Name = "lblPasswordStrength";
             lblPasswordStrength.Size = new Size(168, 13);
             lblPasswordStrength.TabIndex = 6;
             lblPasswordStrength.Text = "Độ mạnh mật khẩu: Chưa nhập";
-            // 
-            // lblRegConfirmPassword
-            // 
-            lblRegConfirmPassword.AutoSize = true;
-            lblRegConfirmPassword.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
-            lblRegConfirmPassword.Location = new Point(444, 227);
-            lblRegConfirmPassword.Name = "lblRegConfirmPassword";
-            lblRegConfirmPassword.Size = new Size(129, 17);
-            lblRegConfirmPassword.TabIndex = 7;
-            lblRegConfirmPassword.Text = "Xác nhận mật khẩu:";
+            lblPasswordStrength.ForeColor = Color.Gray;
             // 
             // txtRegConfirmPassword
             // 
             txtRegConfirmPassword.BorderStyle = BorderStyle.FixedSingle;
-            txtRegConfirmPassword.Font = new Font("Segoe UI", 10F);
-            txtRegConfirmPassword.Location = new Point(444, 252);
+            txtRegConfirmPassword.Font = new Font("Segoe UI", 11F);
+            txtRegConfirmPassword.Location = new Point(33, 215);
             txtRegConfirmPassword.Name = "txtRegConfirmPassword";
             txtRegConfirmPassword.PasswordChar = '●';
-            txtRegConfirmPassword.Size = new Size(277, 25);
+            txtRegConfirmPassword.Size = new Size(314, 30);
             txtRegConfirmPassword.TabIndex = 8;
-            // 
-            // lblRegName
-            // 
-            lblRegName.AutoSize = true;
-            lblRegName.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
-            lblRegName.Location = new Point(444, 292);
-            lblRegName.Name = "lblRegName";
-            lblRegName.Size = new Size(71, 17);
-            lblRegName.TabIndex = 9;
-            lblRegName.Text = "Họ và tên:";
+            txtRegConfirmPassword.PlaceholderText = "Xác nhận mật khẩu";
+            txtRegConfirmPassword.Padding = new Padding(8);
             // 
             // txtRegName
             // 
             txtRegName.BorderStyle = BorderStyle.FixedSingle;
-            txtRegName.Font = new Font("Segoe UI", 10F);
-            txtRegName.Location = new Point(444, 317);
+            txtRegName.Font = new Font("Segoe UI", 11F);
+            txtRegName.Location = new Point(33, 265);
             txtRegName.Name = "txtRegName";
-            txtRegName.Size = new Size(277, 25);
+            txtRegName.Size = new Size(314, 30);
             txtRegName.TabIndex = 10;
-            // 
-            // lblRegEmail
-            // 
-            lblRegEmail.AutoSize = true;
-            lblRegEmail.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
-            lblRegEmail.Location = new Point(444, 357);
-            lblRegEmail.Name = "lblRegEmail";
-            lblRegEmail.Size = new Size(43, 17);
-            lblRegEmail.TabIndex = 11;
-            lblRegEmail.Text = "Email:";
+            txtRegName.PlaceholderText = "Họ và tên";
+            txtRegName.Padding = new Padding(8);
             // 
             // txtRegEmail
             // 
             txtRegEmail.BorderStyle = BorderStyle.FixedSingle;
-            txtRegEmail.Font = new Font("Segoe UI", 10F);
-            txtRegEmail.Location = new Point(444, 382);
+            txtRegEmail.Font = new Font("Segoe UI", 11F);
+            txtRegEmail.Location = new Point(33, 315);
             txtRegEmail.Name = "txtRegEmail";
-            txtRegEmail.Size = new Size(277, 25);
+            txtRegEmail.Size = new Size(314, 30);
             txtRegEmail.TabIndex = 12;
-            // 
-            // lblRegPhone
-            // 
-            lblRegPhone.AutoSize = true;
-            lblRegPhone.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
-            lblRegPhone.Location = new Point(444, 422);
-            lblRegPhone.Name = "lblRegPhone";
-            lblRegPhone.Size = new Size(91, 17);
-            lblRegPhone.TabIndex = 13;
-            lblRegPhone.Text = "Số điện thoại:";
+            txtRegEmail.PlaceholderText = "Email";
+            txtRegEmail.Padding = new Padding(8);
             // 
             // txtRegPhone
             // 
             txtRegPhone.BorderStyle = BorderStyle.FixedSingle;
-            txtRegPhone.Font = new Font("Segoe UI", 10F);
-            txtRegPhone.Location = new Point(444, 447);
+            txtRegPhone.Font = new Font("Segoe UI", 11F);
+            txtRegPhone.Location = new Point(33, 365);
             txtRegPhone.Name = "txtRegPhone";
-            txtRegPhone.Size = new Size(277, 25);
+            txtRegPhone.Size = new Size(314, 30);
             txtRegPhone.TabIndex = 14;
+            txtRegPhone.PlaceholderText = "Số điện thoại";
+            txtRegPhone.Padding = new Padding(8);
             // 
             // lblRegisterError
             // 
-            lblRegisterError.Font = new Font("Segoe UI", 9F);
+            lblRegisterError.Font = new Font("Segoe UI", 9.5F);
             lblRegisterError.ForeColor = Color.Red;
-            lblRegisterError.Location = new Point(449, 486);
+            lblRegisterError.Location = new Point(33, 405);
             lblRegisterError.Name = "lblRegisterError";
-            lblRegisterError.Size = new Size(260, 40);
+            lblRegisterError.Size = new Size(314, 35);
             lblRegisterError.TabIndex = 15;
-            lblRegisterError.TextAlign = ContentAlignment.MiddleCenter;
+            lblRegisterError.TextAlign = ContentAlignment.MiddleLeft;
             lblRegisterError.Visible = false;
             // 
             // lblRegisterSuccess
             // 
-            lblRegisterSuccess.Font = new Font("Segoe UI", 9F);
+            lblRegisterSuccess.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             lblRegisterSuccess.ForeColor = Color.Green;
-            lblRegisterSuccess.Location = new Point(448, 481);
+            lblRegisterSuccess.Location = new Point(33, 405);
             lblRegisterSuccess.Name = "lblRegisterSuccess";
-            lblRegisterSuccess.Size = new Size(268, 40);
+            lblRegisterSuccess.Size = new Size(314, 35);
             lblRegisterSuccess.TabIndex = 16;
-            lblRegisterSuccess.TextAlign = ContentAlignment.MiddleCenter;
+            lblRegisterSuccess.TextAlign = ContentAlignment.MiddleLeft;
             lblRegisterSuccess.Visible = false;
             // 
             // btnRegister
@@ -494,12 +429,12 @@ namespace FASCloset.Forms
             btnRegister.FlatStyle = FlatStyle.Flat;
             btnRegister.BackColor = Color.FromArgb(40, 167, 69);
             btnRegister.ForeColor = Color.White;
-            btnRegister.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnRegister.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             btnRegister.FlatAppearance.BorderSize = 0;
             btnRegister.Cursor = Cursors.Hand;
-            btnRegister.Location = new Point(446, 529);
+            btnRegister.Location = new Point(33, 450);
             btnRegister.Name = "btnRegister";
-            btnRegister.Size = new Size(117, 40);
+            btnRegister.Size = new Size(314, 45);
             btnRegister.TabIndex = 17;
             btnRegister.Text = "Đăng ký";
             btnRegister.UseVisualStyleBackColor = false;
@@ -508,16 +443,17 @@ namespace FASCloset.Forms
             // btnSwitchToLogin
             // 
             btnSwitchToLogin.FlatStyle = FlatStyle.Flat;
-            btnSwitchToLogin.BackColor = Color.FromArgb(108, 117, 125);
-            btnSwitchToLogin.ForeColor = Color.White;
+            btnSwitchToLogin.BackColor = Color.FromArgb(240, 240, 240);
+            btnSwitchToLogin.ForeColor = Color.FromArgb(60, 60, 60);
             btnSwitchToLogin.Font = new Font("Segoe UI", 10F);
-            btnSwitchToLogin.FlatAppearance.BorderSize = 0;
+            btnSwitchToLogin.FlatAppearance.BorderSize = 1;
+            btnSwitchToLogin.FlatAppearance.BorderColor = Color.FromArgb(200, 200, 200);
             btnSwitchToLogin.Cursor = Cursors.Hand;
-            btnSwitchToLogin.Location = new Point(604, 529);
+            btnSwitchToLogin.Location = new Point(33, 510);
             btnSwitchToLogin.Name = "btnSwitchToLogin";
-            btnSwitchToLogin.Size = new Size(117, 40);
+            btnSwitchToLogin.Size = new Size(314, 45);
             btnSwitchToLogin.TabIndex = 18;
-            btnSwitchToLogin.Text = "Đã có tài khoản";
+            btnSwitchToLogin.Text = "Đã có tài khoản? Đăng nhập";
             btnSwitchToLogin.UseVisualStyleBackColor = false;
             // 
             // errorProviderLogin
@@ -530,13 +466,6 @@ namespace FASCloset.Forms
             errorProviderRegister.BlinkStyle = ErrorBlinkStyle.NeverBlink;
             errorProviderRegister.ContainerControl = this;
 
-            // Đặt ToolTip cho các button chính
-            ToolTip toolTip = new ToolTip();
-            toolTip.SetToolTip(btnLogin, "Đăng nhập vào hệ thống");
-            toolTip.SetToolTip(btnSwitchToRegister, "Chuyển sang đăng ký tài khoản mới");
-            toolTip.SetToolTip(btnRegister, "Tạo tài khoản mới");
-            toolTip.SetToolTip(btnSwitchToLogin, "Quay lại màn hình đăng nhập");
-            toolTip.SetToolTip(lnkForgotPassword, "Lấy lại mật khẩu nếu bạn quên");
             // 
             // AuthForm
             // 
@@ -549,11 +478,13 @@ namespace FASCloset.Forms
             Text = "FAS Closet - Đăng Nhập";
             tabControlAuth.ResumeLayout(false);
             tabPageLogin.ResumeLayout(false);
-            tabPageLogin.PerformLayout();
+            pnlLoginForm.ResumeLayout(false);
+            pnlLoginForm.PerformLayout();
             ((ISupportInitialize)pictureBox1).EndInit();
             ((ISupportInitialize)pictureBox2).EndInit();
             tabPageRegister.ResumeLayout(false);
-            tabPageRegister.PerformLayout();
+            pnlRegisterForm.ResumeLayout(false);
+            pnlRegisterForm.PerformLayout();
             ((ISupportInitialize)pictureBox3).EndInit();
             ((ISupportInitialize)errorProviderLogin).EndInit();
             ((ISupportInitialize)errorProviderRegister).EndInit();
