@@ -148,6 +148,39 @@ namespace FASCloset.Forms
             this.panel1.Size = new Size(325, 119);
             this.panel1.TabIndex = 1;
 
+            // Set up the low stock panel
+            this.panel2.BorderStyle = BorderStyle.FixedSingle;
+            this.panel2.Location = new Point(12, 400);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new Size(680, 300);
+            this.panel2.TabIndex = 8;
+            
+            // Add label to panel2
+            Label lblLowStock = new Label
+            {
+                Text = "Sản phẩm sắp hết hàng",
+                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
+                Location = new Point(10, 10),
+                AutoSize = true
+            };
+            this.panel2.Controls.Add(lblLowStock);
+            
+            // Set up dataGridViewLowStock
+            this.dataGridViewLowStock.Location = new Point(10, 40);
+            this.dataGridViewLowStock.Name = "dataGridViewLowStock";
+            this.dataGridViewLowStock.Size = new Size(660, 250);
+            this.dataGridViewLowStock.TabIndex = 0;
+            this.dataGridViewLowStock.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            this.dataGridViewLowStock.ReadOnly = true;
+            this.dataGridViewLowStock.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(255, 128, 0);
+            this.dataGridViewLowStock.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            this.dataGridViewLowStock.ColumnHeadersHeight = 40;
+            this.dataGridViewLowStock.BorderStyle = BorderStyle.None;
+            this.dataGridViewLowStock.BackgroundColor = Color.White;
+            this.dataGridViewLowStock.GridColor = Color.FromArgb(230, 230, 230);
+            this.dataGridViewLowStock.RowHeadersVisible = false;
+            this.panel2.Controls.Add(this.dataGridViewLowStock);
+
             this.txtProductId.Location = new Point(106, 12);
             this.txtProductId.Name = "txtProductId";
             this.txtProductId.Size = new Size(100, 23);
@@ -186,12 +219,13 @@ namespace FASCloset.Forms
             this.Controls.Add(this.btnRefresh);
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.panel1);
+            this.Controls.Add(this.panel2);
             this.Controls.Add(this.btnViewProductsByCategory);
 
             this.AutoScaleDimensions = new SizeF(7F, 15F);
             this.AutoScaleMode = AutoScaleMode.Font;
             this.Name = "UcInventoryManagement";
-            this.Size = new Size(800, 740);
+            this.Size = new Size(800, 750);
         }
 
         public Label lblTitle;

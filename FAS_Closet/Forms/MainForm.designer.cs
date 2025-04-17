@@ -13,6 +13,7 @@ namespace FASCloset.Forms
         private System.Windows.Forms.SplitContainer mainSplit;
         private System.Windows.Forms.FlowLayoutPanel leftPanel;
         private System.Windows.Forms.Button btnProductManagement;
+        private System.Windows.Forms.Button btnInventoryManagement;
         private System.Windows.Forms.Button btnOrderManagement;
         private System.Windows.Forms.Button btnCustomerManagement;
         private System.Windows.Forms.Button btnRevenueReport;
@@ -46,6 +47,7 @@ namespace FASCloset.Forms
             mainSplit = new SplitContainer();
             leftPanel = new FlowLayoutPanel();
             btnProductManagement = new Button();
+            btnInventoryManagement = new Button();
             btnOrderManagement = new Button();
             btnCustomerManagement = new Button();
             btnRevenueReport = new Button();
@@ -149,7 +151,7 @@ namespace FASCloset.Forms
             btnLogout.TextAlign = ContentAlignment.MiddleLeft;
             btnLogout.Padding = new Padding(15, 0, 0, 0);
             btnLogout.ImageAlign = ContentAlignment.MiddleLeft;
-            btnLogout.Location = new Point(15, 350);
+            btnLogout.Location = new Point(15, 405);
             btnLogout.Margin = new Padding(5, 20, 5, 5);
             btnLogout.Name = "btnLogout";
             btnLogout.Size = new Size(260, 45);
@@ -181,6 +183,7 @@ namespace FASCloset.Forms
             leftPanel.BackColor = Color.FromArgb(248, 249, 250);
             leftPanel.Controls.Add(btnDashboard);
             leftPanel.Controls.Add(btnProductManagement);
+            leftPanel.Controls.Add(btnInventoryManagement);
             leftPanel.Controls.Add(btnOrderManagement);
             leftPanel.Controls.Add(btnCustomerManagement);
             leftPanel.Controls.Add(btnRevenueReport);
@@ -215,6 +218,26 @@ namespace FASCloset.Forms
             btnProductManagement.UseVisualStyleBackColor = false;
             btnProductManagement.Click += btnProductManagement_Click;
             // 
+            // btnInventoryManagement
+            // 
+            btnInventoryManagement.FlatStyle = FlatStyle.Flat;
+            btnInventoryManagement.BackColor = Color.FromArgb(248, 249, 250);
+            btnInventoryManagement.ForeColor = Color.FromArgb(52, 58, 64);
+            btnInventoryManagement.Font = new Font("Segoe UI", 11F, FontStyle.Regular);
+            btnInventoryManagement.FlatAppearance.BorderSize = 0;
+            btnInventoryManagement.Cursor = Cursors.Hand;
+            btnInventoryManagement.Text = "🧾 Quản lý kho";
+            btnInventoryManagement.TextAlign = ContentAlignment.MiddleLeft;
+            btnInventoryManagement.Padding = new Padding(15, 0, 0, 0);
+            btnInventoryManagement.ImageAlign = ContentAlignment.MiddleLeft;
+            btnInventoryManagement.Location = new Point(15, 130);
+            btnInventoryManagement.Margin = new Padding(5);
+            btnInventoryManagement.Name = "btnInventoryManagement";
+            btnInventoryManagement.Size = new Size(260, 45);
+            btnInventoryManagement.TabIndex = 7;
+            btnInventoryManagement.UseVisualStyleBackColor = false;
+            btnInventoryManagement.Click += btnInventoryManagement_Click;
+            // 
             // btnOrderManagement
             // 
             btnOrderManagement.FlatStyle = FlatStyle.Flat;
@@ -227,7 +250,7 @@ namespace FASCloset.Forms
             btnOrderManagement.TextAlign = ContentAlignment.MiddleLeft;
             btnOrderManagement.Padding = new Padding(15, 0, 0, 0);
             btnOrderManagement.ImageAlign = ContentAlignment.MiddleLeft;
-            btnOrderManagement.Location = new Point(15, 130);
+            btnOrderManagement.Location = new Point(15, 185);
             btnOrderManagement.Margin = new Padding(5);
             btnOrderManagement.Name = "btnOrderManagement";
             btnOrderManagement.Size = new Size(260, 45);
@@ -247,7 +270,7 @@ namespace FASCloset.Forms
             btnCustomerManagement.TextAlign = ContentAlignment.MiddleLeft;
             btnCustomerManagement.Padding = new Padding(15, 0, 0, 0);
             btnCustomerManagement.ImageAlign = ContentAlignment.MiddleLeft;
-            btnCustomerManagement.Location = new Point(15, 185);
+            btnCustomerManagement.Location = new Point(15, 240);
             btnCustomerManagement.Margin = new Padding(5);
             btnCustomerManagement.Name = "btnCustomerManagement";
             btnCustomerManagement.Size = new Size(260, 45);
@@ -267,7 +290,7 @@ namespace FASCloset.Forms
             btnRevenueReport.TextAlign = ContentAlignment.MiddleLeft;
             btnRevenueReport.Padding = new Padding(15, 0, 0, 0);
             btnRevenueReport.ImageAlign = ContentAlignment.MiddleLeft;
-            btnRevenueReport.Location = new Point(15, 240);
+            btnRevenueReport.Location = new Point(15, 295);
             btnRevenueReport.Margin = new Padding(5);
             btnRevenueReport.Name = "btnRevenueReport";
             btnRevenueReport.Size = new Size(260, 45);
@@ -278,9 +301,9 @@ namespace FASCloset.Forms
             // btnDashboard
             // 
             btnDashboard.FlatStyle = FlatStyle.Flat;
-            btnDashboard.BackColor = Color.FromArgb(0, 123, 255);
-            btnDashboard.ForeColor = Color.White;
-            btnDashboard.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnDashboard.BackColor = Color.FromArgb(248, 249, 250);
+            btnDashboard.ForeColor = Color.FromArgb(52, 58, 64);
+            btnDashboard.Font = new Font("Segoe UI", 11F, FontStyle.Regular);
             btnDashboard.FlatAppearance.BorderSize = 0;
             btnDashboard.Cursor = Cursors.Hand;
             btnDashboard.Text = "📊 Dashboard";
@@ -307,7 +330,7 @@ namespace FASCloset.Forms
             btnNotificationSettings.TextAlign = ContentAlignment.MiddleLeft;
             btnNotificationSettings.Padding = new Padding(15, 0, 0, 0);
             btnNotificationSettings.ImageAlign = ContentAlignment.MiddleLeft;
-            btnNotificationSettings.Location = new Point(15, 295);
+            btnNotificationSettings.Location = new Point(15, 350);
             btnNotificationSettings.Margin = new Padding(5);
             btnNotificationSettings.Name = "btnNotificationSettings";
             btnNotificationSettings.Size = new Size(260, 45);
@@ -343,7 +366,7 @@ namespace FASCloset.Forms
             Controls.Add(headerPanel);
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "MainForm";
+            Text = "FAS Closet - Hệ Thống Quản Lý";
             headerPanel.ResumeLayout(false);
             headerPanel.PerformLayout();
             warehousePanel.ResumeLayout(false);

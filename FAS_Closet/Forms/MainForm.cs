@@ -15,6 +15,10 @@ namespace FASCloset.Forms
         private UcRevenueReport? ucRevenueReport = null;
         private UcDashboard? ucDashboard = null;
         private UcNotificationSettings? ucNotificationSettings = null;
+        
+        // Add reference to current active button
+        private Button? currentActiveButton = null;
+        private Label? navigationLabel = null;
 
         public MainForm(User user)
         {
@@ -26,6 +30,19 @@ namespace FASCloset.Forms
 
             // Add warehouse selector
             InitializeWarehouseSelector();
+            
+            // Create navigation label to show current section
+            navigationLabel = new Label
+            {
+                AutoSize = false,
+                TextAlign = ContentAlignment.MiddleCenter,
+                BackColor = Color.FromArgb(240, 240, 240),
+                ForeColor = Color.FromArgb(50, 50, 50),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Dock = DockStyle.Top,
+                Height = 25
+            };
+            contentPanel.Controls.Add(navigationLabel);
 
             // Check for low stock items on startup (but don't show toast notifications)
             NotificationManager.CheckAndSendLowStockNotifications();
@@ -50,9 +67,35 @@ namespace FASCloset.Forms
             this.Close();
         }
 
+        // Method to set active button appearance
+        private void SetActiveButton(Button button, string sectionName)
+        {
+            // Reset current active button if exists
+            if (currentActiveButton != null)
+            {
+                // Reset về màu mặc định của menu
+                currentActiveButton.BackColor = Color.FromArgb(248, 249, 250);
+                currentActiveButton.ForeColor = Color.FromArgb(52, 58, 64);
+                currentActiveButton.Font = new Font("Segoe UI", 11F, FontStyle.Regular);
+            }
+            
+            // Set new active button
+            currentActiveButton = button;
+            currentActiveButton.BackColor = Color.FromArgb(0, 123, 255);
+            currentActiveButton.ForeColor = Color.White;
+            currentActiveButton.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            
+            // Update navigation label
+            if (navigationLabel != null)
+            {
+                navigationLabel.Text = "Đang xem: " + sectionName;
+            }
+        }
+        
         // Các sự kiện điều hướng load các UserControl và cập nhật thanh tính năng
         private void btnProductManagement_Click(object sender, EventArgs e)
         {
+            SetActiveButton(btnProductManagement, "Quản lý Sản phẩm");
             UpdateFeatureToolbar(new string[] { "Thêm", "Sửa", "Xóa", "Phân loại" });
 
             if (ucProductManagement == null)
@@ -93,6 +136,7 @@ namespace FASCloset.Forms
 
         private void btnInventoryManagement_Click(object sender, EventArgs e)
         {
+            SetActiveButton(btnInventoryManagement, "Quản lý Kho hàng");
             UpdateFeatureToolbar(new string[] { "Cập nhật tồn kho", "Cảnh báo sắp hết" });
 
             if (ucInventoryManagement == null)
@@ -108,6 +152,7 @@ namespace FASCloset.Forms
 
         private void btnOrderManagement_Click(object sender, EventArgs e)
         {
+            SetActiveButton(btnOrderManagement, "Quản lý Đơn hàng");
             UpdateFeatureToolbar(new string[] { "Tạo đơn hàng", "Xử lý thanh toán", "In hóa đơn" });
 
             if (ucOrderManagement == null)
@@ -122,6 +167,7 @@ namespace FASCloset.Forms
 
         private void btnCustomerManagement_Click(object sender, EventArgs e)
         {
+            SetActiveButton(btnCustomerManagement, "Quản lý Khách hàng");
             UpdateFeatureToolbar(new string[] { "Thêm khách hàng", "Chỉnh sửa thông tin khách hàng", "Xóa khách hàng", "Làm mới" });
 
             if (ucCustomerManagement == null)
@@ -165,6 +211,7 @@ namespace FASCloset.Forms
 
         private void btnRevenueReport_Click(object sender, EventArgs e)
         {
+            SetActiveButton(btnRevenueReport, "Báo cáo Doanh thu");
             UpdateFeatureToolbar(new string[] { "Thống kê doanh số", "Xuất báo cáo chi tiết" });
 
             if (ucRevenueReport == null)
@@ -181,6 +228,7 @@ namespace FASCloset.Forms
 
         private void btnDashboard_Click(object sender, EventArgs e)
         {
+            SetActiveButton(btnDashboard, "Bảng điều khiển");
             UpdateFeatureToolbar(new string[] { "Sản phẩm bán chạy" });
 
             if (ucDashboard == null)
@@ -195,6 +243,7 @@ namespace FASCloset.Forms
 
         private void btnNotificationSettings_Click(object sender, EventArgs e)
         {
+            SetActiveButton(btnNotificationSettings, "Cài đặt Thông báo");
             UpdateFeatureToolbar(new string[] { "Configure Notifications", "View Notification Logs" });
 
             if (ucNotificationSettings == null)

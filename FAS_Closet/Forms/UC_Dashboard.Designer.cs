@@ -153,33 +153,6 @@ namespace FASCloset.Forms
             dgvVIPCustomers.RowTemplate.DefaultCellStyle.Padding = new Padding(5);
 
             // Add buttons
-            Button btnAdd = new Button();
-            btnAdd.FlatStyle = FlatStyle.Flat;
-            btnAdd.BackColor = Color.FromArgb(0, 123, 255);
-            btnAdd.ForeColor = Color.White;
-            btnAdd.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            btnAdd.FlatAppearance.BorderSize = 0;
-            btnAdd.Cursor = Cursors.Hand;
-            btnAdd.Text = "Thêm";
-
-            Button btnEdit = new Button();
-            btnEdit.FlatStyle = FlatStyle.Flat;
-            btnEdit.BackColor = Color.FromArgb(40, 167, 69);
-            btnEdit.ForeColor = Color.White;
-            btnEdit.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            btnEdit.FlatAppearance.BorderSize = 0;
-            btnEdit.Cursor = Cursors.Hand;
-            btnEdit.Text = "Sửa";
-
-            Button btnDelete = new Button();
-            btnDelete.FlatStyle = FlatStyle.Flat;
-            btnDelete.BackColor = Color.FromArgb(220, 53, 69);
-            btnDelete.ForeColor = Color.White;
-            btnDelete.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            btnDelete.FlatAppearance.BorderSize = 0;
-            btnDelete.Cursor = Cursors.Hand;
-            btnDelete.Text = "Xóa";
-
             Button btnRefresh = new Button();
             btnRefresh.FlatStyle = FlatStyle.Flat;
             btnRefresh.BackColor = Color.FromArgb(108, 117, 125);
@@ -199,9 +172,6 @@ namespace FASCloset.Forms
             this.Controls.Add(dgvBestSellers);
             this.Controls.Add(lblVIPCustomersTitle);
             this.Controls.Add(dgvVIPCustomers);
-            this.Controls.Add(btnAdd);
-            this.Controls.Add(btnEdit);
-            this.Controls.Add(btnDelete);
             this.Controls.Add(btnRefresh);
         }
 

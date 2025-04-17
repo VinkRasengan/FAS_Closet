@@ -240,12 +240,12 @@ namespace FASCloset.Forms
                 return;
             }
             
-            // Create a new panel for low stock alerts - adjust position to not overlap
+            // Create a new panel for low stock alerts - adjust position to not overlap with other elements
             Panel lowStockPanel = new Panel
             {
                 Name = "lowStockAlertPanel",
                 Size = new Size(300, 250),
-                Location = new Point(650, 70),  // Positioned higher up to avoid overlap
+                Location = new Point(650, 220),  // Reposition to avoid overlap with other elements
                 BorderStyle = BorderStyle.FixedSingle,
                 BackColor = Color.FromArgb(255, 248, 230),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right
