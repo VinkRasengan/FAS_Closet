@@ -347,7 +347,7 @@ namespace FASCloset.Forms
                 cmbPaymentMethod.SelectedIndex = 0;
         }
 
-        private void LoadProducts()
+        public void LoadProducts()
         {
             var products = ProductManager.GetProducts(); // Danh sách Product
 
@@ -356,7 +356,7 @@ namespace FASCloset.Forms
             cmbProduct.ValueMember = "ProductID";
         }
 
-        private void LoadCustomers()
+        public void LoadCustomers()
         {
             var customers = CustomerManager.GetCustomers(); // danh sách Customer
 
@@ -510,7 +510,8 @@ namespace FASCloset.Forms
                 {
                     DataPropertyName = "OrderID",
                     HeaderText = "Mã ĐH",
-                    Width = 70
+                    Width = 70,
+                    Name = "OrderID"
                 });
                 
                 dgvOrders.Columns.Add(new DataGridViewTextBoxColumn
@@ -1019,34 +1020,6 @@ namespace FASCloset.Forms
                 MessageBox.Show("Error saving order: " + ex.Message);
             }
         }
-
-
-        //private void btnEditDraftOrder_Click(object sender, EventArgs e)
-        //{
-        //    if (dgvDraftOrders.SelectedRows.Count == 0)
-        //    {
-        //        MessageBox.Show("Please select a draft order to edit.");
-        //        return;
-        //    }
-
-        //    int selectedIndex = dgvDraftOrders.SelectedRows[0].Index;
-        //    if (selectedIndex < 0 || selectedIndex >= draftOrders.Count)
-        //    {
-        //        return;
-        //    }
-
-        //    var (order, details) = draftOrders[selectedIndex];
-
-        //    // Create a new popup form to edit order details
-        //    EditDraftOrderForm editForm = new EditDraftOrderForm(order, details);
-        //    if (editForm.ShowDialog() == DialogResult.OK)
-        //    {
-        //        // When the user clicks "OK", save the changes and refresh the draft orders
-        //        draftOrders[selectedIndex] = (editForm.EditedOrder, editForm.EditedDetails);
-        //        LoadDraftOrders(); // Refresh draft orders after editing
-        //        MessageBox.Show("Draft order updated successfully.");
-        //    }
-        //}
 
     }
 }

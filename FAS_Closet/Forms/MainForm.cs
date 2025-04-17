@@ -234,6 +234,8 @@ namespace FASCloset.Forms
             {
                 ucOrderManagement = new UcOrderManagement();
             }
+            ucOrderManagement.LoadProducts();
+            ucOrderManagement.LoadCustomers();
 
             LoadUserControl(ucOrderManagement);
         }

@@ -106,7 +106,53 @@ namespace FASCloset.Forms
             dgvBestSellers.ReadOnly = true;
             dgvBestSellers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvBestSellers.AllowUserToAddRows = false;
-            
+
+            Label lblVIPCustomersTitle = new Label();
+            lblVIPCustomersTitle.Text = "Top VIP Customers";
+            lblVIPCustomersTitle.Font = new Font("Segoe UI", 12, FontStyle.Bold);
+            lblVIPCustomersTitle.Location = new Point(20, 490); 
+            lblVIPCustomersTitle.Size = new Size(200, 20);
+            // Initialize and style the DataGridView
+            dgvVIPCustomers = new DataGridView
+            {
+                Location = new Point(20, 520),  // Position below the title label
+                Size = new Size(600, 200),
+                ReadOnly = true,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                AllowUserToAddRows = false,
+                BorderStyle = BorderStyle.None,
+                BackgroundColor = Color.White,
+                GridColor = Color.FromArgb(230, 230, 230),
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                RowHeadersVisible = false
+            };
+
+            // Add custom columns
+            dgvVIPCustomers.Columns.Add("CustomerName", "Customer Name");
+            dgvVIPCustomers.Columns.Add("LoyaltyPoints", "Loyalty Points");
+
+            // Apply styling to column headers
+            dgvVIPCustomers.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(25, 118, 210);
+            dgvVIPCustomers.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dgvVIPCustomers.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            dgvVIPCustomers.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+            // Apply styling to rows
+            dgvVIPCustomers.DefaultCellStyle.Font = new Font("Segoe UI", 10);
+            dgvVIPCustomers.DefaultCellStyle.ForeColor = Color.FromArgb(64, 64, 64);
+            dgvVIPCustomers.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 123, 255);
+            dgvVIPCustomers.DefaultCellStyle.SelectionForeColor = Color.White;
+
+            // Add alternating row color for better readability
+            dgvVIPCustomers.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
+
+            // Apply row height for better presentation
+            dgvVIPCustomers.RowTemplate.Height = 35;
+
+            // Add a separator line between rows and header
+            dgvVIPCustomers.RowTemplate.DefaultCellStyle.Padding = new Padding(5);
+
+
             // Refresh button
             Button btnRefresh = new Button();
             btnRefresh.Text = "Refresh Data";
@@ -119,6 +165,8 @@ namespace FASCloset.Forms
             this.Controls.Add(metricsPanel);
             this.Controls.Add(lblBestSellersTitle);
             this.Controls.Add(dgvBestSellers);
+            this.Controls.Add(lblVIPCustomersTitle);
+            this.Controls.Add(dgvVIPCustomers);
             this.Controls.Add(btnRefresh);
         }
 
@@ -127,5 +175,6 @@ namespace FASCloset.Forms
         private Label lblTotalCustomers;
         private Label lblTotalOrders;
         private Label lblLowStockWarning;
+        private DataGridView dgvVIPCustomers;
     }
 }

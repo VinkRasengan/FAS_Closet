@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -14,6 +14,75 @@ namespace FASCloset.Forms
             InitializeComponent();
             LoadDashboardData();
         }
+
+        private void LoadVIPCustomers()
+        {
+            try
+            {
+                // Ensure the DataGridView is initialized and exists
+                if (dgvVIPCustomers == null)
+                {
+                    MessageBox.Show("DataGridView is not initialized.");
+                    return;
+                }
+
+                // Clear any existing rows in the DataGridView before populating
+                dgvVIPCustomers.Rows.Clear();
+
+                // Example: Get the top customers based on their total spending
+                var customers = CustomerManager.GetCustomers(); // Assuming this method fetches all customers
+                var customerWithLoyaltyList = new List<CustomerWithLoyalty>();
+
+                // Loop through each customer and calculate their total amount spent, then determine their loyalty points
+                foreach (var customer in customers)
+                {
+                    var orders = OrderManager.GetOrdersByCustomerId(customer.CustomerID);
+                    decimal totalSpent = orders.Sum(o => o.TotalAmount);
+                    int loyaltyPoints = (int)(totalSpent / 10); // 1 loyalty point for every $10 spent
+
+                    // Create a custom object to hold customer information and their loyalty points
+                    var customerWithLoyalty = new CustomerWithLoyalty
+                    {
+                        Customer = customer,
+                        TotalSpent = totalSpent,
+                        LoyaltyPoints = loyaltyPoints
+                    };
+
+                    // Add the customer data to the list
+                    customerWithLoyaltyList.Add(customerWithLoyalty);
+                }
+
+                // Sort the list by LoyaltyPoints in descending order and take the top 5
+                var topVIPCustomers = customerWithLoyaltyList
+                    .OrderByDescending(c => c.LoyaltyPoints)
+                    .Take(5)
+                    .ToList();
+
+                // Load the data into the DataGridView
+                foreach (var customerWithLoyalty in topVIPCustomers)
+                {
+                    // Add a new row with customer name and loyalty points to the DataGridView
+                    dgvVIPCustomers.Rows.Add(customerWithLoyalty.Customer.Name, customerWithLoyalty.LoyaltyPoints);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Display an error message if an exception occurs
+                MessageBox.Show($"Error loading VIP customers: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
+
+        // Create a new class to hold customer data along with their total spending and loyalty points
+        public class CustomerWithLoyalty
+        {
+            public Customer Customer { get; set; }
+            public decimal TotalSpent { get; set; }
+            public int LoyaltyPoints { get; set; }
+        }
+
+        private ListView lstVIPCustomers;
 
         public void LoadDashboardData()
         {
@@ -123,7 +192,8 @@ namespace FASCloset.Forms
                 
                 // Apply special style to low stock warning
                 ApplyMetricStyle(lblLowStockWarning, "Sắp Hết Hàng", warningColor);
-                
+                LoadVIPCustomers();
+
                 // Update Low Stock Alert Panel
                 UpdateLowStockAlertPanel(lowStockItems);
             }

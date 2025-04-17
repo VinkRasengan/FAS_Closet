@@ -145,20 +145,49 @@ namespace FASCloset.Forms
             btnManageLoyaltyPoints.Size = new Size(120, 30);
             btnManageLoyaltyPoints.Click += btnManageLoyaltyPoints_Click;
 
-            // Configure DataGridViews
+            // Adjusted width for dgvCustomers
             dgvCustomers.Location = new Point(20, 230);
-            dgvCustomers.Size = new Size(280, 200);
+            dgvCustomers.Size = new Size(400, 200); // Increase the width to 400
             dgvCustomers.AllowUserToAddRows = false;
             dgvCustomers.ReadOnly = true;
             dgvCustomers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvCustomers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvCustomers.SelectionChanged += dgvCustomers_SelectionChanged;
 
-            dataGridViewPurchaseHistory.Location = new Point(320, 230);
-            dataGridViewPurchaseHistory.Size = new Size(300, 200);
+            // Apply modern styling for dgvCustomers
+            dgvCustomers.BorderStyle = BorderStyle.None;
+            dgvCustomers.BackgroundColor = Color.White;
+            dgvCustomers.GridColor = Color.FromArgb(230, 230, 230);
+            dgvCustomers.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(93, 64, 150); // Dark Purple
+            dgvCustomers.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dgvCustomers.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
+            dgvCustomers.ColumnHeadersHeight = 40;
+            dgvCustomers.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
+            dgvCustomers.RowTemplate.Height = 35;
+            dgvCustomers.RowsDefaultCellStyle.BackColor = Color.White;
+            dgvCustomers.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
+            dgvCustomers.RowHeadersVisible = false;
+
+            // Adjusted width for dataGridViewPurchaseHistory
+            dataGridViewPurchaseHistory.Location = new Point(440, 230); // Adjust position to match new size
+            dataGridViewPurchaseHistory.Size = new Size(400, 200); // Increase the width to 400
             dataGridViewPurchaseHistory.AllowUserToAddRows = false;
             dataGridViewPurchaseHistory.ReadOnly = true;
             dataGridViewPurchaseHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            // Apply modern styling for dataGridViewPurchaseHistory
+            dataGridViewPurchaseHistory.BorderStyle = BorderStyle.None;
+            dataGridViewPurchaseHistory.BackgroundColor = Color.White;
+            dataGridViewPurchaseHistory.GridColor = Color.FromArgb(230, 230, 230);
+            dataGridViewPurchaseHistory.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(93, 64, 150); // Dark Purple
+            dataGridViewPurchaseHistory.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dataGridViewPurchaseHistory.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
+            dataGridViewPurchaseHistory.ColumnHeadersHeight = 40;
+            dataGridViewPurchaseHistory.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
+            dataGridViewPurchaseHistory.RowTemplate.Height = 35;
+            dataGridViewPurchaseHistory.RowsDefaultCellStyle.BackColor = Color.White;
+            dataGridViewPurchaseHistory.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
+            dataGridViewPurchaseHistory.RowHeadersVisible = false;
 
             // Add controls to form
             this.Controls.Add(lblCustomerName);
@@ -179,6 +208,140 @@ namespace FASCloset.Forms
             this.Controls.Add(dgvCustomers);
             this.Controls.Add(dataGridViewPurchaseHistory);
         }
+
+        private void btnManageLoyaltyPoints_Click(object? sender, EventArgs e)
+        {
+            if (dgvCustomers.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a customer first.");
+                return;
+            }
+
+            int selectedCustomerId = Convert.ToInt32(dgvCustomers.SelectedRows[0].Cells["CustomerID"].Value);
+            try
+            {
+                // Get loyalty points of the selected customer
+                int loyaltyPoints = GetLoyaltyPointsByCustomerId(selectedCustomerId);
+
+                // Fetch customer details
+                var selectedCustomer = CustomerManager.GetCustomerById(selectedCustomerId);
+
+                // Create and display the loyalty points info popup
+                Form loyaltyPointsPopup = new Form
+                {
+                    Text = $"Loyalty Points for {selectedCustomer.Name}",
+                    Size = new Size(420, 360),
+                    StartPosition = FormStartPosition.CenterParent,
+                    FormBorderStyle = FormBorderStyle.FixedDialog,
+                    MaximizeBox = false,
+                    MinimizeBox = false,
+                    BackColor = Color.White
+                };
+
+                // Set background color for the form to light blue
+                loyaltyPointsPopup.BackColor = Color.FromArgb(173, 216, 230); // Light blue color
+
+                // Create a panel for better control grouping
+                Panel panel = new Panel
+                {
+                    Size = new Size(380, 300),
+                    Location = new Point(10, 10),
+                    BackColor = Color.FromArgb(255, 255, 255), // White background for content
+                    BorderStyle = BorderStyle.FixedSingle,
+                    Padding = new Padding(10)
+                };
+                loyaltyPointsPopup.Controls.Add(panel);
+
+                // Add custom-styled labels for customer info and loyalty points
+                Label lblTitle = new Label
+                {
+                    Text = $"Loyalty Points for {selectedCustomer.Name}",
+                    Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(25, 118, 210),  // Light blue color for title
+                    Location = new Point(10, 10),
+                    AutoSize = true
+                };
+                panel.Controls.Add(lblTitle);
+
+                // Customer Name
+                Label lblCustomerName = new Label
+                {
+                    Text = $"Customer Name: {selectedCustomer.Name}",
+                    Font = new Font("Segoe UI", 10),
+                    Location = new Point(10, 50),
+                    ForeColor = Color.Black,
+                    AutoSize = true
+                };
+                panel.Controls.Add(lblCustomerName);
+
+                // Customer Email
+                Label lblCustomerEmail = new Label
+                {
+                    Text = $"Email: {selectedCustomer.Email}",
+                    Font = new Font("Segoe UI", 10),
+                    Location = new Point(10, 80),
+                    ForeColor = Color.Black,
+                    AutoSize = true
+                };
+                panel.Controls.Add(lblCustomerEmail);
+
+                // Customer Phone
+                Label lblCustomerPhone = new Label
+                {
+                    Text = $"Phone: {selectedCustomer.Phone}",
+                    Font = new Font("Segoe UI", 10),
+                    Location = new Point(10, 110),
+                    ForeColor = Color.Black,
+                    AutoSize = true
+                };
+                panel.Controls.Add(lblCustomerPhone);
+
+                // Customer Address
+                Label lblCustomerAddress = new Label
+                {
+                    Text = $"Address: {selectedCustomer.Address}",
+                    Font = new Font("Segoe UI", 10),
+                    Location = new Point(10, 140),
+                    ForeColor = Color.Black,
+                    AutoSize = true
+                };
+                panel.Controls.Add(lblCustomerAddress);
+
+                // Loyalty Points
+                Label lblLoyaltyPoints = new Label
+                {
+                    Text = $"Loyalty Points: {loyaltyPoints}",
+                    Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                    Location = new Point(10, 180),
+                    ForeColor = Color.FromArgb(0, 122, 204),  // Blue color for loyalty points
+                    AutoSize = true
+                };
+                panel.Controls.Add(lblLoyaltyPoints);
+
+                // Add a colorful button to close the popup
+                Button btnClose = new Button
+                {
+                    Text = "Close",
+                    Font = new Font("Segoe UI", 10),
+                    Location = new Point(300, 240),
+                    Size = new Size(75, 30),
+                    BackColor = Color.FromArgb(25, 118, 210),  // Blue color for close button
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat
+                };
+                btnClose.Click += (s, ev) => loyaltyPointsPopup.Close();
+                panel.Controls.Add(btnClose);
+
+                // Show the popup
+                loyaltyPointsPopup.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error managing loyalty points: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
 
 
         public void btnAddCustomer_Click(object sender, EventArgs e)
@@ -253,7 +416,8 @@ namespace FASCloset.Forms
                 {
                     DataPropertyName = "CustomerID",
                     HeaderText = "Mã KH",
-                    Width = 60
+                    Width = 60,
+                    Name = "CustomerID"
                 });
                 
                 dgvCustomers.Columns.Add(new DataGridViewTextBoxColumn
@@ -370,12 +534,29 @@ namespace FASCloset.Forms
                 return;
             }
 
+            // Check if required fields are filled
             if (string.IsNullOrWhiteSpace(txtCustomerName.Text) ||
                 string.IsNullOrWhiteSpace(txtCustomerEmail.Text) ||
                 string.IsNullOrWhiteSpace(txtCustomerPhone.Text) ||
                 string.IsNullOrWhiteSpace(txtCustomerAddress.Text))
             {
-                MessageBox.Show("All fields are required");
+                MessageBox.Show("All fields are required.");
+                return;
+            }
+
+            // Validate email format using regex
+            string email = txtCustomerEmail.Text.Trim();
+            if (!IsValidEmail(email))
+            {
+                MessageBox.Show("Please enter a valid email address.", "Invalid Email", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Validate phone number format (basic validation, e.g., for 10 digits)
+            string phone = txtCustomerPhone.Text.Trim();
+            if (!IsValidPhoneNumber(phone))
+            {
+                MessageBox.Show("Please enter a valid phone number.", "Invalid Phone", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -384,8 +565,8 @@ namespace FASCloset.Forms
                 var customer = new Customer
                 {
                     Name = txtCustomerName.Text,
-                    Email = txtCustomerEmail.Text,
-                    Phone = txtCustomerPhone.Text,
+                    Email = email,
+                    Phone = phone,
                     Address = txtCustomerAddress.Text
                 };
 
@@ -394,23 +575,38 @@ namespace FASCloset.Forms
                     // Update existing customer
                     customer.CustomerID = customerId;
                     CustomerManager.UpdateCustomer(customer);
-                    MessageBox.Show("Customer updated successfully");
+                    MessageBox.Show("Customer updated successfully.");
                 }
                 else
                 {
                     // Add new customer
                     CustomerManager.AddCustomer(customer);
-                    MessageBox.Show("Customer added successfully");
-                    ClearForm();
+                    MessageBox.Show("Customer added successfully.");
+                    ClearForm();  // Clear form after saving
                 }
 
-                LoadCustomers();
+                LoadCustomers();  // Reload customers list
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving customer: {ex.Message}");
+                MessageBox.Show($"Error saving customer: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        // Validate email using regular expression
+        private bool IsValidEmail(string email)
+        {
+            var emailRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
+            return emailRegex.IsMatch(email);
+        }
+
+        // Validate phone number (basic validation for 10 digits)
+        private bool IsValidPhoneNumber(string phone)
+        {
+            var phoneRegex = new System.Text.RegularExpressions.Regex(@"^\d{10}$");  // Basic validation: exactly 10 digits
+            return phoneRegex.IsMatch(phone);
+        }
+
 
         private void btnViewPurchaseHistory_Click(object? sender, EventArgs e)
         {
@@ -431,15 +627,18 @@ namespace FASCloset.Forms
             }
         }
 
-        private void btnManageLoyaltyPoints_Click(object? sender, EventArgs e)
+        public static int GetLoyaltyPointsByCustomerId(int customerId)
         {
-            if (string.IsNullOrEmpty(txtCustomerId!.Text) || !int.TryParse(txtCustomerId.Text, out int _))
-            {
-                MessageBox.Show("Please select a customer first");
-                return;
-            }
+            // Step 1: Get all orders by the customer
+            var orders = OrderManager.GetOrdersByCustomerId(customerId);
 
-            MessageBox.Show("Loyalty points management feature is coming soon");
+            // Step 2: Sum the TotalAmount of all orders
+            decimal totalAmountSpent = orders.Sum(o => o.TotalAmount);
+
+            // Step 3: Calculate loyalty points (1 point for every $10 spent)
+            int loyaltyPoints = (int)(totalAmountSpent / 10); // Integer division
+
+            return loyaltyPoints;
         }
 
         private void ClearForm()
