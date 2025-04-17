@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using FASCloset.Models;
 using FASCloset.Services;
 using System.Linq;
+using System.Drawing;
 
 namespace FASCloset.Forms
 {
@@ -16,7 +17,80 @@ namespace FASCloset.Forms
 
         public void LoadCategories()
         {
-            dataGridViewCategories.DataSource = CategoryManager.GetCategories();
+            try
+            {
+                // Get categories from the database
+                var categories = CategoryManager.GetCategories();
+                
+                // Configure columns with better headers before setting data source
+                dataGridViewCategories.AutoGenerateColumns = false;
+                dataGridViewCategories.Columns.Clear();
+                
+                // Add custom columns with better headers and styling
+                dataGridViewCategories.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "CategoryID",
+                    HeaderText = "Mã Danh Mục",
+                    Width = 80
+                });
+                
+                dataGridViewCategories.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "CategoryName",
+                    HeaderText = "Tên Danh Mục",
+                    Width = 160
+                });
+                
+                dataGridViewCategories.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "Description",
+                    HeaderText = "Mô Tả",
+                    Width = 200
+                });
+                
+                dataGridViewCategories.Columns.Add(new DataGridViewCheckBoxColumn
+                {
+                    DataPropertyName = "IsActive",
+                    HeaderText = "Đang Hoạt Động",
+                    Width = 80
+                });
+                
+                dataGridViewCategories.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "CreatedDate",
+                    HeaderText = "Ngày Tạo",
+                    Width = 120,
+                    DefaultCellStyle = new DataGridViewCellStyle
+                    {
+                        Format = "dd/MM/yyyy"
+                    }
+                });
+                
+                // Set the data source after column configuration
+                dataGridViewCategories.DataSource = categories;
+                
+                // Apply modern styling
+                dataGridViewCategories.BorderStyle = BorderStyle.None;
+                dataGridViewCategories.BackgroundColor = Color.White;
+                dataGridViewCategories.GridColor = Color.FromArgb(230, 230, 230);
+                dataGridViewCategories.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 123, 255);
+                dataGridViewCategories.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+                dataGridViewCategories.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
+                dataGridViewCategories.ColumnHeadersHeight = 40;
+                dataGridViewCategories.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
+                dataGridViewCategories.RowTemplate.Height = 35;
+                dataGridViewCategories.RowsDefaultCellStyle.BackColor = Color.White;
+                dataGridViewCategories.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
+                dataGridViewCategories.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                dataGridViewCategories.RowHeadersVisible = false;
+                
+                // Refresh the UI
+                dataGridViewCategories.Refresh();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading categories: " + ex.Message);
+            }
         }
 
         private void btnViewProductsByCategory_Click(object sender, EventArgs e)

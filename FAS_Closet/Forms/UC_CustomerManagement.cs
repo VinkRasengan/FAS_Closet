@@ -243,12 +243,63 @@ namespace FASCloset.Forms
             try
             {
                 var customers = CustomerManager.GetCustomers();
+                
+                // Apply better formatting to the grid view before setting the data source
+                dgvCustomers.AutoGenerateColumns = false;
+                dgvCustomers.Columns.Clear();
+                
+                // Add custom columns with better headers and formatting
+                dgvCustomers.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "CustomerID",
+                    HeaderText = "Mã KH",
+                    Width = 60
+                });
+                
+                dgvCustomers.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "Name",
+                    HeaderText = "Tên Khách Hàng",
+                    Width = 150
+                });
+                
+                dgvCustomers.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "Email",
+                    HeaderText = "Email",
+                    Width = 180
+                });
+                
+                dgvCustomers.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "Phone",
+                    HeaderText = "Số Điện Thoại",
+                    Width = 120
+                });
+                
+                // Set the data source after configuring columns
                 dgvCustomers.DataSource = customers;
-
-                if (dgvCustomers.Columns.Count > 0)
+                
+                // Hide the address column as it's shown in the detail panel
+                if (dgvCustomers.Columns.Contains("Address"))
                 {
                     dgvCustomers.Columns["Address"].Visible = false;
                 }
+                
+                // Apply modern styling
+                dgvCustomers.BorderStyle = BorderStyle.None;
+                dgvCustomers.BackgroundColor = Color.White;
+                dgvCustomers.GridColor = Color.FromArgb(230, 230, 230);
+                dgvCustomers.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(25, 118, 210);
+                dgvCustomers.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+                dgvCustomers.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
+                dgvCustomers.ColumnHeadersHeight = 40;
+                dgvCustomers.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
+                dgvCustomers.RowTemplate.Height = 35;
+                dgvCustomers.RowsDefaultCellStyle.BackColor = Color.White;
+                dgvCustomers.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
+                dgvCustomers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                dgvCustomers.RowHeadersVisible = false;
             }
             catch (Exception ex)
             {

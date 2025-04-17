@@ -51,47 +51,47 @@ namespace FASCloset.Forms
             // Clear existing columns to avoid duplicates on reload
             ProductDisplay.Columns.Clear();
             
-            // Add columns with meaningful headers
+            // Add columns with meaningful headers and improved styling
             ProductDisplay.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "ProductID",
-                HeaderText = "ID",
-                Width = 50,
+                HeaderText = "Mã SP",
+                Width = 60,
                 SortMode = DataGridViewColumnSortMode.Automatic
             });
             
             ProductDisplay.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "ProductName",
-                HeaderText = "Product Name",
-                Width = 150,
+                HeaderText = "Tên Sản Phẩm",
+                Width = 180,
                 SortMode = DataGridViewColumnSortMode.Automatic
             });
             
             ProductDisplay.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "CategoryName",
-                HeaderText = "Category",
-                Width = 100,
+                HeaderText = "Danh Mục",
+                Width = 120,
                 SortMode = DataGridViewColumnSortMode.Automatic
             });
             
             ProductDisplay.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "ManufacturerName",
-                HeaderText = "Manufacturer",
-                Width = 100,
+                HeaderText = "Nhà Sản Xuất",
+                Width = 140,
                 SortMode = DataGridViewColumnSortMode.Automatic
             });
             
             ProductDisplay.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Price",
-                HeaderText = "Price",
-                Width = 80,
+                HeaderText = "Giá Bán",
+                Width = 100,
                 DefaultCellStyle = new DataGridViewCellStyle 
                 { 
-                    Format = "C2", 
+                    Format = "N0", 
                     Alignment = DataGridViewContentAlignment.MiddleRight 
                 },
                 SortMode = DataGridViewColumnSortMode.Automatic
@@ -100,8 +100,8 @@ namespace FASCloset.Forms
             ProductDisplay.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Stock",
-                HeaderText = "Stock",
-                Width = 60,
+                HeaderText = "Tồn Kho",
+                Width = 80,
                 DefaultCellStyle = new DataGridViewCellStyle 
                 { 
                     Alignment = DataGridViewContentAlignment.MiddleRight
@@ -113,7 +113,7 @@ namespace FASCloset.Forms
             DataGridViewCheckBoxColumn lowStockColumn = new DataGridViewCheckBoxColumn
             {
                 DataPropertyName = "IsLowStock",
-                HeaderText = "Low Stock",
+                HeaderText = "Sắp Hết",
                 Width = 80,
                 ReadOnly = true,
                 TrueValue = true,
@@ -126,8 +126,8 @@ namespace FASCloset.Forms
             DataGridViewCheckBoxColumn isActiveColumn = new DataGridViewCheckBoxColumn
             {
                 DataPropertyName = "IsActive",
-                HeaderText = "Active",
-                Width = 60,
+                HeaderText = "Đang Kinh Doanh",
+                Width = 80,
                 ReadOnly = true,
                 TrueValue = true,
                 FalseValue = false,
@@ -140,6 +140,20 @@ namespace FASCloset.Forms
             ProductDisplay.MultiSelect = false;
             ProductDisplay.ReadOnly = true;
             ProductDisplay.AllowUserToOrderColumns = true;
+            
+            // Enhance visual appearance
+            ProductDisplay.BorderStyle = BorderStyle.None;
+            ProductDisplay.RowHeadersVisible = false;
+            ProductDisplay.BackgroundColor = Color.White;
+            ProductDisplay.GridColor = Color.FromArgb(230, 230, 230);
+            ProductDisplay.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 120, 215);
+            ProductDisplay.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            ProductDisplay.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
+            ProductDisplay.ColumnHeadersHeight = 40;
+            ProductDisplay.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
+            ProductDisplay.RowsDefaultCellStyle.BackColor = Color.White;
+            ProductDisplay.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
+            ProductDisplay.RowTemplate.Height = 35;
             
             // Add DataError handler to avoid binding errors
             ProductDisplay.DataError += (s, e) => {

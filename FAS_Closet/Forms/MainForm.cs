@@ -30,17 +30,20 @@ namespace FASCloset.Forms
             // Add warehouse selector
             InitializeWarehouseSelector();
 
-            // Check for low stock items on startup
+            // Check for low stock items on startup (but don't show toast notifications)
             NotificationManager.CheckAndSendLowStockNotifications();
-            StartNotificationTimer();
+            
+            // No longer show toast notifications - removed timer
+            // StartNotificationTimer();
 
             btnDashboard_Click(this, EventArgs.Empty);
         }
 
+        // Keeping this method for future reference but not using it anymore
         private void StartNotificationTimer()
         {
             notificationTimer = new System.Windows.Forms.Timer();
-            notificationTimer.Interval = 10000; // 5 seconds
+            notificationTimer.Interval = 10000; // 10 seconds
             notificationTimer.Tick += (s, e) =>
             {
                 var lowStock = InventoryManager.GetLowStockProducts();
@@ -95,11 +98,7 @@ namespace FASCloset.Forms
 
                 link.LinkClicked += (s, e) =>
                 {
-                    btnInventoryManagement_Click(this, EventArgs.Empty);
-                    if (ucInventoryManagement != null)
-                    {
-                        ucInventoryManagement.txtProductId.Text = product.ProductID.ToString();
-                    }
+                    NavigateToInventoryManagement(product.ProductID);
                     this.Controls.Remove(toast);
                 };
 
@@ -398,6 +397,19 @@ namespace FASCloset.Forms
                 ucInventoryManagement.btnUpdateStock_Click(sender ?? this, e);
             else
                 MessageBox.Show("Vui lòng chọn Quản lý kho hàng trước.");
+        }
+
+        // Add this public navigation method for low stock items that can be accessed from other controls
+        public void NavigateToInventoryManagement(int productId = 0)
+        {
+            btnInventoryManagement_Click(this, EventArgs.Empty);
+            
+            // If a product ID was provided, set it in the inventory management UI
+            if (productId > 0 && ucInventoryManagement != null)
+            {
+                ucInventoryManagement.txtProductId.Text = productId.ToString();
+                ucInventoryManagement.BringToFront();
+            }
         }
     }
 }

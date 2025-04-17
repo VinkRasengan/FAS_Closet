@@ -145,9 +145,6 @@ namespace FASCloset.Forms
             popup.ShowDialog();
         }
 
-
-
-
         private void btnCancelOrder_Click(object sender, EventArgs e)
         {
             if (dgvOrders.SelectedRows.Count == 0)
@@ -498,14 +495,79 @@ namespace FASCloset.Forms
             autoClose.Start();
         }
 
-
-
         private void LoadOrders()
         {
             try
             {
                 var orders = OrderManager.GetOrders();
+                
+                // Configure columns with better headers before setting data source
+                dgvOrders.AutoGenerateColumns = false;
+                dgvOrders.Columns.Clear();
+                
+                // Add custom columns with better headers and styling
+                dgvOrders.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "OrderID",
+                    HeaderText = "Mã ĐH",
+                    Width = 70
+                });
+                
+                dgvOrders.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "CustomerID",
+                    HeaderText = "Mã KH",
+                    Width = 70
+                });
+                
+                // Add a column that will display customer name (would need to implement proper lookup)
+                dgvOrders.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "OrderDate",
+                    HeaderText = "Ngày Đặt Hàng",
+                    Width = 120,
+                    DefaultCellStyle = new DataGridViewCellStyle
+                    {
+                        Format = "dd/MM/yyyy HH:mm"
+                    }
+                });
+                
+                dgvOrders.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "TotalAmount",
+                    HeaderText = "Tổng Tiền",
+                    Width = 100,
+                    DefaultCellStyle = new DataGridViewCellStyle
+                    {
+                        Format = "N0",
+                        Alignment = DataGridViewContentAlignment.MiddleRight
+                    }
+                });
+                
+                dgvOrders.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "PaymentMethod",
+                    HeaderText = "Phương Thức Thanh Toán",
+                    Width = 140
+                });
+                
+                // Set the data source after column configuration
                 dgvOrders.DataSource = orders;
+                
+                // Apply modern styling
+                dgvOrders.BorderStyle = BorderStyle.None;
+                dgvOrders.BackgroundColor = Color.White;
+                dgvOrders.GridColor = Color.FromArgb(230, 230, 230);
+                dgvOrders.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(40, 167, 69);
+                dgvOrders.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+                dgvOrders.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
+                dgvOrders.ColumnHeadersHeight = 40;
+                dgvOrders.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
+                dgvOrders.RowTemplate.Height = 35;
+                dgvOrders.RowsDefaultCellStyle.BackColor = Color.White;
+                dgvOrders.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
+                dgvOrders.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                dgvOrders.RowHeadersVisible = false;
             }
             catch (Exception ex)
             {
