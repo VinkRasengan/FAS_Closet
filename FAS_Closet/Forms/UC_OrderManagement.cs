@@ -127,6 +127,9 @@ namespace FASCloset.Forms
                 d.UnitPrice,
                 Total = d.Quantity * d.UnitPrice
             }).ToList();
+            
+            // Apply the standardized style using the helper
+            FASCloset.Extensions.DataGridViewStyleHelper.ApplyFullStyle(dgvOrderDetails);
 
             // Add the DataGridView to the popup
             popup.Controls.Add(dgvOrderDetails);
@@ -417,12 +420,11 @@ namespace FASCloset.Forms
                 Total = d.Quantity * d.UnitPrice
             }).ToList();
 
-            // Manually set the column headers (make sure only these columns appear)
-            productList.Columns["ProductID"].Visible = false; // Hide ProductID column from UI
-            productList.Columns["ProductName"].HeaderText = "Product Name";
-            productList.Columns["Quantity"].HeaderText = "Quantity";
-            productList.Columns["UnitPrice"].HeaderText = "Unit Price";
-            productList.Columns["Total"].HeaderText = "Total";
+            // Hide ProductID column from UI
+            productList.Columns["ProductID"].Visible = false; 
+            
+            // Apply the standardized style using the helper
+            FASCloset.Extensions.DataGridViewStyleHelper.ApplyFullStyle(productList);
         }
 
         private void ShowOrderSuccessNotification()
@@ -521,7 +523,13 @@ namespace FASCloset.Forms
                     Width = 70
                 });
                 
-                // Add a column that will display customer name (would need to implement proper lookup)
+                dgvOrders.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    DataPropertyName = "CustomerName",
+                    HeaderText = "Khách hàng",
+                    Width = 150
+                });
+                
                 dgvOrders.Columns.Add(new DataGridViewTextBoxColumn
                 {
                     DataPropertyName = "OrderDate",
@@ -555,20 +563,8 @@ namespace FASCloset.Forms
                 // Set the data source after column configuration
                 dgvOrders.DataSource = orders;
                 
-                // Apply modern styling
-                dgvOrders.BorderStyle = BorderStyle.None;
-                dgvOrders.BackgroundColor = Color.White;
-                dgvOrders.GridColor = Color.FromArgb(230, 230, 230);
-                dgvOrders.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(40, 167, 69);
-                dgvOrders.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-                dgvOrders.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
-                dgvOrders.ColumnHeadersHeight = 40;
-                dgvOrders.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
-                dgvOrders.RowTemplate.Height = 35;
-                dgvOrders.RowsDefaultCellStyle.BackColor = Color.White;
-                dgvOrders.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
-                dgvOrders.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-                dgvOrders.RowHeadersVisible = false;
+                // Apply the standardized style using the helper
+                FASCloset.Extensions.DataGridViewStyleHelper.ApplyFullStyle(dgvOrders);
             }
             catch (Exception ex)
             {
@@ -792,11 +788,15 @@ namespace FASCloset.Forms
             dgvDraftOrders.DataSource = draftOrders.Select((x, i) => new
             {
                 DraftID = i + 1,
-                x.Order.CustomerID,
-                x.Order.TotalAmount,
-                x.Order.PaymentMethod,
-                x.Order.OrderDate
+                CustomerID = x.Order.CustomerID,
+                CustomerName = CustomerManager.GetCustomerById(x.Order.CustomerID)?.Name ?? "Unknown",
+                TotalAmount = x.Order.TotalAmount,
+                PaymentMethod = x.Order.PaymentMethod,
+                OrderDate = x.Order.OrderDate
             }).ToList();
+            
+            // Apply the standardized style using the helper
+            FASCloset.Extensions.DataGridViewStyleHelper.ApplyFullStyle(dgvDraftOrders);
         }
 
 

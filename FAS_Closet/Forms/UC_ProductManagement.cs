@@ -137,19 +137,8 @@ namespace FASCloset.Forms
             ProductDisplay.ReadOnly = true;
             ProductDisplay.AllowUserToOrderColumns = true;
             
-            // Enhance visual appearance
-            ProductDisplay.BorderStyle = BorderStyle.None;
-            ProductDisplay.RowHeadersVisible = false;
-            ProductDisplay.BackgroundColor = Color.White;
-            ProductDisplay.GridColor = Color.FromArgb(230, 230, 230);
-            ProductDisplay.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 120, 215);
-            ProductDisplay.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            ProductDisplay.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
-            ProductDisplay.ColumnHeadersHeight = 40;
-            ProductDisplay.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
-            ProductDisplay.RowsDefaultCellStyle.BackColor = Color.White;
-            ProductDisplay.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
-            ProductDisplay.RowTemplate.Height = 35;
+            // Áp dụng style chuẩn từ helper
+            FASCloset.Extensions.DataGridViewStyleHelper.ApplyBasicStyle(ProductDisplay);
             
             // Add DataError handler to avoid binding errors
             ProductDisplay.DataError += (s, e) => {
