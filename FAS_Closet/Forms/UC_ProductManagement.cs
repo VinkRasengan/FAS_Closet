@@ -11,11 +11,8 @@ namespace FASCloset.Forms
 {
     public partial class UcProductManagement : UserControl
     {
-        private enum Mode { View, Add, Edit, Duplicate }
-        private Mode currentMode = Mode.View;
         private bool showInactiveProducts = false;
         private bool showOnlyLowStock = false;
-        private Product? selectedProduct = null; // Add this line to track selected product
 
         // Use a BindingSource to manage the data binding
         private BindingSource productsBindingSource = new BindingSource();
@@ -28,7 +25,7 @@ namespace FASCloset.Forms
         {
             InitializeComponent();
             
-            // Setup data binding and grid view
+            // Setup data grid view
             SetupDataGridView();
             
             // Setup data binding
@@ -38,10 +35,6 @@ namespace FASCloset.Forms
             // Load data
             LoadProducts();
             LoadCategories();
-            LoadManufacturers();
-            
-            // Hide the AddEditPanel initially
-            AddEditPanel.Visible = false;
         }
 
         #region DataGridView Setup and Formatting
@@ -163,6 +156,9 @@ namespace FASCloset.Forms
                 // Suppress DataError dialog
                 e.ThrowException = false;
             };
+
+            // Add CellFormatting handler
+            ProductDisplay.CellFormatting += ProductDisplay_CellFormatting;
         }
 
         private void ProductDisplay_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -243,7 +239,6 @@ namespace FASCloset.Forms
             }
         }
 
-
         private void LoadProductsByCategory(int categoryId)
         {
             try
@@ -276,31 +271,10 @@ namespace FASCloset.Forms
                 CmbFilterCategory.DisplayMember = "CategoryName";
                 CmbFilterCategory.ValueMember = "CategoryID";
                 CmbFilterCategory.DataSource = new BindingSource { DataSource = allCategories };
-                
-                // Setup add/edit dropdown (without All Categories)
-                CmbCategory.DisplayMember = "CategoryName";
-                CmbCategory.ValueMember = "CategoryID";
-                CmbCategory.DataSource = new BindingSource { DataSource = categories };
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading categories: {ex.Message}", DataLoadingError, 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void LoadManufacturers()
-        {
-            try
-            {
-                var manufacturers = ProductManager.GetManufacturers();
-                CmbManufacturer.DisplayMember = "ManufacturerName";
-                CmbManufacturer.ValueMember = "ManufacturerID";
-                CmbManufacturer.DataSource = new BindingSource { DataSource = manufacturers };
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading manufacturers: {ex.Message}", DataLoadingError, 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -311,21 +285,75 @@ namespace FASCloset.Forms
 
         public void btnAdd_Click(object sender, EventArgs e)
         {
-            currentMode = Mode.Add;
-            InitializeAddProductUI();
-            ShowAddEditPanel();
+            try
+            {
+                // Open the ProductForm for adding a new product
+                using (var productForm = new ProductForm())
+                {
+                    if (productForm.ShowDialog() == DialogResult.OK)
+                    {
+                        // Get the new product from the form
+                        var newProduct = productForm.Product;
+                        
+                        // Save the new product to the database
+                        ProductManager.AddProduct(newProduct);
+                        
+                        // Reload the product list
+                        LoadProducts();
+                        
+                        // Select the newly added product
+                        SelectProductInGridByName(newProduct.ProductName);
+                        
+                        MessageBox.Show("Product added successfully!", "Success", 
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error adding product: {ex.Message}", ErrorLiteral, 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         public void btnEdit_Click(object sender, EventArgs e)
         {
             if (ProductDisplay.SelectedRows.Count > 0)
             {
-                currentMode = Mode.Edit;
-                selectedProduct = ProductDisplay.SelectedRows[0].DataBoundItem as Product; // Store selected product
-                if (selectedProduct != null)
+                try
                 {
-                    FillAddEditPanel(selectedProduct);
-                    ShowAddEditPanel();
+                    // Get the selected product
+                    var selectedProduct = ProductDisplay.SelectedRows[0].DataBoundItem as Product;
+                    
+                    if (selectedProduct != null)
+                    {
+                        // Open the ProductForm for editing
+                        using (var productForm = new ProductForm(selectedProduct))
+                        {
+                            if (productForm.ShowDialog() == DialogResult.OK)
+                            {
+                                // Get the updated product from the form
+                                var updatedProduct = productForm.Product;
+                                
+                                // Save the updated product to the database
+                                ProductManager.UpdateProduct(updatedProduct);
+                                
+                                // Reload the product list
+                                LoadProducts();
+                                
+                                // Select the updated product
+                                SelectProductInGrid(updatedProduct.ProductID);
+                                
+                                MessageBox.Show("Product updated successfully!", "Success", 
+                                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error updating product: {ex.Message}", ErrorLiteral, 
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else
@@ -365,19 +393,6 @@ namespace FASCloset.Forms
                 MessageBox.Show("Please select a product to archive.", "No Selection", 
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-        }
-
-        private void btnSave_Click(object sender, EventArgs e)
-        {
-            if (ValidateAllInputs())
-            {
-                SaveProduct();
-            }
-        }
-
-        private void btnCancel_Click(object sender, EventArgs e)
-        {
-            HideAddEditPanel();
         }
 
         private void cmbFilterCategory_SelectedIndexChanged(object sender, EventArgs e)
@@ -435,245 +450,52 @@ namespace FASCloset.Forms
             }
         }
 
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        private void btnManageCategories_Click(object sender, EventArgs e)
         {
-            // Handle keyboard shortcuts
-            if (keyData == Keys.Escape && AddEditPanel.Visible)
+            try
             {
-                btnCancel_Click(this, EventArgs.Empty);
-                return true;
+                using (var categoryForm = new CategoryForm())
+                {
+                    if (categoryForm.ShowDialog() == DialogResult.OK)
+                    {
+                        // Reload categories
+                        LoadCategories();
+                        
+                        MessageBox.Show("Category added successfully!", "Success", 
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
             }
-            else if (keyData == (Keys.Control | Keys.S) && AddEditPanel.Visible)
+            catch (Exception ex)
             {
-                btnSave_Click(this, EventArgs.Empty);
-                return true;
-            }
-            else if (keyData == (Keys.Control | Keys.A) && !AddEditPanel.Visible)
-            {
-                btnAdd_Click(this, EventArgs.Empty);
-                return true;
-            }
-            else if (keyData == (Keys.Control | Keys.E) && !AddEditPanel.Visible && ProductDisplay.SelectedRows.Count > 0)
-            {
-                btnEdit_Click(this, EventArgs.Empty);
-                return true;
-            }
-            
-            return base.ProcessCmdKey(ref msg, keyData);
-        }
-
-        #endregion
-
-        #region Data Validation
-
-        private bool ValidateAllInputs()
-        {
-            errorProvider.Clear();
-            bool isValid = true;
-            
-            // Validate product name
-            if (string.IsNullOrWhiteSpace(TxtProductName.Text))
-            {
-                errorProvider.SetError(TxtProductName, "Product name is required");
-                isValid = false;
-            }
-            
-            // Validate category selection
-            if (CmbCategory.SelectedItem == null)
-            {
-                errorProvider.SetError(CmbCategory, "Please select a category");
-                isValid = false;
-            }
-            
-            // Validate price
-            if (!decimal.TryParse(TxtPrice.Text, out decimal price) || price < 0)
-            {
-                errorProvider.SetError(TxtPrice, "Please enter a valid price");
-                isValid = false;
-            }
-            
-            // Validate stock
-            if (!int.TryParse(TxtStock.Text, out int stock) || stock < 0)
-            {
-                errorProvider.SetError(TxtStock, "Please enter a valid stock quantity");
-                isValid = false;
-            }
-            
-            // Validate description
-            if (string.IsNullOrWhiteSpace(TxtDescription.Text))
-            {
-                errorProvider.SetError(TxtDescription, "Description is required");
-                isValid = false;
-            }
-            
-            return isValid;
-        }
-
-        private void TxtProductName_Validating(object sender, CancelEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(TxtProductName.Text))
-            {
-                errorProvider.SetError(TxtProductName, "Product name is required");
-            }
-            else
-            {
-                errorProvider.SetError(TxtProductName, "");
+                MessageBox.Show($"Error managing categories: {ex.Message}", ErrorLiteral, 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void CmbCategory_Validating(object sender, CancelEventArgs e)
+        private void btnManageManufacturers_Click(object sender, EventArgs e)
         {
-            if (CmbCategory.SelectedItem == null)
+            try
             {
-                errorProvider.SetError(CmbCategory, "Please select a category");
+                using (var manufacturerForm = new ManufacturerForm())
+                {
+                    if (manufacturerForm.ShowDialog() == DialogResult.OK)
+                    {
+                        MessageBox.Show("Manufacturer added successfully!", "Success", 
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
             }
-            else
+            catch (Exception ex)
             {
-                errorProvider.SetError(CmbCategory, "");
-            }
-        }
-
-        private void TxtPrice_Validating(object sender, CancelEventArgs e)
-        {
-            if (!decimal.TryParse(TxtPrice.Text, out decimal price) || price < 0)
-            {
-                errorProvider.SetError(TxtPrice, "Please enter a valid price");
-            }
-            else
-            {
-                errorProvider.SetError(TxtPrice, "");
-            }
-        }
-
-        private void TxtStock_Validating(object sender, CancelEventArgs e)
-        {
-            if (!int.TryParse(TxtStock.Text, out int stock) || stock < 0)
-            {
-                errorProvider.SetError(TxtStock, "Please enter a valid stock quantity");
-            }
-            else
-            {
-                errorProvider.SetError(TxtStock, "");
-            }
-        }
-
-        private void TxtDescription_Validating(object sender, CancelEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(TxtDescription.Text))
-            {
-                errorProvider.SetError(TxtDescription, "Description is required");
-            }
-            else
-            {
-                errorProvider.SetError(TxtDescription, "");
-            }
-        }
-
-        // Allow only numeric input for price field
-        private void TxtPrice_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            // Allow digits, decimal point, and control characters (like Backspace)
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != '.')
-            {
-                e.Handled = true;
-            }
-
-            // Allow only one decimal point
-            if (e.KeyChar == '.' && sender is TextBox txt && txt.Text.IndexOf('.') > -1)
-            {
-                e.Handled = true;
-            }
-        }
-
-        // Allow only numeric input for stock field
-        private void TxtStock_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            // Allow only digits and control characters
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
-            {
-                e.Handled = true;
+                MessageBox.Show($"Error managing manufacturers: {ex.Message}", ErrorLiteral, 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         #endregion
 
         #region Helper Methods
-
-        private void InitializeAddProductUI()
-        {
-            TxtProductName.Text = "";
-            if (CmbCategory.Items.Count > 0)
-                CmbCategory.SelectedIndex = 0;
-            else
-                CmbCategory.SelectedIndex = -1;
-                
-            if (CmbManufacturer.Items.Count > 0)
-                CmbManufacturer.SelectedIndex = 0;
-            else
-                CmbManufacturer.SelectedIndex = -1;
-                
-            TxtPrice.Text = "0.00";
-            TxtStock.Text = "0";
-            TxtDescription.Text = "";
-            ChkIsActive.Checked = true;
-            
-            errorProvider.Clear();
-        }
-
-        private void FillAddEditPanel(Product product)
-        {
-            TxtProductName.Text = product.ProductName;
-            
-            // Find the category in the combo box
-            for (int i = 0; i < CmbCategory.Items.Count; i++)
-            {
-                if (CmbCategory.Items[i] is Category category && category.CategoryID == product.CategoryID)
-                {
-                    CmbCategory.SelectedIndex = i;
-                    break;
-                }
-            }
-            
-            // Find the manufacturer in the combo box
-            if (product.ManufacturerID.HasValue)
-            {
-                for (int i = 0; i < CmbManufacturer.Items.Count; i++)
-                {
-                    if (CmbManufacturer.Items[i] is Manufacturer manufacturer && manufacturer.ManufacturerID == product.ManufacturerID)
-                    {
-                        CmbManufacturer.SelectedIndex = i;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                CmbManufacturer.SelectedIndex = -1;
-            }
-            
-            TxtPrice.Text = product.Price.ToString("0.00");
-            TxtStock.Text = product.Stock.ToString();
-            TxtDescription.Text = product.Description;
-            ChkIsActive.Checked = product.IsActive;
-            
-            errorProvider.Clear();
-        }
-
-        private void ShowAddEditPanel()
-        {
-            AddEditPanel.Visible = true;
-            AddEditPanel.BringToFront();
-            FilterPanel.Visible = false; // Hide FilterPanel to avoid overlap
-            TxtProductName.Focus();
-        }
-
-        private void HideAddEditPanel()
-        {
-            AddEditPanel.Visible = false;
-            FilterPanel.Visible = true;
-            currentMode = Mode.View;
-            errorProvider.Clear();
-        }
 
         private void PerformSearch(string searchText)
         {
@@ -687,99 +509,6 @@ namespace FASCloset.Forms
             {
                 MessageBox.Show($"Error performing search: {ex.Message}", ErrorLiteral, 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void SaveProduct()
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(TxtProductName.Text))
-                {
-                    MessageBox.Show("Product Name is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                if (!decimal.TryParse(TxtPrice.Text, out decimal price) || price <= 0)
-                {
-                    MessageBox.Show("Please enter a valid price greater than 0.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                if (!int.TryParse(TxtStock.Text, out int stock) || stock < 0)
-                {
-                    MessageBox.Show("Please enter a valid stock quantity (0 or more).", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                Product product = new Product
-                {
-                    ProductName = TxtProductName.Text,
-                    CategoryID = CmbCategory.SelectedItem is Category cat ? cat.CategoryID : 0,
-                    Price = decimal.Parse(TxtPrice.Text),
-                    Stock = int.Parse(TxtStock.Text),
-                    Description = TxtDescription.Text,
-                    IsActive = ChkIsActive.Checked
-                };
-
-                // Set manufacturer if selected
-                if (CmbManufacturer.SelectedItem != null && CmbManufacturer.SelectedIndex > 0)
-                {
-                    product.ManufacturerID = ((Manufacturer)CmbManufacturer.SelectedItem).ManufacturerID;
-                }
-
-                int? productIdToSelect = null;
-
-                if (currentMode == Mode.Add)
-                {
-                    // Add new product
-                    ProductManager.AddProduct(product);
-                    MessageBox.Show("Product added successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    
-                    // We'll need to search for the product after reloading
-                    productIdToSelect = null; // Will select by name later
-                }
-                else if (currentMode == Mode.Edit)
-                {
-                    if (selectedProduct != null)
-                    {
-                        // Update existing product
-                        product.ProductID = selectedProduct.ProductID;
-                        ProductManager.UpdateProduct(product);
-                        productIdToSelect = selectedProduct.ProductID;
-                        MessageBox.Show("Product updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                }
-                
-                // Store name for finding the product after reload
-                string addedProductName = product.ProductName;
-                
-                // Clear the UI and return to view mode
-                HideAddEditPanel();
-                currentMode = Mode.View;
-                
-                // Important: Reload products to refresh the UI
-                LoadProducts();
-                
-                // Explicitly refresh the binding source and grid
-                productsBindingSource.ResetBindings(false);
-                ProductDisplay.Refresh();
-                
-                // Try to find and select the product we just added/edited
-                if (productIdToSelect.HasValue)
-                {
-                    // We know the ID, so select by ID
-                    SelectProductInGrid(productIdToSelect.Value);
-                }
-                else
-                {
-                    // Try to find by name (for newly added products)
-                    SelectProductInGridByName(addedProductName);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error saving product: {ex.Message}", ErrorLiteral, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -814,145 +543,57 @@ namespace FASCloset.Forms
             }
         }
 
-        private void btnAddCategory_Click(object sender, EventArgs e)
+        #endregion
+
+        #region Validation Event Handlers
+
+        private void TxtProductName_Validating(object? sender, CancelEventArgs e)
         {
-            // Show an input dialog for new category name
-            using (var form = new Form())
+            // Add validation logic for product name if needed
+        }
+
+        private void CmbCategory_Validating(object? sender, CancelEventArgs e)
+        {
+            // Add validation logic for category selection if needed
+        }
+
+        private void TxtPrice_KeyPress(object? sender, KeyPressEventArgs e)
+        {
+            // Allow only digits, control chars, and one decimal separator
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != '.')
             {
-                form.Text = "Add Category";
-                form.Size = new Size(300, 150);
-                form.StartPosition = FormStartPosition.CenterParent;
-                form.FormBorderStyle = FormBorderStyle.FixedDialog;
-                form.MaximizeBox = false;
-                form.MinimizeBox = false;
-                
-                var label = new Label() { Left = 20, Top = 20, Text = "Category Name:" };
-                var textBox = new TextBox() { Left = 120, Top = 20, Width = 150 };
-                var buttonOk = new Button() { Text = "OK", Left = 120, Top = 70, Width = 75, DialogResult = DialogResult.OK };
-                var buttonCancel = new Button() { Text = "Cancel", Left = 195, Top = 70, Width = 75, DialogResult = DialogResult.Cancel };
-                
-                form.Controls.Add(label);
-                form.Controls.Add(textBox);
-                form.Controls.Add(buttonOk);
-                form.Controls.Add(buttonCancel);
-                form.AcceptButton = buttonOk;
-                form.CancelButton = buttonCancel;
-                
-                var result = form.ShowDialog();
-                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(textBox.Text))
-                {
-                    try
-                    {
-                        // Check if category already exists
-                        var categories = ProductManager.GetCategories();
-                        if (categories.Any(c => c.CategoryName.Equals(textBox.Text.Trim(), StringComparison.OrdinalIgnoreCase)))
-                        {
-                            MessageBox.Show("This category already exists.", "Duplicate Category", 
-                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            return;
-                        }
-                        
-                        // Add the new category
-                        var category = new Category
-                        {
-                            CategoryName = textBox.Text.Trim(),
-                            Description = "",
-                            IsActive = true,
-                            CreatedDate = DateTime.Now
-                        };
-                        
-                        ProductManager.AddCategory(category);
-                        LoadCategories();
-                        MessageBox.Show("Category added successfully.", "Success", 
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error adding category: {ex.Message}", ErrorLiteral, 
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
+                e.Handled = true;
+            }
+            // Only allow one decimal point
+            TextBox? tb = sender as TextBox;
+            if (e.KeyChar == '.' && tb != null && tb.Text.Contains('.'))
+            {
+                e.Handled = true;
             }
         }
 
-        private void btnAddManufacturer_Click(object sender, EventArgs e)
+        private void TxtPrice_Validating(object? sender, CancelEventArgs e)
         {
-            // Show an input dialog for new manufacturer name
-            using (var form = new Form())
+            // Add validation logic for price if needed
+        }
+
+        private void TxtStock_KeyPress(object? sender, KeyPressEventArgs e)
+        {
+            // Allow only digits and control chars
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
             {
-                form.Text = "Add Manufacturer";
-                form.Size = new Size(300, 150);
-                form.StartPosition = FormStartPosition.CenterParent;
-                form.FormBorderStyle = FormBorderStyle.FixedDialog;
-                form.MaximizeBox = false;
-                form.MinimizeBox = false;
-                
-                var label = new Label() { Left = 20, Top = 20, Text = "Manufacturer Name:" };
-                var textBox = new TextBox() { Left = 120, Top = 20, Width = 150 };
-                var buttonOk = new Button() { Text = "OK", Left = 120, Top = 70, Width = 75, DialogResult = DialogResult.OK };
-                var buttonCancel = new Button() { Text = "Cancel", Left = 195, Top = 70, Width = 75, DialogResult = DialogResult.Cancel };
-                
-                form.Controls.Add(label);
-                form.Controls.Add(textBox);
-                form.Controls.Add(buttonOk);
-                form.Controls.Add(buttonCancel);
-                form.AcceptButton = buttonOk;
-                form.CancelButton = buttonCancel;
-                
-                var result = form.ShowDialog();
-                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(textBox.Text))
-                {
-                    try
-                    {
-                        // Check if manufacturer already exists
-                        var manufacturers = ProductManager.GetManufacturers();
-                        if (manufacturers.Any(m => m.ManufacturerName.Equals(textBox.Text.Trim(), StringComparison.OrdinalIgnoreCase)))
-                        {
-                            MessageBox.Show("This manufacturer already exists.", "Duplicate Manufacturer", 
-                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            return;
-                        }
-                        
-                        // Add the new manufacturer
-                        var manufacturer = new Manufacturer
-                        {
-                            ManufacturerName = textBox.Text.Trim(),
-                            Description = ""
-                        };
-                        
-                        ProductManager.AddManufacturer(manufacturer);
-                        LoadManufacturers();
-                        MessageBox.Show("Manufacturer added successfully.", "Success", 
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error adding manufacturer: {ex.Message}", ErrorLiteral, 
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
+                e.Handled = true;
             }
         }
 
-        private void LoadLowStockProducts()
+        private void TxtStock_Validating(object? sender, CancelEventArgs e)
         {
-            try
-            {
-                var lowStockProducts = InventoryManager.GetLowStockProducts();
+            // Add validation logic for stock if needed
+        }
 
-                var filteredProducts = lowStockProducts
-                    .Where(p => showInactiveProducts || p.IsActive)
-                    .ToList();
-
-                // Gán vào data grid hoặc binding source
-                //lowStockGridView.DataSource = new BindingSource { DataSource = filteredProducts };
-
-                Console.WriteLine($"Loaded {filteredProducts.Count} low stock products");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading low stock products: {ex.Message}", ErrorLiteral, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+        private void TxtDescription_Validating(object? sender, CancelEventArgs e)
+        {
+            // Add validation logic for description if needed
         }
 
         #endregion

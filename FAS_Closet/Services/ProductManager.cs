@@ -250,6 +250,51 @@ namespace FASCloset.Services
             DataAccessHelper.ExecuteNonQuery(query, parameters);
         }
 
+        // Update a category 
+        public static void UpdateCategory(Category category)
+        {
+            string query = "UPDATE Category SET CategoryName = @CategoryName, Description = @Description, IsActive = @IsActive WHERE CategoryID = @CategoryID";
+            var parameters = new Dictionary<string, object>
+            {
+                { "@CategoryID", category.CategoryID },
+                { "@CategoryName", category.CategoryName },
+                { "@Description", category.Description ?? (object)DBNull.Value },
+                { "@IsActive", category.IsActive }
+            };
+            DataAccessHelper.ExecuteNonQuery(query, parameters);
+        }
+
+        // Update a manufacturer
+        public static void UpdateManufacturer(Manufacturer manufacturer)
+        {
+            string query = "UPDATE Manufacturer SET ManufacturerName = @ManufacturerName, Description = @Description WHERE ManufacturerID = @ManufacturerID";
+            var parameters = new Dictionary<string, object>
+            {
+                { "@ManufacturerID", manufacturer.ManufacturerID },
+                { "@ManufacturerName", manufacturer.ManufacturerName },
+                { "@Description", manufacturer.Description ?? (object)DBNull.Value }
+            };
+            DataAccessHelper.ExecuteNonQuery(query, parameters);
+        }
+
+        // Check if category name is already in use
+        public static bool IsCategoryNameTaken(string categoryName)
+        {
+            string query = "SELECT COUNT(*) FROM Category WHERE CategoryName = @CategoryName";
+            var parameters = new Dictionary<string, object> { { "@CategoryName", categoryName } };
+            int count = DataAccessHelper.ExecuteScalar<int>(query, parameters);
+            return count > 0;
+        }
+
+        // Check if manufacturer name is already in use
+        public static bool IsManufacturerNameTaken(string manufacturerName)
+        {
+            string query = "SELECT COUNT(*) FROM Manufacturer WHERE ManufacturerName = @ManufacturerName";
+            var parameters = new Dictionary<string, object> { { "@ManufacturerName", manufacturerName } };
+            int count = DataAccessHelper.ExecuteScalar<int>(query, parameters);
+            return count > 0;
+        }
+
         // Search products by name or description
         public static List<Product> SearchProducts(string searchText, bool includeInactive = false)
         {
@@ -275,9 +320,7 @@ namespace FASCloset.Services
             return DataAccessHelper.ExecuteReader(query, reader => MapProductWithDetails(reader), parameters);
         }
 
-        /// <summary>
-        /// Get all products with warehouse-specific stock information
-        /// </summary>
+        // Get all products with warehouse-specific stock information
         public static List<Product> GetProductsForWarehouse(int warehouseId, bool includeInactive = false)
         {
             // Define SQL parameter name constants
@@ -433,6 +476,5 @@ namespace FASCloset.Services
                 ManufacturerName = reader.IsDBNull(reader.GetOrdinal("ManufacturerName")) ? string.Empty : reader.GetString(reader.GetOrdinal("ManufacturerName")),
             }, parameters);
         }
-
     }
 }

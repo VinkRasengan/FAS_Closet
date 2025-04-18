@@ -109,6 +109,14 @@ namespace FASCloset.Data
                     Subject TEXT NOT NULL,
                     Message TEXT NOT NULL,
                     Timestamp DATETIME NOT NULL
+                );",
+                
+                @"CREATE TABLE IF NOT EXISTS Inventory (
+                    InventoryID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ProductID INTEGER NOT NULL,
+                    StockQuantity INTEGER NOT NULL,
+                    MinimumStockThreshold INTEGER NOT NULL,
+                    FOREIGN KEY (ProductID) REFERENCES Product(ProductID) ON DELETE CASCADE
                 );"
             };
             
@@ -234,8 +242,8 @@ namespace FASCloset.Data
         
         private static void CreateDemoProducts(SqliteConnection connection)
         {
-            string[] insertCommands = {
-                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Blue Button-Up Shirt', 1, 1, 29.99, 50, 'Classic blue button-up shirt for all occasions')",
+            string[] insertProductCommands = {
+                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Description) VALUES ('Blue Button-Up Shirt', 1, 1, 29.99, 'Classic blue button-up shirt for all occasions')",
                 "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Black Slim Pants', 2, 2, 39.99, 30, 'Stylish slim-fit pants in black')",
                 "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Summer Floral Dress', 3, 3, 49.99, 25, 'Beautiful floral pattern dress for summer')",
                 "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Winter Jacket', 4, 4, 89.99, 20, 'Warm winter jacket with hood')",
@@ -246,8 +254,21 @@ namespace FASCloset.Data
                 "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Wool Scarf', 5, 3, 34.99, 30, 'Soft wool scarf for winter')",
                 "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Denim Jacket', 4, 2, 69.99, 25, 'Classic denim jacket')"
             };
-            
-            ExecuteCommands(connection, insertCommands);
+            ExecuteCommands(connection, insertProductCommands);
+
+            string[] insertInventoryCommands = {
+                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (1, 50, 5)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (2, 30, 5)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (3, 25, 5)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (4, 20, 5)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (5, 40, 5)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (6, 35, 5)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (7, 45, 5)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (8, 15, 5)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (9, 30, 5)",
+                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (10, 25, 5)"
+            };
+            ExecuteCommands(connection, insertInventoryCommands);
         }
         
         private static void CreateDemoCustomers(SqliteConnection connection)
