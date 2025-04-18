@@ -19,7 +19,7 @@ namespace FASCloset.Forms
             
             // Date range selection
             Label lblDateRange = new Label();
-            lblDateRange.Text = "Select Date Range:";
+            lblDateRange.Text = "Chọn khoảng thời gian:";
             lblDateRange.Location = new Point(20, 20);
             lblDateRange.Size = new Size(120, 25);
             lblDateRange.TextAlign = ContentAlignment.MiddleLeft;
@@ -30,7 +30,7 @@ namespace FASCloset.Forms
             DateTimePickerStartDate.Format = DateTimePickerFormat.Short;
             
             Label lblTo = new Label();
-            lblTo.Text = "to";
+            lblTo.Text = "đến";
             lblTo.Location = new Point(310, 20);
             lblTo.Size = new Size(30, 25);
             lblTo.TextAlign = ContentAlignment.MiddleCenter;
@@ -42,20 +42,20 @@ namespace FASCloset.Forms
             
             // Report type selection
             Label lblReportType = new Label();
-            lblReportType.Text = "Report Type:";
+            lblReportType.Text = "Loại báo cáo:";
             lblReportType.Location = new Point(20, 60);
             lblReportType.Size = new Size(120, 25);
             lblReportType.TextAlign = ContentAlignment.MiddleLeft;
             
-            ComboBox cmbReportType = new ComboBox();
+            cmbReportType = new ComboBox();
             cmbReportType.Location = new Point(150, 60);
             cmbReportType.Size = new Size(200, 25);
             cmbReportType.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbReportType.Items.AddRange(new object[] { "Sales Summary", "Product Sales", "Customer Orders" });
+            cmbReportType.Items.AddRange(new object[] { "Tổng quan doanh số", "Báo cáo bán hàng theo sản phẩm", "Báo cáo bán hàng theo khách hàng" });
             cmbReportType.SelectedIndex = 0;
             
             // Action buttons
-            Button btnExport = new Button();
+            btnExport = new Button();
             btnExport.FlatStyle = FlatStyle.Flat;
             btnExport.BackColor = Color.FromArgb(0, 123, 255);
             btnExport.ForeColor = Color.White;
@@ -66,7 +66,7 @@ namespace FASCloset.Forms
             btnExport.Location = new Point(20, 100);
             btnExport.Size = new Size(150, 30);
             
-            Button btnRefresh = new Button();
+            btnRefresh = new Button();
             btnRefresh.FlatStyle = FlatStyle.Flat;
             btnRefresh.BackColor = Color.FromArgb(108, 117, 125);
             btnRefresh.ForeColor = Color.White;
@@ -92,37 +92,37 @@ namespace FASCloset.Forms
             summaryPanel.BorderStyle = BorderStyle.FixedSingle;
             
             Label lblTotalRevenueTitle = new Label();
-            lblTotalRevenueTitle.Text = "Total Revenue:";
+            lblTotalRevenueTitle.Text = "Tổng doanh thu:";
             lblTotalRevenueTitle.Location = new Point(20, 10);
             lblTotalRevenueTitle.Size = new Size(100, 20);
             lblTotalRevenueTitle.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             
-            Label lblTotalRevenue = new Label();
-            lblTotalRevenue.Text = "$0.00";
+            lblTotalRevenue = new Label();
+            lblTotalRevenue.Text = "0 đ";
             lblTotalRevenue.Location = new Point(20, 30);
             lblTotalRevenue.Size = new Size(150, 20);
             lblTotalRevenue.Font = new Font("Segoe UI", 10);
             
             Label lblOrderCountTitle = new Label();
-            lblOrderCountTitle.Text = "Order Count:";
+            lblOrderCountTitle.Text = "Số đơn hàng:";
             lblOrderCountTitle.Location = new Point(200, 10);
             lblOrderCountTitle.Size = new Size(100, 20);
             lblOrderCountTitle.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             
-            Label lblOrderCount = new Label();
+            lblOrderCount = new Label();
             lblOrderCount.Text = "0";
             lblOrderCount.Location = new Point(200, 30);
             lblOrderCount.Size = new Size(150, 20);
             lblOrderCount.Font = new Font("Segoe UI", 10);
             
             Label lblAverageOrderTitle = new Label();
-            lblAverageOrderTitle.Text = "Average Order:";
+            lblAverageOrderTitle.Text = "Trung bình đơn:";
             lblAverageOrderTitle.Location = new Point(380, 10);
             lblAverageOrderTitle.Size = new Size(100, 20);
             lblAverageOrderTitle.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             
-            Label lblAverageOrder = new Label();
-            lblAverageOrder.Text = "$0.00";
+            lblAverageOrder = new Label();
+            lblAverageOrder.Text = "0 đ";
             lblAverageOrder.Location = new Point(380, 30);
             lblAverageOrder.Size = new Size(150, 20);
             lblAverageOrder.Font = new Font("Segoe UI", 10);
@@ -154,21 +154,17 @@ namespace FASCloset.Forms
             this.Controls.Add(ProgressBarReport);
             this.Controls.Add(summaryPanel);
             this.Controls.Add(DataGridViewReport);
-            
-            // Store references to controls needed in code-behind
-            this.cmbReportType = cmbReportType;
-            this.lblTotalRevenue = lblTotalRevenue;
-            this.lblOrderCount = lblOrderCount;
-            this.lblAverageOrder = lblAverageOrder;
         }
 
         public DateTimePicker DateTimePickerStartDate;
         public DateTimePicker DateTimePickerEndDate;
         public DataGridView DataGridViewReport;
         public ProgressBar ProgressBarReport;
-        private ComboBox cmbReportType;
-        private Label lblTotalRevenue;
-        private Label lblOrderCount;
-        private Label lblAverageOrder;
+        public ComboBox cmbReportType;
+        public Label lblTotalRevenue;
+        public Label lblOrderCount;
+        public Label lblAverageOrder;
+        public Button btnExport;
+        public Button btnRefresh;
     }
 }

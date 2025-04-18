@@ -11,6 +11,11 @@ namespace FASCloset.Services
 {
     public static class OrderDetailManager
     {
+        private static string GetConnectionString()
+        {
+            return DatabaseConnection.GetConnectionString();
+        }
+        
         /// <summary>
         /// Adds a new order detail
         /// </summary>
@@ -18,30 +23,36 @@ namespace FASCloset.Services
         /// <returns>The ID of the newly added order detail</returns>
         public static int AddOrderDetail(OrderDetail orderDetail)
         {
-            try
+            string query = @"
+                INSERT INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice)
+                VALUES (@OrderID, @ProductID, @Quantity, @UnitPrice);
+                SELECT last_insert_rowid();
+            ";
+            
+            var parameters = new Dictionary<string, object>
             {
-                string query = @"
-                    INSERT INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice)
-                    VALUES (@OrderID, @ProductID, @Quantity, @UnitPrice);
-                    SELECT last_insert_rowid();";
-                    
-                var parameters = new Dictionary<string, object>
-                {
-                    { "@OrderID", orderDetail.OrderID },
-                    { "@ProductID", orderDetail.ProductID },
-                    { "@Quantity", orderDetail.Quantity },
-                    { "@UnitPrice", orderDetail.UnitPrice }
-                };
-                
-                int orderDetailId = DataAccessHelper.ExecuteScalar<int>(query, parameters);
-                orderDetail.OrderDetailID = orderDetailId;
-                return orderDetailId;
-            }
-            catch (Exception ex)
+                { "@OrderID", orderDetail.OrderID },
+                { "@ProductID", orderDetail.ProductID },
+                { "@Quantity", orderDetail.Quantity },
+                { "@UnitPrice", orderDetail.UnitPrice }
+            };
+            
+            int orderDetailId = DataAccessHelper.ExecuteScalar<int>(query, parameters);
+            
+            // Update the Product stock quantity
+            string updateProductQuery = @"
+                UPDATE Product 
+                SET Stock = Stock - @Quantity 
+                WHERE ProductID = @ProductID AND Stock >= @Quantity
+            ";
+            
+            int rowsAffected = DataAccessHelper.ExecuteNonQuery(updateProductQuery, parameters);
+            if (rowsAffected == 0)
             {
-                Console.WriteLine($"Error adding order detail: {ex.Message}");
-                throw new InvalidOperationException("Database error occurred while adding order detail.", ex);
+                throw new InvalidOperationException($"Not enough stock for product ID {orderDetail.ProductID}");
             }
+            
+            return orderDetailId;
         }
 
         /// <summary>
@@ -50,32 +61,56 @@ namespace FASCloset.Services
         /// <param name="orderDetail">The order detail to update</param>
         public static void UpdateOrderDetail(OrderDetail orderDetail)
         {
-            try
+            // First get the existing order detail to calculate stock adjustment
+            OrderDetail existingDetail = GetOrderDetailById(orderDetail.OrderDetailID);
+            int stockDifference = orderDetail.Quantity - existingDetail.Quantity;
+            
+            // Start a transaction to ensure consistency
+            DatabaseConnection.ExecuteWithTransaction((connection, transaction) =>
             {
-                string query = @"
+                // Update the order detail
+                string updateDetailQuery = @"
                     UPDATE OrderDetails 
-                    SET OrderID = @OrderID, 
-                        ProductID = @ProductID, 
-                        Quantity = @Quantity, 
-                        UnitPrice = @UnitPrice 
-                    WHERE OrderDetailID = @OrderDetailID";
-                    
-                var parameters = new Dictionary<string, object>
-                {
-                    { "@OrderDetailID", orderDetail.OrderDetailID },
-                    { "@OrderID", orderDetail.OrderID },
-                    { "@ProductID", orderDetail.ProductID },
-                    { "@Quantity", orderDetail.Quantity },
-                    { "@UnitPrice", orderDetail.UnitPrice }
-                };
+                    SET OrderID = @OrderID,
+                        ProductID = @ProductID,
+                        Quantity = @Quantity,
+                        UnitPrice = @UnitPrice
+                    WHERE OrderDetailID = @OrderDetailID
+                ";
                 
-                DataAccessHelper.ExecuteNonQuery(query, parameters);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error updating order detail: {ex.Message}");
-                throw new InvalidOperationException("Database error occurred while updating order detail.", ex);
-            }
+                using (var updateCmd = new SqliteCommand(updateDetailQuery, connection, transaction))
+                {
+                    updateCmd.Parameters.AddWithValue("@OrderDetailID", orderDetail.OrderDetailID);
+                    updateCmd.Parameters.AddWithValue("@OrderID", orderDetail.OrderID);
+                    updateCmd.Parameters.AddWithValue("@ProductID", orderDetail.ProductID);
+                    updateCmd.Parameters.AddWithValue("@Quantity", orderDetail.Quantity);
+                    updateCmd.Parameters.AddWithValue("@UnitPrice", orderDetail.UnitPrice);
+                    
+                    updateCmd.ExecuteNonQuery();
+                }
+                
+                // Only update stock if there's a change in quantity
+                if (stockDifference != 0)
+                {
+                    string updateStockQuery = @"
+                        UPDATE Product 
+                        SET Stock = Stock - @StockDifference 
+                        WHERE ProductID = @ProductID AND (Stock >= @StockDifference OR @StockDifference < 0)
+                    ";
+                    
+                    using (var stockCmd = new SqliteCommand(updateStockQuery, connection, transaction))
+                    {
+                        stockCmd.Parameters.AddWithValue("@ProductID", orderDetail.ProductID);
+                        stockCmd.Parameters.AddWithValue("@StockDifference", stockDifference);
+                        
+                        int rowsAffected = stockCmd.ExecuteNonQuery();
+                        if (rowsAffected == 0 && stockDifference > 0)
+                        {
+                            throw new InvalidOperationException($"Not enough stock for product ID {orderDetail.ProductID}");
+                        }
+                    }
+                }
+            });
         }
 
         /// <summary>
@@ -84,22 +119,40 @@ namespace FASCloset.Services
         /// <param name="orderDetailId">The ID of the order detail to delete</param>
         public static void DeleteOrderDetail(int orderDetailId)
         {
-            try
+            // First get the existing order detail to restore stock
+            OrderDetail existingDetail = GetOrderDetailById(orderDetailId);
+            
+            // Start a transaction to ensure consistency
+            DatabaseConnection.ExecuteWithTransaction((connection, transaction) =>
             {
-                string query = "DELETE FROM OrderDetails WHERE OrderDetailID = @OrderDetailID";
+                // Restore product stock
+                string updateStockQuery = @"
+                    UPDATE Product 
+                    SET Stock = Stock + @Quantity 
+                    WHERE ProductID = @ProductID
+                ";
                 
-                var parameters = new Dictionary<string, object>
+                using (var stockCmd = new SqliteCommand(updateStockQuery, connection, transaction))
                 {
-                    { "@OrderDetailID", orderDetailId }
-                };
+                    stockCmd.Parameters.AddWithValue("@ProductID", existingDetail.ProductID);
+                    stockCmd.Parameters.AddWithValue("@Quantity", existingDetail.Quantity);
+                    
+                    stockCmd.ExecuteNonQuery();
+                }
                 
-                DataAccessHelper.ExecuteNonQuery(query, parameters);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error deleting order detail: {ex.Message}");
-                throw new InvalidOperationException("Database error occurred while deleting order detail.", ex);
-            }
+                // Delete the order detail
+                string deleteQuery = @"
+                    DELETE FROM OrderDetails 
+                    WHERE OrderDetailID = @OrderDetailID
+                ";
+                
+                using (var deleteCmd = new SqliteCommand(deleteQuery, connection, transaction))
+                {
+                    deleteCmd.Parameters.AddWithValue("@OrderDetailID", orderDetailId);
+                    
+                    deleteCmd.ExecuteNonQuery();
+                }
+            });
         }
 
         /// <summary>
@@ -109,32 +162,28 @@ namespace FASCloset.Services
         /// <returns>The order detail or null if not found</returns>
         public static OrderDetail GetOrderDetailById(int orderDetailId)
         {
-            try
+            string query = @"
+                SELECT od.OrderDetailID, od.OrderID, od.ProductID, od.Quantity, od.UnitPrice,
+                       p.ProductName
+                FROM OrderDetails od
+                JOIN Product p ON od.ProductID = p.ProductID
+                WHERE od.OrderDetailID = @OrderDetailID
+            ";
+            
+            var parameters = new Dictionary<string, object>
             {
-                string query = @"
-                    SELECT OrderDetailID, OrderID, ProductID, Quantity, UnitPrice 
-                    FROM OrderDetails 
-                    WHERE OrderDetailID = @OrderDetailID";
-                    
-                var parameters = new Dictionary<string, object>
-                {
-                    { "@OrderDetailID", orderDetailId }
-                };
-                
-                return DataAccessHelper.ExecuteReaderSingle(query, reader => new OrderDetail
-                {
-                    OrderDetailID = reader.GetInt32(0),
-                    OrderID = reader.GetInt32(1),
-                    ProductID = reader.GetInt32(2),
-                    Quantity = reader.GetInt32(3),
-                    UnitPrice = reader.GetDecimal(4)
-                }, parameters);
-            }
-            catch (Exception ex)
+                { "@OrderDetailID", orderDetailId }
+            };
+            
+            return DataAccessHelper.ExecuteReaderSingle(query, reader => new OrderDetail
             {
-                Console.WriteLine($"Error getting order detail: {ex.Message}");
-                throw new InvalidOperationException("Database error occurred while retrieving order detail.", ex);
-            }
+                OrderDetailID = Convert.ToInt32(reader["OrderDetailID"]),
+                OrderID = Convert.ToInt32(reader["OrderID"]),
+                ProductID = Convert.ToInt32(reader["ProductID"]),
+                Quantity = Convert.ToInt32(reader["Quantity"]),
+                UnitPrice = Convert.ToDecimal(reader["UnitPrice"]),
+                ProductName = reader["ProductName"].ToString()
+            }, parameters);
         }
         
         /// <summary>
@@ -145,8 +194,28 @@ namespace FASCloset.Services
         /// <returns>A list of order details</returns>
         public static List<OrderDetail> GetOrderDetails(int orderId)
         {
-            // This method now delegates to OrderManager to maintain a single source of truth
-            return OrderManager.GetOrderDetails(orderId);
+            string query = @"
+                SELECT od.OrderDetailID, od.OrderID, od.ProductID, od.Quantity, od.UnitPrice,
+                       p.ProductName
+                FROM OrderDetails od
+                JOIN Product p ON od.ProductID = p.ProductID
+                WHERE od.OrderID = @OrderID
+            ";
+            
+            var parameters = new Dictionary<string, object>
+            {
+                { "@OrderID", orderId }
+            };
+            
+            return DataAccessHelper.ExecuteReader(query, reader => new OrderDetail
+            {
+                OrderDetailID = Convert.ToInt32(reader["OrderDetailID"]),
+                OrderID = Convert.ToInt32(reader["OrderID"]),
+                ProductID = Convert.ToInt32(reader["ProductID"]),
+                Quantity = Convert.ToInt32(reader["Quantity"]),
+                UnitPrice = Convert.ToDecimal(reader["UnitPrice"]),
+                ProductName = reader["ProductName"].ToString()
+            }, parameters);
         }
     }
 }
