@@ -218,10 +218,8 @@ namespace FASCloset.Forms
             if (ucRevenueReport == null)
             {
                 ucRevenueReport = new UcRevenueReport();
-                ucRevenueReport.DateTimePickerStartDate = new DateTimePicker();
-                ucRevenueReport.DateTimePickerEndDate = new DateTimePicker();
-                ucRevenueReport.DataGridViewReport = new DataGridView();
-                ucRevenueReport.ProgressBarReport = new ProgressBar();
+                // Gỡ bỏ việc tạo lại các control vì đã được khởi tạo trong InitializeComponent
+                // của UC_RevenueReport.Designer.cs
             }
 
             LoadUserControl(ucRevenueReport);

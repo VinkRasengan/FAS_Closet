@@ -312,9 +312,18 @@ namespace FASCloset.Forms
                 return;
             }
             
+            // Cập nhật DataSource với dữ liệu thực từ báo cáo
+            DataGridViewReport.DataSource = null; // Clear trước để tránh lỗi khi thay đổi cấu trúc DataTable
             DataGridViewReport.DataSource = reportData;
+            
+            // Áp dụng định dạng và tính tổng
             FormatDataGridView();
             UpdateSummary(reportData);
+            
+            // Cập nhật trạng thái để hiển thị rằng đây là dữ liệu thực
+            lblReportStatus.Text = $"✅ Đang hiển thị dữ liệu thực từ {DateTimePickerStartDate.Value:dd/MM/yyyy} đến {DateTimePickerEndDate.Value:dd/MM/yyyy}";
+            lblReportStatus.ForeColor = Color.FromArgb(40, 167, 69); // Màu xanh lá
+            lblReportStatus.Visible = true;
         }
         
         private void FormatDataGridView()
@@ -622,76 +631,95 @@ namespace FASCloset.Forms
         // Hiển thị dữ liệu mẫu để bảng luôn xuất hiện ngay cả khi không có dữ liệu thực
         private void ShowSampleData()
         {
-            // Đảm bảo DataGridView được hiển thị
-            DataGridViewReport.Visible = true;
-            
-            // Xóa dữ liệu nguồn hiện tại (nếu có)
-            DataGridViewReport.DataSource = null;
-            
-            // Tạo cấu trúc cột và định dạng
-            SetupDefaultColumns();
-            
-            // Tạo dữ liệu mẫu dựa trên loại báo cáo được chọn
-            DataTable sampleData = new DataTable();
-            
-            switch (cmbReportType.SelectedIndex)
+            try
             {
-                case 1: // Báo cáo theo sản phẩm
-                    // Thêm cột vào DataTable
-                    sampleData.Columns.Add("Mã sản phẩm", typeof(string));
-                    sampleData.Columns.Add("Tên sản phẩm", typeof(string));
-                    sampleData.Columns.Add("Số lượng", typeof(int));
-                    sampleData.Columns.Add("Doanh thu", typeof(decimal));
-                    sampleData.Columns.Add("Lợi nhuận", typeof(decimal));
-                    
-                    // Thêm dữ liệu mẫu
-                    sampleData.Rows.Add("SP001", "Áo thun nam basic", 15, 1500000, 500000);
-                    sampleData.Rows.Add("SP002", "Quần jeans nữ", 8, 2400000, 800000);
-                    sampleData.Rows.Add("SP003", "Váy đầm dự tiệc", 5, 3250000, 1200000);
-                    sampleData.Rows.Add("SP004", "Áo khoác denim", 7, 2100000, 700000);
-                    break;
-                    
-                case 2: // Báo cáo theo khách hàng
-                    sampleData.Columns.Add("Mã khách hàng", typeof(string));
-                    sampleData.Columns.Add("Tên khách hàng", typeof(string));
-                    sampleData.Columns.Add("Số đơn hàng", typeof(int));
-                    sampleData.Columns.Add("Tổng chi tiêu", typeof(decimal));
-                    
-                    // Thêm dữ liệu mẫu
-                    sampleData.Rows.Add("KH001", "Nguyễn Văn An", 3, 2500000);
-                    sampleData.Rows.Add("KH002", "Trần Thị Bình", 5, 4300000);
-                    sampleData.Rows.Add("KH003", "Lê Hoàng Cường", 2, 1800000);
-                    sampleData.Rows.Add("KH004", "Phạm Minh Dương", 4, 3600000);
-                    break;
-                    
-                default: // Báo cáo tổng quan
-                    sampleData.Columns.Add("Ngày", typeof(DateTime));
-                    sampleData.Columns.Add("Mã đơn hàng", typeof(string));
-                    sampleData.Columns.Add("Khách hàng", typeof(string));
-                    sampleData.Columns.Add("Tổng tiền", typeof(decimal));
-                    sampleData.Columns.Add("Thanh toán", typeof(string));
-                    
-                    // Thêm dữ liệu mẫu
-                    sampleData.Rows.Add(DateTime.Now.AddDays(-1), "DH001", "Nguyễn Văn An", 850000, "Tiền mặt");
-                    sampleData.Rows.Add(DateTime.Now.AddDays(-2), "DH002", "Trần Thị Bình", 1200000, "Chuyển khoản");
-                    sampleData.Rows.Add(DateTime.Now.AddDays(-3), "DH003", "Lê Hoàng Cường", 650000, "Tiền mặt");
-                    sampleData.Rows.Add(DateTime.Now.AddDays(-4), "DH004", "Phạm Minh Dương", 950000, "Momo");
-                    break;
+                // Xóa dữ liệu nguồn hiện tại (nếu có)
+                DataGridViewReport.DataSource = null;
+                DataGridViewReport.Rows.Clear();
+                DataGridViewReport.Columns.Clear();
+                
+                // Đảm bảo DataGridView được hiển thị
+                DataGridViewReport.Visible = true;
+                DataGridViewReport.BringToFront();
+                
+                // Tạo dữ liệu mẫu dựa trên loại báo cáo được chọn
+                DataTable sampleData = new DataTable();
+                
+                switch (cmbReportType.SelectedIndex)
+                {
+                    case 1: // Báo cáo theo sản phẩm
+                        // Thêm cột vào DataTable
+                        sampleData.Columns.Add("Mã SP", typeof(string));
+                        sampleData.Columns.Add("Tên sản phẩm", typeof(string));
+                        sampleData.Columns.Add("Danh mục", typeof(string));
+                        sampleData.Columns.Add("Số lượng bán", typeof(int));
+                        sampleData.Columns.Add("Số đơn hàng", typeof(int));
+                        sampleData.Columns.Add("Doanh thu", typeof(decimal));
+                        
+                        // Thêm dữ liệu mẫu
+                        sampleData.Rows.Add("SP001", "Áo thun nam basic", "Áo", 15, 10, 1500000);
+                        sampleData.Rows.Add("SP002", "Quần jeans nữ", "Quần", 8, 7, 2400000);
+                        sampleData.Rows.Add("SP003", "Váy đầm dự tiệc", "Váy", 5, 5, 3250000);
+                        sampleData.Rows.Add("SP004", "Áo khoác denim", "Áo", 7, 6, 2100000);
+                        break;
+                        
+                    case 2: // Báo cáo theo khách hàng
+                        sampleData.Columns.Add("Mã KH", typeof(string));
+                        sampleData.Columns.Add("Tên khách hàng", typeof(string));
+                        sampleData.Columns.Add("Email", typeof(string));
+                        sampleData.Columns.Add("Điện thoại", typeof(string));
+                        sampleData.Columns.Add("Tổng chi tiêu", typeof(decimal));
+                        
+                        // Thêm dữ liệu mẫu
+                        sampleData.Rows.Add("KH001", "Nguyễn Văn An", "an@example.com", "0901234567", 2500000);
+                        sampleData.Rows.Add("KH002", "Trần Thị Bình", "binh@example.com", "0912345678", 4300000);
+                        sampleData.Rows.Add("KH003", "Lê Hoàng Cường", "cuong@example.com", "0923456789", 1800000);
+                        sampleData.Rows.Add("KH004", "Phạm Minh Dương", "duong@example.com", "0934567890", 3600000);
+                        break;
+                        
+                    default: // Báo cáo tổng quan
+                        sampleData.Columns.Add("Ngày", typeof(DateTime));
+                        sampleData.Columns.Add("Mã đơn hàng", typeof(string));
+                        sampleData.Columns.Add("Khách hàng", typeof(string));
+                        sampleData.Columns.Add("Tổng tiền", typeof(decimal));
+                        sampleData.Columns.Add("Thanh toán", typeof(string));
+                        
+                        // Thêm dữ liệu mẫu
+                        sampleData.Rows.Add(DateTime.Now.AddDays(-1), "DH001", "Nguyễn Văn An", 850000, "Tiền mặt");
+                        sampleData.Rows.Add(DateTime.Now.AddDays(-2), "DH002", "Trần Thị Bình", 1200000, "Chuyển khoản");
+                        sampleData.Rows.Add(DateTime.Now.AddDays(-3), "DH003", "Lê Hoàng Cường", 650000, "Tiền mặt");
+                        sampleData.Rows.Add(DateTime.Now.AddDays(-4), "DH004", "Phạm Minh Dương", 950000, "Momo");
+                        break;
+                }
+                
+                // Cập nhật DataSource với dữ liệu mẫu
+                DataGridViewReport.DataSource = sampleData;
+                
+                // Định dạng bảng và cập nhật tóm tắt
+                FormatDataGridView();
+                UpdateSummary(sampleData);
+                
+                // Hiển thị dialog để debug
+                MessageBox.Show($"Đã tạo dữ liệu mẫu với {sampleData.Rows.Count} dòng và {sampleData.Columns.Count} cột", "Debug");
+                
+                // In console để debug
+                Console.WriteLine($"Hiển thị dữ liệu mẫu với {sampleData.Rows.Count} dòng và {sampleData.Columns.Count} cột");
+                Console.WriteLine($"DataGridView có {DataGridViewReport.RowCount} dòng và {DataGridViewReport.ColumnCount} cột");
+                
+                // Thêm nhãn để nhận biết đây là dữ liệu mẫu
+                lblReportStatus.Text = "⚠️ Đang hiển thị dữ liệu mẫu. Vui lòng chọn khoảng thời gian và nhấn 'Làm mới' để xem dữ liệu thực.";
+                lblReportStatus.Visible = true;
+                lblReportStatus.ForeColor = Color.FromArgb(255, 128, 0);
+                
+                // Đảm bảo DataGridView được refresh
+                DataGridViewReport.Refresh();
+                this.Refresh();
             }
-            
-            // Cập nhật DataSource với dữ liệu mẫu
-            DataGridViewReport.DataSource = sampleData;
-            
-            // Định dạng bảng và cập nhật tóm tắt
-            FormatDataGridView();
-            UpdateSummary(sampleData);
-            
-            // Thêm thông báo để người dùng biết đây là dữ liệu mẫu
-            if (DataGridViewReport.Columns.Count > 0)
+            catch (Exception ex)
             {
-                DataGridViewRow headerRow = new DataGridViewRow();
-                headerRow.DefaultCellStyle.BackColor = Color.LightYellow;
-                headerRow.DefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Italic);
+                MessageBox.Show($"Lỗi khi hiển thị dữ liệu mẫu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Console.WriteLine($"Lỗi hiển thị dữ liệu mẫu: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
             }
         }
     }

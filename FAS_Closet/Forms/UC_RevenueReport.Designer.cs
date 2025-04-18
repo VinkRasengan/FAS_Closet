@@ -84,6 +84,16 @@ namespace FASCloset.Forms
             ProgressBarReport.Style = ProgressBarStyle.Marquee;
             ProgressBarReport.Visible = false;
             
+            // Report status label (NEW)
+            lblReportStatus = new Label();
+            lblReportStatus.Location = new Point(20, 205);
+            lblReportStatus.Size = new Size(700, 20);
+            lblReportStatus.TextAlign = ContentAlignment.MiddleLeft;
+            lblReportStatus.Font = new Font("Segoe UI", 9F, FontStyle.Italic);
+            lblReportStatus.ForeColor = Color.FromArgb(255, 128, 0);
+            lblReportStatus.Text = "";
+            lblReportStatus.Visible = false;
+            
             // Summary panel
             Panel summaryPanel = new Panel();
             summaryPanel.Location = new Point(20, 150);
@@ -178,6 +188,7 @@ namespace FASCloset.Forms
             this.Controls.Add(btnRefresh);
             this.Controls.Add(ProgressBarReport);
             this.Controls.Add(summaryPanel);
+            this.Controls.Add(lblReportStatus);
             this.Controls.Add(DataGridViewReport);
             
             // Đặt kích thước cho user control
@@ -194,5 +205,6 @@ namespace FASCloset.Forms
         public Label lblAverageOrder;
         public Button btnExport;
         public Button btnRefresh;
+        private Label lblReportStatus;
     }
 }
