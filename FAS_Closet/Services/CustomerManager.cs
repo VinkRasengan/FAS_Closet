@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using FASCloset.Data;
 using FASCloset.Models;
+using Microsoft.Data.Sqlite;
 
 namespace FASCloset.Services
 {
@@ -44,11 +45,8 @@ namespace FASCloset.Services
         
         public static void AddCustomer(Customer customer)
         {
-            string query = @"
-                INSERT INTO Customer (Name, Email, Phone, Address)
-                VALUES (@Name, @Email, @Phone, @Address);
-                SELECT last_insert_rowid();";
-                
+            string query = "INSERT INTO Customer (Name, Email, Phone, Address, LoyaltyPoints) VALUES (@Name, @Email, @Phone, @Address, 0)";
+            
             var parameters = new Dictionary<string, object>
             {
                 { "@Name", customer.Name },
@@ -57,8 +55,10 @@ namespace FASCloset.Services
                 { "@Address", customer.Address }
             };
             
-            int customerId = DataAccessHelper.ExecuteScalar<int>(query, parameters);
-            customer.CustomerID = customerId;
+            DataAccessHelper.ExecuteNonQuery(query, parameters);
+            
+            // Get the ID of the just-added customer
+            customer.CustomerID = DataAccessHelper.ExecuteScalar<int>("SELECT last_insert_rowid()");
         }
         
         public static void UpdateCustomer(Customer customer)
