@@ -49,83 +49,86 @@ namespace FASCloset.Forms
             
             cmbReportType = new ComboBox();
             cmbReportType.Location = new Point(150, 60);
-            cmbReportType.Size = new Size(200, 25);
+            cmbReportType.Size = new Size(250, 25);
             cmbReportType.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbReportType.Items.AddRange(new object[] { "Tổng quan doanh số", "Báo cáo bán hàng theo sản phẩm", "Báo cáo bán hàng theo khách hàng" });
             cmbReportType.SelectedIndex = 0;
             
-            // Action buttons
+            // Chỉ giữ lại nút làm mới và xuất báo cáo
+            btnRefresh = new Button();
+            btnRefresh.FlatStyle = FlatStyle.Flat;
+            btnRefresh.BackColor = Color.FromArgb(40, 167, 69); // Màu xanh lá tương tự Bootstrap success
+            btnRefresh.ForeColor = Color.White;
+            btnRefresh.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnRefresh.FlatAppearance.BorderSize = 0;
+            btnRefresh.Cursor = Cursors.Hand;
+            btnRefresh.Text = "🔄 Làm mới báo cáo";
+            btnRefresh.Location = new Point(320, 100);
+            btnRefresh.Size = new Size(180, 35);
+            
             btnExport = new Button();
             btnExport.FlatStyle = FlatStyle.Flat;
-            btnExport.BackColor = Color.FromArgb(0, 123, 255);
+            btnExport.BackColor = Color.FromArgb(0, 123, 255); // Màu xanh tương tự Bootstrap primary
             btnExport.ForeColor = Color.White;
             btnExport.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             btnExport.FlatAppearance.BorderSize = 0;
             btnExport.Cursor = Cursors.Hand;
-            btnExport.Text = "Xuất báo cáo";
-            btnExport.Location = new Point(20, 100);
-            btnExport.Size = new Size(150, 30);
-            
-            btnRefresh = new Button();
-            btnRefresh.FlatStyle = FlatStyle.Flat;
-            btnRefresh.BackColor = Color.FromArgb(108, 117, 125);
-            btnRefresh.ForeColor = Color.White;
-            btnRefresh.Font = new Font("Segoe UI", 10F);
-            btnRefresh.FlatAppearance.BorderSize = 0;
-            btnRefresh.Cursor = Cursors.Hand;
-            btnRefresh.Text = "Làm mới";
-            btnRefresh.Location = new Point(180, 100);
-            btnRefresh.Size = new Size(150, 30);
+            btnExport.Text = "📊 Xuất báo cáo"; // Đã sửa từ "Xuất báo" thành "Xuất báo cáo"
+            btnExport.Location = new Point(150, 100);
+            btnExport.Size = new Size(160, 35);
             
             // Progress bar
             ProgressBarReport = new ProgressBar();
-            ProgressBarReport.Location = new Point(350, 100);
-            ProgressBarReport.Size = new Size(200, 30);
+            ProgressBarReport.Location = new Point(510, 100);
+            ProgressBarReport.Size = new Size(180, 35);
             ProgressBarReport.Style = ProgressBarStyle.Marquee;
             ProgressBarReport.Visible = false;
             
             // Summary panel
             Panel summaryPanel = new Panel();
             summaryPanel.Location = new Point(20, 150);
-            summaryPanel.Size = new Size(600, 60);
+            summaryPanel.Size = new Size(700, 60);
             summaryPanel.BackColor = Color.AliceBlue;
             summaryPanel.BorderStyle = BorderStyle.FixedSingle;
             
             Label lblTotalRevenueTitle = new Label();
             lblTotalRevenueTitle.Text = "Tổng doanh thu:";
             lblTotalRevenueTitle.Location = new Point(20, 10);
-            lblTotalRevenueTitle.Size = new Size(100, 20);
+            lblTotalRevenueTitle.Size = new Size(120, 20);
             lblTotalRevenueTitle.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             
             lblTotalRevenue = new Label();
             lblTotalRevenue.Text = "0 đ";
             lblTotalRevenue.Location = new Point(20, 30);
             lblTotalRevenue.Size = new Size(150, 20);
-            lblTotalRevenue.Font = new Font("Segoe UI", 10);
+            lblTotalRevenue.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            lblTotalRevenue.ForeColor = Color.FromArgb(0, 123, 255);
             
             Label lblOrderCountTitle = new Label();
             lblOrderCountTitle.Text = "Số đơn hàng:";
             lblOrderCountTitle.Location = new Point(200, 10);
-            lblOrderCountTitle.Size = new Size(100, 20);
+            lblOrderCountTitle.Size = new Size(120, 20);
             lblOrderCountTitle.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             
             lblOrderCount = new Label();
             lblOrderCount.Text = "0";
             lblOrderCount.Location = new Point(200, 30);
             lblOrderCount.Size = new Size(150, 20);
-            lblOrderCount.Font = new Font("Segoe UI", 10);
+            lblOrderCount.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            lblOrderCount.ForeColor = Color.FromArgb(40, 167, 69);
             
             Label lblAverageOrderTitle = new Label();
             lblAverageOrderTitle.Text = "Trung bình đơn:";
             lblAverageOrderTitle.Location = new Point(380, 10);
-            lblAverageOrderTitle.Size = new Size(100, 20);
+            lblAverageOrderTitle.Size = new Size(120, 20);
             lblAverageOrderTitle.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             
             lblAverageOrder = new Label();
             lblAverageOrder.Text = "0 đ";
             lblAverageOrder.Location = new Point(380, 30);
             lblAverageOrder.Size = new Size(150, 20);
-            lblAverageOrder.Font = new Font("Segoe UI", 10);
+            lblAverageOrder.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            lblAverageOrder.ForeColor = Color.FromArgb(108, 117, 125);
             
             summaryPanel.Controls.Add(lblTotalRevenueTitle);
             summaryPanel.Controls.Add(lblTotalRevenue);
@@ -134,13 +137,35 @@ namespace FASCloset.Forms
             summaryPanel.Controls.Add(lblAverageOrderTitle);
             summaryPanel.Controls.Add(lblAverageOrder);
             
-            // Report grid
+            // Report grid với màu sắc mới và đảm bảo luôn hiển thị
             DataGridViewReport = new DataGridView();
             DataGridViewReport.Location = new Point(20, 230);
-            DataGridViewReport.Size = new Size(600, 300);
+            DataGridViewReport.Size = new Size(700, 350);
             DataGridViewReport.AllowUserToAddRows = false;
             DataGridViewReport.ReadOnly = true;
+            DataGridViewReport.Visible = true; // Đảm bảo luôn hiển thị
             DataGridViewReport.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            DataGridViewReport.BorderStyle = BorderStyle.None;
+            DataGridViewReport.BackgroundColor = Color.White;
+            DataGridViewReport.GridColor = Color.FromArgb(230, 230, 230);
+            DataGridViewReport.EnableHeadersVisualStyles = false;
+            DataGridViewReport.RowHeadersVisible = false;
+            
+            // Định dạng tiêu đề cột
+            DataGridViewReport.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(37, 150, 190);
+            DataGridViewReport.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            DataGridViewReport.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 11, FontStyle.Bold);
+            DataGridViewReport.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            DataGridViewReport.ColumnHeadersHeight = 40;
+            
+            // Thiết lập dòng
+            DataGridViewReport.DefaultCellStyle.Font = new Font("Segoe UI", 10);
+            DataGridViewReport.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(238, 239, 249);
+            DataGridViewReport.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            DataGridViewReport.DefaultCellStyle.SelectionBackColor = Color.FromArgb(208, 215, 229);
+            DataGridViewReport.DefaultCellStyle.SelectionForeColor = Color.Black;
+            DataGridViewReport.RowTemplate.Height = 35;
+            DataGridViewReport.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             
             // Add all controls to the form
             this.Controls.Add(lblDateRange);
@@ -154,6 +179,9 @@ namespace FASCloset.Forms
             this.Controls.Add(ProgressBarReport);
             this.Controls.Add(summaryPanel);
             this.Controls.Add(DataGridViewReport);
+            
+            // Đặt kích thước cho user control
+            this.Size = new Size(750, 600);
         }
 
         public DateTimePicker DateTimePickerStartDate;

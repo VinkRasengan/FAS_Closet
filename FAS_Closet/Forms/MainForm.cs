@@ -212,7 +212,7 @@ namespace FASCloset.Forms
         private void btnRevenueReport_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnRevenueReport, "Báo cáo Doanh thu");
-            UpdateFeatureToolbar(new string[] { "Thống kê doanh số", "Xuất báo cáo chi tiết" });
+            UpdateFeatureToolbar(new string[] { "Làm mới báo cáo", "Xuất báo cáo" });
 
             if (ucRevenueReport == null)
             {
@@ -326,6 +326,18 @@ namespace FASCloset.Forms
                     break;
                 case "Sản phẩm bán chạy":
                     btn.Click += (s, e) => ShowBestSellingProductsDetail(s, e);
+                    break;
+                case "Làm mới báo cáo":
+                    btn.Click += (s, e) => {
+                        if (ucRevenueReport != null)
+                            ucRevenueReport.btnRefresh.PerformClick();
+                    };
+                    break;
+                case "Xuất báo cáo":
+                    btn.Click += (s, e) => {
+                        if (ucRevenueReport != null)
+                            ucRevenueReport.btnExport.PerformClick();
+                    };
                     break;
                 default:
                     btn.Click += (s, e) => MessageBox.Show("Chức năng: " + feature);
