@@ -107,6 +107,105 @@ namespace FASCloset.Forms
             dgvBestSellers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvBestSellers.AllowUserToAddRows = false;
 
+            // Initialize Low Stock Alert Panel with header elements
+            lowStockAlertPanel = new Panel
+            {
+                Name = "lowStockAlertPanel",
+                Size = new Size(300, 250),
+                Location = new Point(650, 220),
+                BorderStyle = BorderStyle.FixedSingle,
+                BackColor = Color.FromArgb(255, 248, 230),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+            
+            // Add title to the low stock panel
+            Label lowStockTitle = new Label
+            {
+                Text = "⚠️ Sản Phẩm Sắp Hết Hàng",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                ForeColor = Color.FromArgb(204, 102, 0),
+                Location = new Point(10, 10),
+                Size = new Size(280, 25),
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            lowStockAlertPanel.Controls.Add(lowStockTitle);
+            
+            // Add a line separator
+            Panel lowStockSeparator = new Panel
+            {
+                Location = new Point(10, 40),
+                Size = new Size(280, 1),
+                BackColor = Color.FromArgb(224, 224, 224)
+            };
+            lowStockAlertPanel.Controls.Add(lowStockSeparator);
+            
+            // Create column headers for low stock panel
+            Label productNameHeader = new Label
+            {
+                Text = "Tên Sản Phẩm",
+                Location = new Point(10, 45),
+                Size = new Size(180, 20),
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.FromArgb(102, 102, 102)
+            };
+            
+            Label stockHeader = new Label
+            {
+                Text = "SL",
+                Location = new Point(215, 45),
+                Size = new Size(30, 20),
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.FromArgb(102, 102, 102),
+                TextAlign = ContentAlignment.MiddleRight
+            };
+            
+            Label priceHeader = new Label
+            {
+                Text = "Giá",
+                Location = new Point(245, 45),
+                Size = new Size(45, 20),
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.FromArgb(102, 102, 102),
+                TextAlign = ContentAlignment.MiddleRight
+            };
+            
+            lowStockAlertPanel.Controls.Add(productNameHeader);
+            lowStockAlertPanel.Controls.Add(stockHeader);
+            lowStockAlertPanel.Controls.Add(priceHeader);
+            
+            // Add second separator below headers
+            Panel headerSeparator = new Panel
+            {
+                Location = new Point(10, 68),
+                Size = new Size(280, 1),
+                BackColor = Color.FromArgb(224, 224, 224)
+            };
+            lowStockAlertPanel.Controls.Add(headerSeparator);
+            
+            // Add "Manage Inventory" button to low stock panel
+            Button manageInventoryButton = new Button
+            {
+                Text = "Quản Lý Kho Hàng",
+                Location = new Point(75, 210),
+                Size = new Size(150, 30),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(255, 153, 0),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            
+            manageInventoryButton.FlatAppearance.BorderSize = 0;
+            
+            manageInventoryButton.Click += (s, e) => {
+                if (ParentForm is MainForm mainForm)
+                {
+                    mainForm.NavigateToInventoryManagement();
+                }
+            };
+            
+            lowStockAlertPanel.Controls.Add(manageInventoryButton);
+
             Label lblVIPCustomersTitle = new Label();
             lblVIPCustomersTitle.Text = "Top VIP Customers";
             lblVIPCustomersTitle.Font = new Font("Segoe UI", 12, FontStyle.Bold);
@@ -173,6 +272,7 @@ namespace FASCloset.Forms
             this.Controls.Add(lblVIPCustomersTitle);
             this.Controls.Add(dgvVIPCustomers);
             this.Controls.Add(btnRefresh);
+            this.Controls.Add(lowStockAlertPanel);
         }
 
         private DataGridView dgvBestSellers;
@@ -181,5 +281,6 @@ namespace FASCloset.Forms
         private Label lblTotalOrders;
         private Label lblLowStockWarning;
         private DataGridView dgvVIPCustomers;
+        private Panel lowStockAlertPanel; // Add this field for the low stock panel
     }
 }

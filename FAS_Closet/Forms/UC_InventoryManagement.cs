@@ -231,66 +231,9 @@ namespace FASCloset.Forms
         {
             try
             {
+                // Lấy danh sách sản phẩm sắp hết hàng và gán vào DataGridView
                 var lowStockItems = InventoryManager.GetLowStockProducts();
-                
-                // Configure columns with better headers
-                dataGridViewLowStock.AutoGenerateColumns = false;
-                dataGridViewLowStock.Columns.Clear();
-                
-                // Add custom columns with better headers and styling
-                dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-                {
-                    DataPropertyName = "ProductID",
-                    HeaderText = "Mã SP",
-                    Width = 50
-                });
-                
-                dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-                {
-                    DataPropertyName = "ProductName",
-                    HeaderText = "Tên Sản Phẩm",
-                    Width = 200
-                });
-                
-                dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-                {
-                    DataPropertyName = "Stock",
-                    HeaderText = "Kho",
-                    Width = 70,
-                    DefaultCellStyle = new DataGridViewCellStyle
-                    {
-                        ForeColor = Color.Red,
-                        Font = new Font("Segoe UI", 9.5F, FontStyle.Bold)
-                    }
-                });
-                
-                dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-                {
-                    DataPropertyName = "Price",
-                    HeaderText = "Giá",
-                    Width = 100,
-                    DefaultCellStyle = new DataGridViewCellStyle
-                    {
-                        Format = "N0",
-                        Alignment = DataGridViewContentAlignment.MiddleRight
-                    }
-                });
-                
-                // Apply styling to alternating rows
-                dataGridViewLowStock.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(255, 248, 230);
-                
-                // Set the data source
                 dataGridViewLowStock.DataSource = lowStockItems;
-                
-                // Hook up event handler for selection
-                dataGridViewLowStock.SelectionChanged += (s, e) => {
-                    if (dataGridViewLowStock.SelectedRows.Count > 0 && 
-                        dataGridViewLowStock.SelectedRows[0].DataBoundItem is Product product)
-                    {
-                        txtProductId.Text = product.ProductID.ToString();
-                        txtStockQuantity.Focus();
-                    }
-                };
             }
             catch (Exception ex)
             {

@@ -172,6 +172,60 @@ namespace FASCloset.Forms
             this.dataGridViewLowStock.TabIndex = 0;
             this.dataGridViewLowStock.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridViewLowStock.ReadOnly = true;
+            this.dataGridViewLowStock.AutoGenerateColumns = false;
+            
+            // Add custom columns with better headers and styling
+            this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "ProductID",
+                HeaderText = "Mã SP",
+                Width = 50
+            });
+            
+            this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "ProductName",
+                HeaderText = "Tên Sản Phẩm",
+                Width = 200
+            });
+            
+            this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Stock",
+                HeaderText = "Kho",
+                Width = 70,
+                DefaultCellStyle = new DataGridViewCellStyle
+                {
+                    ForeColor = Color.Red,
+                    Font = new Font("Segoe UI", 9.5F, FontStyle.Bold)
+                }
+            });
+            
+            this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Price",
+                HeaderText = "Giá",
+                Width = 100,
+                DefaultCellStyle = new DataGridViewCellStyle
+                {
+                    Format = "N0",
+                    Alignment = DataGridViewContentAlignment.MiddleRight
+                }
+            });
+            
+            // Apply styling to alternating rows
+            this.dataGridViewLowStock.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(255, 248, 230);
+            
+            // Add selection handler
+            this.dataGridViewLowStock.SelectionChanged += (s, e) => {
+                if (this.dataGridViewLowStock.SelectedRows.Count > 0 && 
+                    this.dataGridViewLowStock.SelectedRows[0].DataBoundItem is Product product)
+                {
+                    this.txtProductId.Text = product.ProductID.ToString();
+                    this.txtStockQuantity.Focus();
+                }
+            };
+            
             this.dataGridViewLowStock.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(255, 128, 0);
             this.dataGridViewLowStock.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             this.dataGridViewLowStock.ColumnHeadersHeight = 40;

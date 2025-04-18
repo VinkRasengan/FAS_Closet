@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using FASCloset.Services;
 using FASCloset.Extensions; // Add this to use StringExtensions
@@ -9,6 +10,9 @@ namespace FASCloset.Forms
 {
     public partial class UcDashboard : UserControl
     {
+        // Font constants
+        private const string DEFAULT_FONT_FAMILY = "Segoe UI";
+        
         public UcDashboard()
         {
             InitializeComponent();
@@ -82,8 +86,6 @@ namespace FASCloset.Forms
             public int LoyaltyPoints { get; set; }
         }
 
-        private ListView lstVIPCustomers;
-
         public void LoadDashboardData()
         {
             try
@@ -142,9 +144,9 @@ namespace FASCloset.Forms
                 dgvBestSellers.GridColor = Color.FromArgb(230, 230, 230);
                 dgvBestSellers.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(93, 64, 150);
                 dgvBestSellers.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-                dgvBestSellers.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
+                dgvBestSellers.ColumnHeadersDefaultCellStyle.Font = new Font(DEFAULT_FONT_FAMILY, 10F, FontStyle.Bold);
                 dgvBestSellers.ColumnHeadersHeight = 40;
-                dgvBestSellers.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
+                dgvBestSellers.DefaultCellStyle.Font = new Font(DEFAULT_FONT_FAMILY, 9.5F);
                 dgvBestSellers.RowTemplate.Height = 35;
                 dgvBestSellers.RowsDefaultCellStyle.BackColor = Color.White;
                 dgvBestSellers.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
@@ -207,11 +209,10 @@ namespace FASCloset.Forms
         private void ApplyMetricStyle(Label valueLabel, string metricName, Color accentColor)
         {
             // Apply style to the value label
-            valueLabel.Font = new Font("Segoe UI", 18, FontStyle.Bold);
+            valueLabel.Font = new Font(DEFAULT_FONT_FAMILY, 18, FontStyle.Bold);
             valueLabel.ForeColor = accentColor;
             
             // Find the title label based on naming convention and apply styling
-            string titleLabelName = $"lbl{metricName}Title";
             var labelControls = this.Controls.OfType<Label>();
             
             foreach (var label in labelControls)
@@ -219,7 +220,7 @@ namespace FASCloset.Forms
                 if (label.Name.Contains(metricName) && label != valueLabel)
                 {
                     label.ForeColor = Color.FromArgb(80, 80, 80);
-                    label.Font = new Font("Segoe UI", 10, FontStyle.Regular);
+                    label.Font = new Font(DEFAULT_FONT_FAMILY, 10, FontStyle.Regular);
                     break;
                 }
             }
@@ -227,222 +228,179 @@ namespace FASCloset.Forms
 
         private void UpdateLowStockAlertPanel(List<Product> lowStockItems)
         {
-            // Clear existing panel if it exists
-            Panel existingPanel = this.Controls.OfType<Panel>().FirstOrDefault(p => p.Name == "lowStockAlertPanel");
-            if (existingPanel != null)
+            // Debug information
+            Console.WriteLine($"Updating low stock panel with {lowStockItems?.Count ?? 0} items");
+            
+            // Check if panel exists and handle empty items list
+            if (!ValidateLowStockPanel(lowStockItems)) return;
+            
+            // Show the panel since we have items to display
+            lowStockAlertPanel.Visible = true;
+            lowStockAlertPanel.BringToFront();
+            
+            // Clear any existing product items
+            ClearExistingLowStockItems();
+            
+            // Add low stock product items
+            AddLowStockItems(lowStockItems);
+            
+            // Ensure panel is properly positioned and visible
+            ConfigureLowStockPanelLayout();
+            
+            // Debug information
+            Console.WriteLine($"Low stock panel configured with {Math.Min(lowStockItems.Count, 5)} items. Panel visible: {lowStockAlertPanel.Visible}");
+        }
+        
+        private bool ValidateLowStockPanel(List<Product> lowStockItems)
+        {
+            // Check if panel exists
+            if (lowStockAlertPanel == null)
             {
-                this.Controls.Remove(existingPanel);
+                MessageBox.Show("Low stock alert panel is not initialized!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
             
-            // If no low stock items, don't create the panel
+            // If no low stock items, hide the panel
             if (lowStockItems == null || lowStockItems.Count == 0)
             {
-                return;
+                lowStockAlertPanel.Visible = false;
+                Console.WriteLine("No low stock items, hiding panel");
+                return false;
             }
             
-            // Create a new panel for low stock alerts - adjust position to not overlap with other elements
-            Panel lowStockPanel = new Panel
+            return true;
+        }
+        
+        private void ClearExistingLowStockItems()
+        {
+            foreach (Control control in lowStockAlertPanel.Controls.Cast<Control>().ToList())
             {
-                Name = "lowStockAlertPanel",
-                Size = new Size(300, 250),
-                Location = new Point(650, 220),  // Reposition to avoid overlap with other elements
-                BorderStyle = BorderStyle.FixedSingle,
-                BackColor = Color.FromArgb(255, 248, 230),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
-            };
-            
-            // Add title to the panel
-            Label title = new Label
-            {
-                Text = "⚠️ Sản Phẩm Sắp Hết Hàng",
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                ForeColor = Color.FromArgb(204, 102, 0),
-                Location = new Point(10, 10),
-                Size = new Size(280, 25),
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            lowStockPanel.Controls.Add(title);
-            
-            // Add a line separator
-            Panel separator = new Panel
-            {
-                Location = new Point(10, 40),
-                Size = new Size(280, 1),
-                BackColor = Color.FromArgb(224, 224, 224)
-            };
-            lowStockPanel.Controls.Add(separator);
-            
-            // Create column headers
-            Label productNameHeader = new Label
-            {
-                Text = "Tên Sản Phẩm",
-                Location = new Point(10, 45),
-                Size = new Size(180, 20),
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                ForeColor = Color.FromArgb(102, 102, 102)
-            };
-            
-            Label stockHeader = new Label
-            {
-                Text = "SL",
-                Location = new Point(215, 45),
-                Size = new Size(30, 20),
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                ForeColor = Color.FromArgb(102, 102, 102),
-                TextAlign = ContentAlignment.MiddleRight
-            };
-            
-            Label priceHeader = new Label
-            {
-                Text = "Giá",
-                Location = new Point(245, 45),
-                Size = new Size(45, 20),
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                ForeColor = Color.FromArgb(102, 102, 102),
-                TextAlign = ContentAlignment.MiddleRight
-            };
-            
-            lowStockPanel.Controls.Add(productNameHeader);
-            lowStockPanel.Controls.Add(stockHeader);
-            lowStockPanel.Controls.Add(priceHeader);
-            
-            // Add second separator below headers
-            Panel headerSeparator = new Panel
-            {
-                Location = new Point(10, 68),
-                Size = new Size(280, 1),
-                BackColor = Color.FromArgb(224, 224, 224)
-            };
-            lowStockPanel.Controls.Add(headerSeparator);
-            
-            // Create low stock items list - Debug check
-            Console.WriteLine($"Processing {lowStockItems.Count} low stock items");
-            foreach (var item in lowStockItems)
-            {
-                Console.WriteLine($"Product: {item.ProductID} - {item.ProductName} - Stock: {item.Stock} - Price: {item.Price}");
+                if (control is Panel itemPanel && control.Location.Y >= 70 && control.Location.Y < 200)
+                {
+                    lowStockAlertPanel.Controls.Remove(control);
+                    control.Dispose();
+                }
+                else if (control is Label moreLabel && control.Font.Italic)
+                {
+                    lowStockAlertPanel.Controls.Remove(control);
+                    moreLabel.Dispose();
+                }
             }
-            
+        }
+        
+        private void AddLowStockItems(List<Product> lowStockItems)
+        {
             int yPos = 70;
             int itemHeight = 32;
             int maxItems = Math.Min(lowStockItems.Count, 5); // Show max 5 items to leave room for price
             
             for (int i = 0; i < maxItems; i++)
             {
-                var product = lowStockItems[i];
-                
-                Console.WriteLine($"Adding product to panel: {product.ProductName}");
-                
-                // Create container panel for item
-                Panel itemPanel = new Panel
-                {
-                    Location = new Point(10, yPos),
-                    Size = new Size(280, itemHeight),
-                    BackColor = Color.Transparent
-                };
-                
-                // Product name
-                Label nameLabel = new Label
-                {
-                    Text = product.ProductName?.Truncate(22) ?? "Unknown Product",
-                    Location = new Point(5, 7),
-                    Size = new Size(180, 20),
-                    Font = new Font("Segoe UI", 9),
-                    ForeColor = product.Stock == 0 ? Color.Red : Color.FromArgb(68, 68, 68)
-                };
-                
-                // Current stock
-                Label stockLabel = new Label
-                {
-                    Text = product.Stock.ToString(),
-                    Location = new Point(215, 7),
-                    Size = new Size(30, 20),
-                    Font = new Font("Segoe UI", 9, product.Stock == 0 ? FontStyle.Bold : FontStyle.Regular),
-                    ForeColor = product.Stock == 0 ? Color.Red : Color.FromArgb(102, 102, 102),
-                    TextAlign = ContentAlignment.MiddleRight
-                };
-                
-                // Price with additional null check
-                Label priceLabel = new Label
-                {
-                    Text = product.Price.ToString("N0"),
-                    Location = new Point(245, 7),
-                    Size = new Size(45, 20),
-                    Font = new Font("Segoe UI", 9),
-                    ForeColor = Color.FromArgb(0, 123, 255),
-                    TextAlign = ContentAlignment.MiddleRight
-                };
-                
-                itemPanel.Controls.Add(nameLabel);
-                itemPanel.Controls.Add(stockLabel);
-                itemPanel.Controls.Add(priceLabel);
-                
-                // Add hover effect
-                itemPanel.MouseEnter += (s, e) => {
-                    itemPanel.BackColor = Color.FromArgb(245, 245, 245);
-                };
-                itemPanel.MouseLeave += (s, e) => {
-                    itemPanel.BackColor = Color.Transparent;
-                };
-                
-                // Add click handler to navigate to inventory management
-                int productId = product.ProductID; // Capture in closure
-                itemPanel.Click += (s, e) => {
-                    // Request navigation to inventory management
-                    if (ParentForm is MainForm mainForm)
-                    {
-                        mainForm.NavigateToInventoryManagement(productId);
-                    }
-                };
-                itemPanel.Cursor = Cursors.Hand;
-                
-                lowStockPanel.Controls.Add(itemPanel);
+                AddSingleLowStockItem(lowStockItems[i], yPos);
                 yPos += itemHeight;
             }
             
             // If there are more items than we can display
             if (lowStockItems.Count > maxItems)
             {
-                Label moreLabel = new Label
-                {
-                    Text = $"+ {lowStockItems.Count - maxItems} sản phẩm khác...",
-                    Location = new Point(10, yPos + 5),
-                    Size = new Size(280, 20),
-                    Font = new Font("Segoe UI", 9, FontStyle.Italic),
-                    ForeColor = Color.Gray,
-                    TextAlign = ContentAlignment.MiddleCenter
-                };
-                lowStockPanel.Controls.Add(moreLabel);
+                AddMoreItemsLabel(lowStockItems.Count - maxItems, yPos);
             }
+        }
+        
+        private void AddSingleLowStockItem(Product product, int yPosition)
+        {
+            Console.WriteLine($"Adding product {product.ProductName} to low stock panel");
             
-            // Add button to inventory management
-            Button manageButton = new Button
+            // Create container panel for item
+            Panel itemPanel = new Panel
             {
-                Text = "Quản Lý Kho Hàng",
-                Location = new Point(75, 210),
-                Size = new Size(150, 30),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(255, 153, 0),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                Cursor = Cursors.Hand
+                Location = new Point(10, yPosition),
+                Size = new Size(280, 32),
+                BackColor = Color.Transparent
             };
             
-            // Round the button corners
-            manageButton.FlatAppearance.BorderSize = 0;
+            // Product name
+            Label nameLabel = new Label
+            {
+                Text = product.ProductName?.Truncate(22) ?? "Unknown Product",
+                Location = new Point(5, 7),
+                Size = new Size(180, 20),
+                Font = new Font(DEFAULT_FONT_FAMILY, 9),
+                ForeColor = product.Stock == 0 ? Color.Red : Color.FromArgb(68, 68, 68)
+            };
             
-            // Add click handler
-            manageButton.Click += (s, e) => {
+            // Current stock
+            Label stockLabel = new Label
+            {
+                Text = product.Stock.ToString(),
+                Location = new Point(215, 7),
+                Size = new Size(30, 20),
+                Font = new Font(DEFAULT_FONT_FAMILY, 9, product.Stock == 0 ? FontStyle.Bold : FontStyle.Regular),
+                ForeColor = product.Stock == 0 ? Color.Red : Color.FromArgb(102, 102, 102),
+                TextAlign = ContentAlignment.MiddleRight
+            };
+            
+            // Price with additional null check
+            Label priceLabel = new Label
+            {
+                Text = product.Price.ToString("N0"),
+                Location = new Point(245, 7),
+                Size = new Size(45, 20),
+                Font = new Font(DEFAULT_FONT_FAMILY, 9),
+                ForeColor = Color.FromArgb(0, 123, 255),
+                TextAlign = ContentAlignment.MiddleRight
+            };
+            
+            itemPanel.Controls.Add(nameLabel);
+            itemPanel.Controls.Add(stockLabel);
+            itemPanel.Controls.Add(priceLabel);
+            
+            // Add hover effect
+            itemPanel.MouseEnter += (s, e) => {
+                itemPanel.BackColor = Color.FromArgb(245, 245, 245);
+            };
+            itemPanel.MouseLeave += (s, e) => {
+                itemPanel.BackColor = Color.Transparent;
+            };
+            
+            // Add click handler to navigate to inventory management
+            int productId = product.ProductID; // Capture in closure
+            itemPanel.Click += (s, e) => {
+                // Request navigation to inventory management
                 if (ParentForm is MainForm mainForm)
                 {
-                    mainForm.NavigateToInventoryManagement();
+                    mainForm.NavigateToInventoryManagement(productId);
                 }
             };
+            itemPanel.Cursor = Cursors.Hand;
             
-            lowStockPanel.Controls.Add(manageButton);
+            lowStockAlertPanel.Controls.Add(itemPanel);
+        }
+        
+        private void AddMoreItemsLabel(int remainingCount, int yPosition)
+        {
+            Label moreLabel = new Label
+            {
+                Text = $"+ {remainingCount} sản phẩm khác...",
+                Location = new Point(10, yPosition + 5),
+                Size = new Size(280, 20),
+                Font = new Font(DEFAULT_FONT_FAMILY, 9, FontStyle.Italic),
+                ForeColor = Color.Gray,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            lowStockAlertPanel.Controls.Add(moreLabel);
+        }
+        
+        private void ConfigureLowStockPanelLayout()
+        {
+            // Ensure panel position is correctly set
+            lowStockAlertPanel.Location = new Point(650, 220);
+            lowStockAlertPanel.Size = new Size(300, 250);
+            lowStockAlertPanel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             
-            // Add the panel to the form
-            this.Controls.Add(lowStockPanel);
-            lowStockPanel.BringToFront();
+            // Make sure the panel is visible and on top
+            lowStockAlertPanel.Visible = true;
+            lowStockAlertPanel.BringToFront();
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)

@@ -236,9 +236,11 @@ namespace FASCloset.Forms
                 ucDashboard = new UcDashboard();
             }
 
-            ucDashboard.LoadDashboardData();
-
+            // First add the dashboard to the form 
             LoadUserControl(ucDashboard);
+            
+            // Then load the data after it's visible in the UI
+            ucDashboard.LoadDashboardData();
         }
 
         private void btnNotificationSettings_Click(object sender, EventArgs e)
@@ -319,6 +321,9 @@ namespace FASCloset.Forms
                 case "Làm mới":
                     btn.Click += (s, e) => HandleCustomerRefresh(s, e);
                     break;
+                case "Sản phẩm bán chạy":
+                    btn.Click += (s, e) => ShowBestSellingProductsDetail(s, e);
+                    break;
                 default:
                     btn.Click += (s, e) => MessageBox.Show("Chức năng: " + feature);
                     break;
@@ -351,6 +356,242 @@ namespace FASCloset.Forms
             {
                 ucInventoryManagement.txtProductId.Text = productId.ToString();
                 ucInventoryManagement.BringToFront();
+            }
+        }
+
+        private void ShowBestSellingProductsDetail(object? sender, EventArgs e)
+        {
+            if (ucDashboard == null)
+            {
+                MessageBox.Show("Chưa sẵn sàng hiển thị dữ liệu sản phẩm bán chạy.");
+                return;
+            }
+
+            try
+            {
+                var bestSellingProducts = ReportManager.GetBestSellingProducts(null, null);
+                if (bestSellingProducts == null || bestSellingProducts.Count == 0)
+                {
+                    MessageBox.Show("Không có dữ liệu sản phẩm bán chạy.");
+                    return;
+                }
+
+                // Create a Form to display detailed information
+                Form detailForm = new Form
+                {
+                    Text = "Chi tiết sản phẩm bán chạy",
+                    Size = new Size(800, 600),
+                    StartPosition = FormStartPosition.CenterParent,
+                    FormBorderStyle = FormBorderStyle.FixedDialog,
+                    MaximizeBox = false,
+                    MinimizeBox = false
+                };
+
+                // Create DataGridView with detailed information
+                DataGridView dgvDetailedProducts = new DataGridView
+                {
+                    Dock = DockStyle.Fill,
+                    ReadOnly = true,
+                    AllowUserToAddRows = false,
+                    AllowUserToDeleteRows = false,
+                    MultiSelect = false,
+                    SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                    AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                    BackgroundColor = Color.White,
+                    BorderStyle = BorderStyle.None,
+                    RowHeadersVisible = false
+                };
+
+                // Style the DataGridView
+                dgvDetailedProducts.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 123, 255);
+                dgvDetailedProducts.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+                dgvDetailedProducts.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+                dgvDetailedProducts.ColumnHeadersHeight = 40;
+                dgvDetailedProducts.DefaultCellStyle.Font = new Font("Segoe UI", 9);
+                dgvDetailedProducts.RowTemplate.Height = 35;
+
+                // Add columns
+                dgvDetailedProducts.Columns.Add("ProductID", "Mã SP");
+                dgvDetailedProducts.Columns.Add("ProductName", "Tên Sản Phẩm");
+                dgvDetailedProducts.Columns.Add("CategoryName", "Danh Mục");
+                dgvDetailedProducts.Columns.Add("Price", "Giá Bán");
+                dgvDetailedProducts.Columns.Add("TotalQuantity", "SL Đã Bán");
+                dgvDetailedProducts.Columns.Add("Revenue", "Doanh Thu");
+                dgvDetailedProducts.Columns.Add("CurrentStock", "Tồn Kho");
+
+                // Configure column formatting
+                dgvDetailedProducts.Columns["ProductID"].Width = 70;
+                dgvDetailedProducts.Columns["Price"].DefaultCellStyle.Format = "N0";
+                dgvDetailedProducts.Columns["Price"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                dgvDetailedProducts.Columns["TotalQuantity"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                dgvDetailedProducts.Columns["Revenue"].DefaultCellStyle.Format = "N0";
+                dgvDetailedProducts.Columns["Revenue"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                dgvDetailedProducts.Columns["CurrentStock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+                // Add alternating row color
+                dgvDetailedProducts.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(242, 242, 242);
+
+                // Add the data
+                foreach (var product in bestSellingProducts)
+                {
+                    var currentStock = ProductManager.GetProductById(product.ProductID)?.Stock ?? 0;
+                    dgvDetailedProducts.Rows.Add(
+                        product.ProductID,
+                        product.ProductName,
+                        product.CategoryName,
+                        product.Price,
+                        product.TotalQuantity,
+                        product.Revenue,
+                        currentStock
+                    );
+                }
+
+                // Create a title label
+                Label titleLabel = new Label
+                {
+                    Text = "Chi tiết sản phẩm bán chạy",
+                    Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(0, 123, 255),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Dock = DockStyle.Top,
+                    Height = 40
+                };
+
+                // Create DateTimePicker controls for filtering by date range
+                Label lblDateRange = new Label
+                {
+                    Text = "Chọn khoảng thời gian:",
+                    Font = new Font("Segoe UI", 10),
+                    Location = new Point(10, 50),
+                    Size = new Size(150, 25)
+                };
+
+                DateTimePicker dtpStartDate = new DateTimePicker
+                {
+                    Format = DateTimePickerFormat.Short,
+                    Location = new Point(160, 50),
+                    Size = new Size(120, 25)
+                };
+
+                Label lblTo = new Label
+                {
+                    Text = "đến",
+                    Font = new Font("Segoe UI", 10),
+                    Location = new Point(290, 50),
+                    Size = new Size(40, 25),
+                    TextAlign = ContentAlignment.MiddleCenter
+                };
+
+                DateTimePicker dtpEndDate = new DateTimePicker
+                {
+                    Format = DateTimePickerFormat.Short,
+                    Location = new Point(340, 50),
+                    Size = new Size(120, 25)
+                };
+
+                // Set default date range (last 30 days)
+                dtpStartDate.Value = DateTime.Now.AddDays(-30);
+                dtpEndDate.Value = DateTime.Now;
+
+                // Create filter button
+                Button btnFilter = new Button
+                {
+                    Text = "Lọc",
+                    Font = new Font("Segoe UI", 9),
+                    Location = new Point(470, 50),
+                    Size = new Size(80, 25),
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.FromArgb(0, 123, 255),
+                    ForeColor = Color.White
+                };
+
+                // Create export button
+                Button btnExport = new Button
+                {
+                    Text = "Xuất Excel",
+                    Font = new Font("Segoe UI", 9),
+                    Location = new Point(560, 50),
+                    Size = new Size(100, 25),
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.FromArgb(40, 167, 69),
+                    ForeColor = Color.White
+                };
+
+                // Create Panel for controls
+                Panel controlsPanel = new Panel
+                {
+                    Dock = DockStyle.Top,
+                    Height = 85
+                };
+
+                controlsPanel.Controls.Add(lblDateRange);
+                controlsPanel.Controls.Add(dtpStartDate);
+                controlsPanel.Controls.Add(lblTo);
+                controlsPanel.Controls.Add(dtpEndDate);
+                controlsPanel.Controls.Add(btnFilter);
+                controlsPanel.Controls.Add(btnExport);
+
+                // Create close button
+                Button btnClose = new Button
+                {
+                    Text = "Đóng",
+                    Font = new Font("Segoe UI", 10),
+                    Dock = DockStyle.Bottom,
+                    Height = 40,
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.FromArgb(108, 117, 125),
+                    ForeColor = Color.White
+                };
+
+                btnClose.Click += (s, ev) => detailForm.Close();
+                btnFilter.Click += (s, ev) => {
+                    try
+                    {
+                        var filteredProducts = ReportManager.GetBestSellingProducts(dtpStartDate.Value, dtpEndDate.Value);
+                        dgvDetailedProducts.Rows.Clear();
+                        
+                        if (filteredProducts == null || filteredProducts.Count == 0)
+                        {
+                            MessageBox.Show("Không có dữ liệu sản phẩm bán chạy trong khoảng thời gian này.");
+                            return;
+                        }
+                        
+                        foreach (var product in filteredProducts)
+                        {
+                            var currentStock = ProductManager.GetProductById(product.ProductID)?.Stock ?? 0;
+                            dgvDetailedProducts.Rows.Add(
+                                product.ProductID,
+                                product.ProductName,
+                                product.CategoryName,
+                                product.Price,
+                                product.TotalQuantity,
+                                product.Revenue,
+                                currentStock
+                            );
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Lỗi khi lọc dữ liệu: {ex.Message}");
+                    }
+                };
+
+                btnExport.Click += (s, ev) => {
+                    MessageBox.Show("Tính năng xuất Excel sẽ được phát triển trong phiên bản tới.");
+                };
+
+                // Add all controls to the form
+                detailForm.Controls.Add(dgvDetailedProducts);
+                detailForm.Controls.Add(btnClose);
+                detailForm.Controls.Add(controlsPanel);
+                detailForm.Controls.Add(titleLabel);
+
+                // Show the form
+                detailForm.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi: {ex.Message}");
             }
         }
     }
