@@ -32,13 +32,13 @@ namespace FASCloset.Forms
 
             Button btnCancelOrder = new Button();
             btnCancelOrder.Text = "Cancel Order";
-            btnCancelOrder.Location = new Point(530, 600); // Adjust the location as needed
+            btnCancelOrder.Location = new Point(530, 500); // Adjust the location as needed
             btnCancelOrder.Click += btnCancelOrder_Click;
             this.Controls.Add(btnCancelOrder);
 
             Button btnViewOrderDetails = new Button();
             btnViewOrderDetails.Text = "View Order Details";
-            btnViewOrderDetails.Location = new Point(530, 630); // Adjust the location as needed
+            btnViewOrderDetails.Location = new Point(530, 530); // Adjust the location as needed
             btnViewOrderDetails.Click += btnViewOrderDetail_Click;
             this.Controls.Add(btnViewOrderDetails);
         }
@@ -814,7 +814,7 @@ namespace FASCloset.Forms
         }
 
         // Revert to original method naming
-        private void btnPrintInvoice_Click(object sender, EventArgs e)
+        public void btnPrintInvoice_Click(object sender, EventArgs e)
         {
             if (dgvDraftOrders.SelectedRows.Count == 0)
             {
@@ -876,8 +876,6 @@ namespace FASCloset.Forms
                 MessageBox.Show("Error finalizing order: " + ex.Message);
             }
         }
-
-
 
         private bool ValidateOrderInputs()
         {

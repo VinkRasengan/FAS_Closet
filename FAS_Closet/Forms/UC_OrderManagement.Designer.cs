@@ -90,7 +90,7 @@
             this.dgvDraftOrders.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvDraftOrders.Location = new System.Drawing.Point(20, 370); 
             this.dgvDraftOrders.Name = "dgvDraftOrders";
-            this.dgvDraftOrders.Size = new System.Drawing.Size(500, 150); // Adjust size
+            this.dgvDraftOrders.Size = new System.Drawing.Size(500, 80); // Adjust size
             this.dgvDraftOrders.TabIndex = 0;
             this.Controls.Add(this.dgvDraftOrders);
 
@@ -104,9 +104,17 @@
             this.cmbPaymentMethod.Size = new System.Drawing.Size(150, 23);
             this.cmbPaymentMethod.DropDownStyle = ComboBoxStyle.DropDownList;
 
+            Label orderDetail = new Label();
+            orderDetail.Text = "Success Orders";
+            orderDetail.Location = new Point(20, 480);  // Set location above the product list table
+            orderDetail.Size = new Size(200, 20);  // Set size of the label
+            orderDetail.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            orderDetail.ForeColor = Color.Black;
+            this.Controls.Add(orderDetail);
+
             // Orders Grid
             this.dgvOrders = new DataGridView();
-            this.dgvOrders.Location = new System.Drawing.Point(20, 600);
+            this.dgvOrders.Location = new System.Drawing.Point(20, 500);
             this.dgvOrders.Name = "dgvOrders";
             this.dgvOrders.Size = new System.Drawing.Size(500, 200);
             this.dgvOrders.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;

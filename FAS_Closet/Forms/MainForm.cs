@@ -153,7 +153,7 @@ namespace FASCloset.Forms
         private void btnOrderManagement_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnOrderManagement, "Quản lý Đơn hàng");
-            UpdateFeatureToolbar(new string[] { "Tạo đơn hàng", "Xử lý thanh toán", "In hóa đơn" });
+            UpdateFeatureToolbar(new string[] { "Tạo đơn hàng", "In hóa đơn" });
 
             if (ucOrderManagement == null)
             {
@@ -309,6 +309,9 @@ namespace FASCloset.Forms
                 case "Tạo đơn hàng":
                     btn.Click += (s, e) => HandleOrderCreate(s, e);
                     break;
+                case "In hóa đơn":
+                    btn.Click += (s, e) => HandlePrintInvoice(s, e);
+                    break;
                 case "Cập nhật tồn kho":
                     btn.Click += (s, e) => HandleInventoryUpdate(s, e);
                     break;
@@ -334,6 +337,14 @@ namespace FASCloset.Forms
         {
             if (ucOrderManagement != null)
                 ucOrderManagement.btnCreateOrder_Click(sender ?? this, e);
+            else
+                MessageBox.Show("Vui lòng chọn Quản lý đơn hàng trước.");
+        }        
+        
+        private void HandlePrintInvoice(object? sender, EventArgs e)
+        {
+            if (ucOrderManagement != null)
+                ucOrderManagement.btnPrintInvoice_Click(sender ?? this, e);
             else
                 MessageBox.Show("Vui lòng chọn Quản lý đơn hàng trước.");
         }
