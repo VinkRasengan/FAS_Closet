@@ -22,8 +22,8 @@ namespace FASCloset.Forms
             backgroundWorker.DoWork += BackgroundWorker_DoWork;
             backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
             
-            // Set default date range to current month with explicit DateTimeKind
-            DateTimePickerStartDate.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1, 0, 0, 0, DateTimeKind.Local);
+            // Thiết lập khoảng thời gian mặc định là từ 2 năm trước đến hiện tại để đảm bảo bao gồm tất cả đơn hàng
+            DateTimePickerStartDate.Value = new DateTime(DateTime.Now.Year - 2, 1, 1, 0, 0, 0, DateTimeKind.Local);
             DateTimePickerEndDate.Value = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Local);
             
             // Wire up the button click events
@@ -85,21 +85,19 @@ namespace FASCloset.Forms
         
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-            // Reset date pickers to default values
-            DateTimePickerStartDate.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1, 0, 0, 0, DateTimeKind.Local);
+            // Reset date pickers to mở rộng khoảng thời gian để bao gồm tất cả đơn hàng
+            DateTimePickerStartDate.Value = new DateTime(DateTime.Now.Year - 2, 1, 1, 0, 0, 0, DateTimeKind.Local);
             DateTimePickerEndDate.Value = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Local);
             
             // Clear the data grid
             DataGridViewReport.DataSource = null;
             
-            // Reset summary values
-            lblTotalRevenue.Text = "0 đ";
-            lblOrderCount.Text = "0";
-            lblAverageOrder.Text = "0 đ";
-            
-            // Prompt the user
-            MessageBox.Show("Đã làm mới dữ liệu báo cáo", "Làm mới", 
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // Tự động tạo báo cáo mới sau khi làm mới
+            if (!backgroundWorker.IsBusy)
+            {
+                ProgressBarReport.Visible = true;
+                backgroundWorker.RunWorkerAsync("GenerateSalesReport");
+            }
         }
 
         private void BackgroundWorker_DoWork(object? sender, DoWorkEventArgs e)
