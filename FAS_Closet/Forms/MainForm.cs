@@ -212,7 +212,8 @@ namespace FASCloset.Forms
         private void btnRevenueReport_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnRevenueReport, "Báo cáo Doanh thu");
-            UpdateFeatureToolbar(new string[] { "Làm mới báo cáo", "Xuất báo cáo" });
+            // Removed duplicated toolbar buttons since UC_RevenueReport already has these buttons
+            UpdateFeatureToolbar(new string[] { });
 
             if (ucRevenueReport == null)
             {
