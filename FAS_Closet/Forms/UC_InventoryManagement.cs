@@ -7,8 +7,19 @@ using System.Drawing;
 
 namespace FASCloset.Forms
 {
+    /// <summary>
+    /// User control for managing inventory items, categories, and stock levels
+    /// Provides functionality for:
+    /// - Viewing and managing product categories
+    /// - Monitoring low stock products
+    /// - Updating product stock quantities
+    /// </summary>
     public partial class UcInventoryManagement : UserControl
     {
+        /// <summary>
+        /// Initializes a new instance of the UcInventoryManagement class
+        /// Sets up the control and loads initial data for categories and low stock products
+        /// </summary>
         public UcInventoryManagement()
         {
             InitializeComponent();
@@ -16,6 +27,10 @@ namespace FASCloset.Forms
             LoadLowStockProducts();
         }
 
+        /// <summary>
+        /// Loads all active categories from the database and populates the categories DataGridView
+        /// Configures custom columns with appropriate headers and styling
+        /// </summary>
         public void LoadCategories()
         {
             try
@@ -82,6 +97,12 @@ namespace FASCloset.Forms
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the View Products by Category button
+        /// Opens a dialog showing all products in the selected category
+        /// </summary>
+        /// <param name="sender">The source of the event</param>
+        /// <param name="e">Event arguments</param>
         private void btnViewProductsByCategory_Click(object sender, EventArgs e)
         {
             if (dataGridViewCategories.SelectedRows.Count == 0)
@@ -99,7 +120,12 @@ namespace FASCloset.Forms
             }
         }
 
-
+        /// <summary>
+        /// Handles the click event for the Add Category button
+        /// Creates a new category with the provided name and description
+        /// </summary>
+        /// <param name="sender">The source of the event</param>
+        /// <param name="e">Event arguments</param>
         private void BtnAddCategory_Click(object sender, EventArgs e)
         {
             string name = txtCategoryName.Text.Trim();
@@ -124,6 +150,12 @@ namespace FASCloset.Forms
             txtCategoryDescription.Clear();
         }
 
+        /// <summary>
+        /// Handles the click event for the Update Category button
+        /// Updates the selected category with new name and description values
+        /// </summary>
+        /// <param name="sender">The source of the event</param>
+        /// <param name="e">Event arguments</param>
         private void BtnUpdateCategory_Click(object sender, EventArgs e)
         {
             if (dataGridViewCategories.SelectedRows.Count > 0 &&
@@ -136,6 +168,12 @@ namespace FASCloset.Forms
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the Delete Category button
+        /// Deletes the selected category after confirmation, if not in use by any products
+        /// </summary>
+        /// <param name="sender">The source of the event</param>
+        /// <param name="e">Event arguments</param>
         private void BtnDeleteCategory_Click(object sender, EventArgs e)
         {
             if (dataGridViewCategories.SelectedRows.Count > 0 &&
@@ -157,6 +195,12 @@ namespace FASCloset.Forms
             }
         }
 
+        /// <summary>
+        /// Handles the selection change event for the categories DataGridView
+        /// Updates the category name and description text fields with selected category data
+        /// </summary>
+        /// <param name="sender">The source of the event</param>
+        /// <param name="e">Event arguments</param>
         private void DataGridViewCategories_SelectionChanged(object sender, EventArgs e)
         {
             if (dataGridViewCategories.SelectedRows.Count > 0 &&
@@ -167,6 +211,11 @@ namespace FASCloset.Forms
             }
         }
 
+        /// <summary>
+        /// Updates the stock quantity for a specified product
+        /// Validates product ID and quantity inputs before updating
+        /// Shows confirmation dialog and refreshes low stock display after update
+        /// </summary>
         private void UpdateProductStock()
         {
             try
@@ -212,9 +261,18 @@ namespace FASCloset.Forms
             }
         }
 
-
+        /// <summary>
+        /// Handles the click event for the Update Stock button
+        /// Delegates to the UpdateProductStock method
+        /// </summary>
+        /// <param name="sender">The source of the event (nullable)</param>
+        /// <param name="e">Event arguments</param>
         public void btnUpdateStock_Click(object? sender, EventArgs e) => UpdateProductStock();
         
+        /// <summary>
+        /// Loads products with stock levels below their minimum threshold
+        /// Applies special formatting to highlight products that are critically low on stock
+        /// </summary>
         private void LoadLowStockProducts()
         {
             try

@@ -11,6 +11,9 @@ using System.Linq;
 
 namespace FASCloset.Services
 {
+    /// <summary>
+    /// Manages notifications including email alerts and SMS messages
+    /// </summary>
     public static class NotificationManager
     {
         /// <summary>
@@ -57,7 +60,11 @@ namespace FASCloset.Services
             }
         }
 
-         public static void ShowLowStockPopup(List<Product> lowStockItems)
+        /// <summary>
+        /// Displays a popup for low stock items
+        /// </summary>
+        /// <param name="lowStockItems">List of products with low stock</param>
+        public static void ShowLowStockPopup(List<Product> lowStockItems)
         {
             if (lowStockItems == null || lowStockItems.Count == 0)
                 return;
@@ -77,25 +84,29 @@ namespace FASCloset.Services
         /// <summary>
         /// Creates a nicely formatted message for low stock items
         /// </summary>
+        /// <param name="lowStockItems">List of products with low stock</param>
+        /// <returns>Formatted message string</returns>
         private static string BuildLowStockMessage(List<Product> lowStockItems)
         {
-            var message = "The following products are low on stock and may need reordering:\n\n";
+            var sb = new StringBuilder("The following products are low on stock and may need reordering:\n\n");
             
             foreach (var product in lowStockItems)
             {
-                message += $"• {product.ProductName}\n";
-                message += $"  Current stock: {product.Stock}\n";
-                message += $"  Category: {product.CategoryName}\n";
-                message += $"  ID: {product.ProductID}\n\n";
+                sb.AppendLine($"• {product.ProductName}");
+                sb.AppendLine($"  Current stock: {product.Stock}");
+                sb.AppendLine($"  Category: {product.CategoryName}");
+                sb.AppendLine($"  ID: {product.ProductID}\n");
             }
             
-            message += "\nPlease take appropriate action to restock these items.";
-            return message;
+            sb.AppendLine("\nPlease take appropriate action to restock these items.");
+            return sb.ToString();
         }
         
         /// <summary>
         /// Creates a shorter SMS-friendly message for low stock items
         /// </summary>
+        /// <param name="lowStockItems">List of products with low stock</param>
+        /// <returns>Formatted SMS message string</returns>
         private static string GetSmsMessage(List<Product> lowStockItems)
         {
             var criticalItems = lowStockItems.Where(p => p.Stock == 0).ToList();
@@ -114,6 +125,8 @@ namespace FASCloset.Services
         /// <summary>
         /// Send an email notification
         /// </summary>
+        /// <param name="subject">Email subject</param>
+        /// <param name="body">Email body</param>
         public static void SendEmailNotification(string subject, string body)
         {
             try
@@ -147,6 +160,8 @@ namespace FASCloset.Services
         /// <summary>
         /// Send an SMS notification
         /// </summary>
+        /// <param name="subject">SMS subject</param>
+        /// <param name="message">SMS content</param>
         public static void SendSmsNotification(string subject, string message)
         {
             try
@@ -168,6 +183,7 @@ namespace FASCloset.Services
         /// <summary>
         /// Get all notification logs
         /// </summary>
+        /// <returns>List of notification log entries</returns>
         public static List<NotificationLog> GetNotificationLogs()
         {
             // Make sure we have a valid NotificationLog table
@@ -190,6 +206,9 @@ namespace FASCloset.Services
         /// <summary>
         /// Log a notification to the database
         /// </summary>
+        /// <param name="type">Type of notification</param>
+        /// <param name="subject">Notification subject</param>
+        /// <param name="message">Notification message</param>
         public static void LogNotification(NotificationType type, string subject, string message)
         {
             try
@@ -218,7 +237,9 @@ namespace FASCloset.Services
             }
         }
         
-        // Ensure the NotificationLog table exists
+        /// <summary>
+        /// Ensure the NotificationLog table exists
+        /// </summary>
         private static void EnsureNotificationLogTableExists()
         {
             DatabaseConnection.ExecuteDbOperation(connection =>
@@ -245,6 +266,9 @@ namespace FASCloset.Services
         }
     }
     
+    /// <summary>
+    /// Types of notifications
+    /// </summary>
     public enum NotificationType
     {
         LowStock,

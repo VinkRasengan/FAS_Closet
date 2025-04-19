@@ -3,219 +3,297 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using Microsoft.Data.Sqlite;
 using FASCloset.Data;
 using FASCloset.Models;
 
 namespace FASCloset.Services
 {
+    /// <summary>
+    /// Manages order detail operations including creation, retrieval, and updating
+    /// </summary>
     public static class OrderDetailManager
     {
-        private static string GetConnectionString()
-        {
-            return DatabaseConnection.GetConnectionString();
-        }
-        
+        // SQL parameter constants
+        private const string PARAM_ORDER_ID = "@OrderID";
+        private const string PARAM_PRODUCT_ID = "@ProductID";
+        private const string PARAM_QUANTITY = "@Quantity";
+        private const string PARAM_UNIT_PRICE = "@UnitPrice";
+        private const string PARAM_ORDER_DETAIL_ID = "@OrderDetailID";
+
         /// <summary>
-        /// Adds a new order detail
+        /// Adds a new order detail to the database
         /// </summary>
-        /// <param name="orderDetail">The order detail to add</param>
-        /// <returns>The ID of the newly added order detail</returns>
+        /// <param name="orderDetail">Order detail object to add</param>
+        /// <returns>ID of the newly added order detail, or -1 on failure</returns>
         public static int AddOrderDetail(OrderDetail orderDetail)
         {
-            string query = @"
-                INSERT INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice)
-                VALUES (@OrderID, @ProductID, @Quantity, @UnitPrice);
-                SELECT last_insert_rowid();
-            ";
-            
-            var parameters = new Dictionary<string, object>
+            try
             {
-                { "@OrderID", orderDetail.OrderID },
-                { "@ProductID", orderDetail.ProductID },
-                { "@Quantity", orderDetail.Quantity },
-                { "@UnitPrice", orderDetail.UnitPrice }
-            };
-            
-            int orderDetailId = DataAccessHelper.ExecuteScalar<int>(query, parameters);
-            
-            // Update the Product stock quantity
-            string updateProductQuery = @"
-                UPDATE Product 
-                SET Stock = Stock - @Quantity 
-                WHERE ProductID = @ProductID AND Stock >= @Quantity
-            ";
-            
-            int rowsAffected = DataAccessHelper.ExecuteNonQuery(updateProductQuery, parameters);
-            if (rowsAffected == 0)
-            {
-                throw new InvalidOperationException($"Not enough stock for product ID {orderDetail.ProductID}");
+                string query = @"
+                    INSERT INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice)
+                    VALUES (@OrderID, @ProductID, @Quantity, @UnitPrice);
+                    SELECT last_insert_rowid();";
+                    
+                var parameters = new Dictionary<string, object>
+                {
+                    { PARAM_ORDER_ID, orderDetail.OrderID },
+                    { PARAM_PRODUCT_ID, orderDetail.ProductID },
+                    { PARAM_QUANTITY, orderDetail.Quantity },
+                    { PARAM_UNIT_PRICE, orderDetail.UnitPrice }
+                };
+                
+                int orderDetailId = DataAccessHelper.ExecuteScalar<int>(query, parameters);
+                
+                // Update the Product stock quantity
+                if (orderDetailId > 0)
+                {
+                    UpdateProductStock(orderDetail.ProductID, orderDetail.Quantity);
+                }
+                
+                return orderDetailId;
             }
-            
-            return orderDetailId;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding order detail: {ex.Message}");
+                return -1;
+            }
         }
 
         /// <summary>
         /// Updates an existing order detail
         /// </summary>
-        /// <param name="orderDetail">The order detail to update</param>
-        public static void UpdateOrderDetail(OrderDetail orderDetail)
+        /// <param name="orderDetail">Updated order detail information</param>
+        /// <returns>True if update was successful</returns>
+        public static bool UpdateOrderDetail(OrderDetail orderDetail)
         {
-            // First get the existing order detail to calculate stock adjustment
-            OrderDetail existingDetail = GetOrderDetailById(orderDetail.OrderDetailID);
-            int stockDifference = orderDetail.Quantity - existingDetail.Quantity;
-            
-            // Start a transaction to ensure consistency
-            DatabaseConnection.ExecuteWithTransaction((connection, transaction) =>
+            try
             {
+                // Get the current order detail to calculate stock difference
+                OrderDetail? currentOrderDetail = GetOrderDetailById(orderDetail.OrderDetailID);
+                if (currentOrderDetail == null)
+                    return false;
+                
                 // Update the order detail
-                string updateDetailQuery = @"
+                string query = @"
                     UPDATE OrderDetails 
-                    SET OrderID = @OrderID,
-                        ProductID = @ProductID,
+                    SET ProductID = @ProductID,
                         Quantity = @Quantity,
                         UnitPrice = @UnitPrice
-                    WHERE OrderDetailID = @OrderDetailID
-                ";
-                
-                using (var updateCmd = new SqliteCommand(updateDetailQuery, connection, transaction))
-                {
-                    updateCmd.Parameters.AddWithValue("@OrderDetailID", orderDetail.OrderDetailID);
-                    updateCmd.Parameters.AddWithValue("@OrderID", orderDetail.OrderID);
-                    updateCmd.Parameters.AddWithValue("@ProductID", orderDetail.ProductID);
-                    updateCmd.Parameters.AddWithValue("@Quantity", orderDetail.Quantity);
-                    updateCmd.Parameters.AddWithValue("@UnitPrice", orderDetail.UnitPrice);
+                    WHERE OrderDetailID = @OrderDetailID";
                     
-                    updateCmd.ExecuteNonQuery();
-                }
-                
-                // Only update stock if there's a change in quantity
-                if (stockDifference != 0)
+                var parameters = new Dictionary<string, object>
                 {
-                    string updateStockQuery = @"
-                        UPDATE Product 
-                        SET Stock = Stock - @StockDifference 
-                        WHERE ProductID = @ProductID AND (Stock >= @StockDifference OR @StockDifference < 0)
-                    ";
-                    
-                    using (var stockCmd = new SqliteCommand(updateStockQuery, connection, transaction))
+                    { PARAM_ORDER_DETAIL_ID, orderDetail.OrderDetailID },
+                    { PARAM_PRODUCT_ID, orderDetail.ProductID },
+                    { PARAM_QUANTITY, orderDetail.Quantity },
+                    { PARAM_UNIT_PRICE, orderDetail.UnitPrice }
+                };
+                
+                int rowsAffected = DataAccessHelper.ExecuteNonQuery(query, parameters);
+                
+                if (rowsAffected > 0)
+                {
+                    // If the product changed, restore the old product's stock and reduce the new product's stock
+                    if (currentOrderDetail.ProductID != orderDetail.ProductID)
                     {
-                        stockCmd.Parameters.AddWithValue("@ProductID", orderDetail.ProductID);
-                        stockCmd.Parameters.AddWithValue("@StockDifference", stockDifference);
+                        // Restore old product stock (add the quantity back)
+                        UpdateProductStock(currentOrderDetail.ProductID, -currentOrderDetail.Quantity);
                         
-                        int rowsAffected = stockCmd.ExecuteNonQuery();
-                        if (rowsAffected == 0 && stockDifference > 0)
+                        // Reduce new product stock
+                        UpdateProductStock(orderDetail.ProductID, orderDetail.Quantity);
+                    }
+                    // Otherwise, only update stock if the quantity changed
+                    else if (currentOrderDetail.Quantity != orderDetail.Quantity)
+                    {
+                        // Calculate the difference in quantity and update stock accordingly
+                        int quantityDifference = orderDetail.Quantity - currentOrderDetail.Quantity;
+                        if (quantityDifference != 0)
                         {
-                            throw new InvalidOperationException($"Not enough stock for product ID {orderDetail.ProductID}");
+                            UpdateProductStock(orderDetail.ProductID, quantityDifference);
                         }
                     }
+                    
+                    return true;
                 }
-            });
+                
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating order detail: {ex.Message}");
+                return false;
+            }
         }
 
         /// <summary>
-        /// Deletes an order detail
+        /// Deletes an order detail from the database
         /// </summary>
-        /// <param name="orderDetailId">The ID of the order detail to delete</param>
-        public static void DeleteOrderDetail(int orderDetailId)
+        /// <param name="orderDetailId">ID of the order detail to delete</param>
+        /// <returns>True if deletion was successful</returns>
+        public static bool DeleteOrderDetail(int orderDetailId)
         {
-            // First get the existing order detail to restore stock
-            OrderDetail existingDetail = GetOrderDetailById(orderDetailId);
-            
-            // Start a transaction to ensure consistency
-            DatabaseConnection.ExecuteWithTransaction((connection, transaction) =>
+            try
             {
-                // Restore product stock
-                string updateStockQuery = @"
-                    UPDATE Product 
-                    SET Stock = Stock + @Quantity 
-                    WHERE ProductID = @ProductID
-                ";
+                // Get the current order detail to restore stock
+                OrderDetail? orderDetail = GetOrderDetailById(orderDetailId);
+                if (orderDetail == null)
+                    return false;
                 
-                using (var stockCmd = new SqliteCommand(updateStockQuery, connection, transaction))
+                string query = "DELETE FROM OrderDetails WHERE OrderDetailID = @OrderDetailID";
+                var parameters = new Dictionary<string, object>
                 {
-                    stockCmd.Parameters.AddWithValue("@ProductID", existingDetail.ProductID);
-                    stockCmd.Parameters.AddWithValue("@Quantity", existingDetail.Quantity);
-                    
-                    stockCmd.ExecuteNonQuery();
+                    { PARAM_ORDER_DETAIL_ID, orderDetailId }
+                };
+                
+                int rowsAffected = DataAccessHelper.ExecuteNonQuery(query, parameters);
+                
+                if (rowsAffected > 0)
+                {
+                    // Restore stock to inventory (negate the quantity to add it back)
+                    UpdateProductStock(orderDetail.ProductID, -orderDetail.Quantity);
+                    return true;
                 }
                 
-                // Delete the order detail
-                string deleteQuery = @"
-                    DELETE FROM OrderDetails 
-                    WHERE OrderDetailID = @OrderDetailID
-                ";
-                
-                using (var deleteCmd = new SqliteCommand(deleteQuery, connection, transaction))
-                {
-                    deleteCmd.Parameters.AddWithValue("@OrderDetailID", orderDetailId);
-                    
-                    deleteCmd.ExecuteNonQuery();
-                }
-            });
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting order detail: {ex.Message}");
+                return false;
+            }
         }
 
         /// <summary>
-        /// Gets a specific order detail by ID
+        /// Gets a specific order detail by its ID
         /// </summary>
-        /// <param name="orderDetailId">The order detail ID</param>
-        /// <returns>The order detail or null if not found</returns>
-        public static OrderDetail GetOrderDetailById(int orderDetailId)
+        /// <param name="orderDetailId">ID of the order detail to retrieve</param>
+        /// <returns>Order detail object or null if not found</returns>
+        public static OrderDetail? GetOrderDetailById(int orderDetailId)
         {
             string query = @"
-                SELECT od.OrderDetailID, od.OrderID, od.ProductID, od.Quantity, od.UnitPrice,
-                       p.ProductName
+                SELECT od.OrderDetailID, od.OrderID, od.ProductID, p.ProductName, 
+                       od.Quantity, od.UnitPrice
                 FROM OrderDetails od
                 JOIN Product p ON od.ProductID = p.ProductID
-                WHERE od.OrderDetailID = @OrderDetailID
-            ";
-            
+                WHERE od.OrderDetailID = @OrderDetailID";
+                
             var parameters = new Dictionary<string, object>
             {
-                { "@OrderDetailID", orderDetailId }
+                { PARAM_ORDER_DETAIL_ID, orderDetailId }
             };
             
-            return DataAccessHelper.ExecuteReaderSingle(query, reader => new OrderDetail
+            return DataAccessHelper.ExecuteReaderSingle(query, MapOrderDetailFromReader, parameters);
+        }
+
+        /// <summary>
+        /// Gets all details for a specific order
+        /// </summary>
+        /// <param name="orderId">ID of the order</param>
+        /// <returns>List of order details</returns>
+        public static List<OrderDetail> GetOrderDetailsByOrderId(int orderId)
+        {
+            string query = @"
+                SELECT od.OrderDetailID, od.OrderID, od.ProductID, p.ProductName, 
+                       od.Quantity, od.UnitPrice
+                FROM OrderDetails od
+                JOIN Product p ON od.ProductID = p.ProductID
+                WHERE od.OrderID = @OrderID";
+                
+            var parameters = new Dictionary<string, object>
             {
-                OrderDetailID = Convert.ToInt32(reader["OrderDetailID"]),
-                OrderID = Convert.ToInt32(reader["OrderID"]),
-                ProductID = Convert.ToInt32(reader["ProductID"]),
-                Quantity = Convert.ToInt32(reader["Quantity"]),
-                UnitPrice = Convert.ToDecimal(reader["UnitPrice"]),
-                ProductName = reader["ProductName"].ToString()
+                { PARAM_ORDER_ID, orderId }
+            };
+            
+            return DataAccessHelper.ExecuteReader(query, MapOrderDetailFromReader, parameters);
+        }
+
+        /// <summary>
+        /// Updates the stock quantity of a product after an order is placed or updated
+        /// </summary>
+        /// <param name="productId">ID of the product to update</param>
+        /// <param name="quantityToReduce">Quantity to reduce from the stock (negative to increase)</param>
+        private static void UpdateProductStock(int productId, int quantityToReduce)
+        {
+            // Delegate to the inventory manager
+            InventoryManager.UpdateStock(productId, 
+                ProductManager.GetProductById(productId)?.Stock - quantityToReduce ?? 0);
+        }
+
+        /// <summary>
+        /// Maps a database record to an OrderDetail object
+        /// </summary>
+        /// <param name="reader">Data reader containing order detail data</param>
+        /// <returns>Populated OrderDetail object</returns>
+        private static OrderDetail MapOrderDetailFromReader(IDataReader reader)
+        {
+            return new OrderDetail
+            {
+                OrderDetailID = reader.GetInt32(reader.GetOrdinal("OrderDetailID")),
+                OrderID = reader.GetInt32(reader.GetOrdinal("OrderID")),
+                ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
+                ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
+                Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
+                UnitPrice = reader.GetDecimal(reader.GetOrdinal("UnitPrice"))
+                // TotalPrice is now calculated automatically from Quantity and UnitPrice
+            };
+        }
+
+        /// <summary>
+        /// Gets all products in an order with their quantities and prices
+        /// </summary>
+        /// <param name="orderId">ID of the order</param>
+        /// <returns>List of products in the order with quantity information</returns>
+        public static List<Product> GetProductsInOrder(int orderId)
+        {
+            string query = @"
+                SELECT p.*, od.Quantity, od.UnitPrice
+                FROM OrderDetails od
+                JOIN Product p ON od.ProductID = p.ProductID
+                WHERE od.OrderID = @OrderID";
+                
+            var parameters = new Dictionary<string, object>
+            {
+                { PARAM_ORDER_ID, orderId }
+            };
+            
+            return DataAccessHelper.ExecuteReader(query, reader =>
+            {
+                var product = new Product
+                {
+                    Id = reader.GetInt32(reader.GetOrdinal("ProductID")),
+                    Name = reader.GetString(reader.GetOrdinal("ProductName")),
+                    Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                    Stock = reader.GetInt32(reader.GetOrdinal("Stock")),
+                    Description = reader.GetString(reader.GetOrdinal("Description")),
+                    CategoryId = reader.GetInt32(reader.GetOrdinal("CategoryID")),
+                    OrderQuantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
+                    OrderUnitPrice = reader.GetDecimal(reader.GetOrdinal("UnitPrice"))
+                };
+                
+                if (!reader.IsDBNull(reader.GetOrdinal("ManufacturerID")))
+                {
+                    product.ManufacturerId = reader.GetInt32(reader.GetOrdinal("ManufacturerID"));
+                }
+                
+                return product;
             }, parameters);
         }
-        
+
         /// <summary>
-        /// Gets all order details for a specific order, redirecting to OrderManager
-        /// to maintain a single source of truth
+        /// Gets the total item count across all order details for an order
         /// </summary>
-        /// <param name="orderId">The order ID</param>
-        /// <returns>A list of order details</returns>
-        public static List<OrderDetail> GetOrderDetails(int orderId)
+        /// <param name="orderId">ID of the order</param>
+        /// <returns>Total item count</returns>
+        public static int GetTotalItemCount(int orderId)
         {
-            string query = @"
-                SELECT od.OrderDetailID, od.OrderID, od.ProductID, od.Quantity, od.UnitPrice,
-                       p.ProductName
-                FROM OrderDetails od
-                JOIN Product p ON od.ProductID = p.ProductID
-                WHERE od.OrderID = @OrderID
-            ";
-            
+            string query = "SELECT SUM(Quantity) FROM OrderDetails WHERE OrderID = @OrderID";
             var parameters = new Dictionary<string, object>
             {
-                { "@OrderID", orderId }
+                { PARAM_ORDER_ID, orderId }
             };
             
-            return DataAccessHelper.ExecuteReader(query, reader => new OrderDetail
-            {
-                OrderDetailID = Convert.ToInt32(reader["OrderDetailID"]),
-                OrderID = Convert.ToInt32(reader["OrderID"]),
-                ProductID = Convert.ToInt32(reader["ProductID"]),
-                Quantity = Convert.ToInt32(reader["Quantity"]),
-                UnitPrice = Convert.ToDecimal(reader["UnitPrice"]),
-                ProductName = reader["ProductName"].ToString()
-            }, parameters);
+            var result = DataAccessHelper.ExecuteScalar<object>(query, parameters);
+            return result == null || result == DBNull.Value ? 0 : Convert.ToInt32(result);
         }
     }
 }

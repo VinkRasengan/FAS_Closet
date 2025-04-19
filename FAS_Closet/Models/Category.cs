@@ -30,5 +30,10 @@ namespace FASCloset.Models
         /// The date when the category was created
         /// </summary>
         public DateTime CreatedDate { get; set; } = DateTime.Now;
+        
+        /// <summary>
+        /// Property alias for compatibility
+        /// </summary>
+        public int Id { get => CategoryID; set => CategoryID = value; }
     }
 }

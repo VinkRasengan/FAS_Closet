@@ -636,7 +636,10 @@ namespace FASCloset.Forms
                 };
 
                 CustomerManager.UpdateCustomer(customer);
-                MessageBox.Show("Cập nhật khách hàng thành công", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                
+                // Use isEditMode to display a more specific message
+                string successMessage = isEditMode ? "Cập nhật khách hàng thành công" : "Thêm khách hàng thành công";
+                MessageBox.Show(successMessage, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
                 // Cập nhật danh sách và đặt lại form
                 RefreshCustomerList();
@@ -659,12 +662,6 @@ namespace FASCloset.Forms
             {
                 btnEditCustomer_Click(sender, e);
             }
-        }
-
-        private void ShowCustomerPurchaseHistory(int customerId)
-        {
-            // TODO: Hiển thị lịch sử mua hàng của khách hàng
-            // Có thể thêm code để hiển thị danh sách đơn hàng của khách hàng
         }
 
         private void dgvCustomers_SelectionChanged(object? sender, EventArgs e)

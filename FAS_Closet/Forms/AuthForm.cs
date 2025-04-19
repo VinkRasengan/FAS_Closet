@@ -1,4 +1,5 @@
-﻿// This file defines the AuthForm class, which handles user authentication.
+﻿// AuthForm.cs - User authentication form
+// Handles user login and registration functionality with form validation
 
 using System;
 using System.Drawing;
@@ -11,12 +12,18 @@ using FASCloset.Models;
 
 namespace FASCloset.Forms
 {
+    /// <summary>
+    /// Authentication form that handles user login and registration with validation
+    /// </summary>
     public partial class AuthForm : Form
     {
         private const int MinPasswordLength = 6;
         private const int MinUsernameLength = 3;
         private bool _isFormClosing = false;
 
+        /// <summary>
+        /// Initializes a new instance of the AuthForm
+        /// </summary>
         public AuthForm()
         {
             InitializeComponent();
@@ -43,6 +50,9 @@ namespace FASCloset.Forms
             ApplyVisualStyles();
         }
 
+        /// <summary>
+        /// Handles form load event - initializes UI components and sets default values
+        /// </summary>
         private void AuthForm_Load(object? sender, EventArgs e)
         {
             // Focus on username field when form loads
@@ -59,6 +69,9 @@ namespace FASCloset.Forms
             tabControlAuth.Appearance = TabAppearance.FlatButtons;
         }
 
+        /// <summary>
+        /// Handles form closing event - confirms exit intention with user
+        /// </summary>
         private void AuthForm_FormClosing(object? sender, FormClosingEventArgs e)
         {
             if (!_isFormClosing && e.CloseReason == CloseReason.UserClosing)
@@ -76,6 +89,9 @@ namespace FASCloset.Forms
             }
         }
 
+        /// <summary>
+        /// Applies consistent visual styling to all form controls
+        /// </summary>
         private void ApplyVisualStyles()
         {
             // Apply modern color scheme and styling to buttons
@@ -112,6 +128,11 @@ namespace FASCloset.Forms
             ApplyTextBoxStyling(txtRegPhone, "Số điện thoại");
         }
 
+        /// <summary>
+        /// Applies common text box styling with placeholder text
+        /// </summary>
+        /// <param name="textBox">TextBox control to style</param>
+        /// <param name="placeholder">Placeholder text to display</param>
         private void ApplyTextBoxStyling(TextBox textBox, string placeholder)
         {
             textBox.BorderStyle = BorderStyle.FixedSingle;
@@ -121,6 +142,11 @@ namespace FASCloset.Forms
             textBox.Padding = new Padding(8);
         }
 
+        /// <summary>
+        /// Applies rounded corners to a control using GraphicsPath
+        /// </summary>
+        /// <param name="control">Control to apply rounded corners to</param>
+        /// <param name="radius">Corner radius in pixels</param>
         private void ApplyRoundedCorners(Control control, int radius)
         {
             using (GraphicsPath path = new GraphicsPath())
@@ -144,18 +170,28 @@ namespace FASCloset.Forms
 
         #region Login Tab Events and Validation
 
+        /// <summary>
+        /// Validates username entry when text changes
+        /// </summary>
         private void TxtLoginUsername_TextChanged(object? sender, EventArgs e)
         {
             ValidateLoginUsername();
             HideLoginError();
         }
 
+        /// <summary>
+        /// Validates password entry when text changes
+        /// </summary>
         private void TxtLoginPassword_TextChanged(object? sender, EventArgs e)
         {
             ValidateLoginPassword();
             HideLoginError();
         }
 
+        /// <summary>
+        /// Validates login username input
+        /// </summary>
+        /// <returns>True if username is valid, otherwise false</returns>
         private bool ValidateLoginUsername()
         {
             if (string.IsNullOrWhiteSpace(txtLoginUsername.Text))
@@ -167,6 +203,10 @@ namespace FASCloset.Forms
             return true;
         }
 
+        /// <summary>
+        /// Validates login password input
+        /// </summary>
+        /// <returns>True if password is valid, otherwise false</returns>
         private bool ValidateLoginPassword()
         {
             if (string.IsNullOrWhiteSpace(txtLoginPassword.Text))
@@ -178,17 +218,27 @@ namespace FASCloset.Forms
             return true;
         }
 
+        /// <summary>
+        /// Displays login error message
+        /// </summary>
+        /// <param name="message">Error message to display</param>
         private void ShowLoginError(string message)
         {
             lblLoginError.Text = message;
             lblLoginError.Visible = true;
         }
 
+        /// <summary>
+        /// Hides the login error message
+        /// </summary>
         private void HideLoginError()
         {
             lblLoginError.Visible = false;
         }
 
+        /// <summary>
+        /// Switches to the registration tab
+        /// </summary>
         private void BtnSwitchToRegister_Click(object? sender, EventArgs e)
         {
             tabControlAuth.SelectedTab = tabPageRegister;
@@ -201,6 +251,9 @@ namespace FASCloset.Forms
 
         #region Register Tab Events and Validation
 
+        /// <summary>
+        /// Switches to the login tab
+        /// </summary>
         private void BtnSwitchToLogin_Click(object? sender, EventArgs e)
         {
             tabControlAuth.SelectedTab = tabPageLogin;
@@ -209,12 +262,18 @@ namespace FASCloset.Forms
             HideRegisterMessages();
         }
 
+        /// <summary>
+        /// Validates username when text changes
+        /// </summary>
         private void TxtRegUsername_TextChanged(object? sender, EventArgs e)
         {
             ValidateRegUsername();
             HideRegisterMessages();
         }
 
+        /// <summary>
+        /// Updates password strength meter and validates password when text changes
+        /// </summary>
         private void TxtRegPassword_TextChanged(object? sender, EventArgs e)
         {
             // Update password strength indicator
@@ -254,30 +313,46 @@ namespace FASCloset.Forms
             HideRegisterMessages();
         }
 
+        /// <summary>
+        /// Validates password confirmation when text changes
+        /// </summary>
         private void TxtRegConfirmPassword_TextChanged(object? sender, EventArgs e)
         {
             ValidateRegConfirmPassword();
             HideRegisterMessages();
         }
 
+        /// <summary>
+        /// Validates name when text changes
+        /// </summary>
         private void TxtRegName_TextChanged(object? sender, EventArgs e)
         {
             ValidateRegName();
             HideRegisterMessages();
         }
 
+        /// <summary>
+        /// Validates email when text changes
+        /// </summary>
         private void TxtRegEmail_TextChanged(object? sender, EventArgs e)
         {
             ValidateRegEmail();
             HideRegisterMessages();
         }
 
+        /// <summary>
+        /// Validates phone number when text changes
+        /// </summary>
         private void TxtRegPhone_TextChanged(object? sender, EventArgs e)
         {
             ValidateRegPhone();
             HideRegisterMessages();
         }
 
+        /// <summary>
+        /// Validates registration username
+        /// </summary>
+        /// <returns>True if username is valid, otherwise false</returns>
         private bool ValidateRegUsername()
         {
             if (string.IsNullOrWhiteSpace(txtRegUsername.Text))
@@ -300,6 +375,10 @@ namespace FASCloset.Forms
             return true;
         }
 
+        /// <summary>
+        /// Validates registration password
+        /// </summary>
+        /// <returns>True if password is valid, otherwise false</returns>
         private bool ValidateRegPassword()
         {
             if (string.IsNullOrWhiteSpace(txtRegPassword.Text))
@@ -317,6 +396,10 @@ namespace FASCloset.Forms
             return true;
         }
 
+        /// <summary>
+        /// Validates password confirmation
+        /// </summary>
+        /// <returns>True if passwords match, otherwise false</returns>
         private bool ValidateRegConfirmPassword()
         {
             if (string.IsNullOrWhiteSpace(txtRegConfirmPassword.Text))
@@ -334,6 +417,10 @@ namespace FASCloset.Forms
             return true;
         }
 
+        /// <summary>
+        /// Validates user's full name
+        /// </summary>
+        /// <returns>True if name is valid, otherwise false</returns>
         private bool ValidateRegName()
         {
             if (string.IsNullOrWhiteSpace(txtRegName.Text))
@@ -351,6 +438,10 @@ namespace FASCloset.Forms
             return true;
         }
 
+        /// <summary>
+        /// Validates email address format
+        /// </summary>
+        /// <returns>True if email is valid, otherwise false</returns>
         private bool ValidateRegEmail()
         {
             if (string.IsNullOrWhiteSpace(txtRegEmail.Text))
@@ -368,6 +459,10 @@ namespace FASCloset.Forms
             return true;
         }
 
+        /// <summary>
+        /// Validates phone number format
+        /// </summary>
+        /// <returns>True if phone number is valid, otherwise false</returns>
         private bool ValidateRegPhone()
         {
             if (string.IsNullOrWhiteSpace(txtRegPhone.Text))
@@ -385,6 +480,10 @@ namespace FASCloset.Forms
             return true;
         }
 
+        /// <summary>
+        /// Displays error message on registration form
+        /// </summary>
+        /// <param name="message">Error message to show</param>
         private void ShowRegisterError(string message)
         {
             lblRegisterError.Text = message;
@@ -392,6 +491,10 @@ namespace FASCloset.Forms
             lblRegisterSuccess.Visible = false;
         }
 
+        /// <summary>
+        /// Displays success message on registration form
+        /// </summary>
+        /// <param name="message">Success message to show</param>
         private void ShowRegisterSuccess(string message)
         {
             lblRegisterSuccess.Text = message;
@@ -401,6 +504,9 @@ namespace FASCloset.Forms
             lblRegisterError.Visible = false;
         }
 
+        /// <summary>
+        /// Hides all registration message labels
+        /// </summary>
         private void HideRegisterMessages()
         {
             lblRegisterError.Visible = false;
@@ -409,7 +515,9 @@ namespace FASCloset.Forms
 
         #endregion
 
-        // Login logic
+        /// <summary>
+        /// Handles login button click - authenticates user credentials
+        /// </summary>
         private void btnLogin_Click(object? sender, EventArgs e)
         {
             errorProviderLogin.Clear();
@@ -460,7 +568,9 @@ namespace FASCloset.Forms
             }
         }
 
-        // Registration logic
+        /// <summary>
+        /// Handles register button click - creates new user account
+        /// </summary>
         private void BtnRegister_Click(object? sender, EventArgs e)
         {
             // Validate all inputs
@@ -543,6 +653,10 @@ namespace FASCloset.Forms
             }
         }
 
+        /// <summary>
+        /// Validates all registration form inputs
+        /// </summary>
+        /// <returns>True if all inputs are valid, otherwise false</returns>
         private bool ValidateAllRegistrationInputs()
         {
             errorProviderRegister.Clear();
@@ -576,6 +690,9 @@ namespace FASCloset.Forms
             return isValid;
         }
 
+        /// <summary>
+        /// Clears all registration form fields and indicators
+        /// </summary>
         private void ClearRegistrationForm()
         {
             txtRegUsername.Text = string.Empty;
@@ -589,7 +706,11 @@ namespace FASCloset.Forms
             errorProviderRegister.Clear();
         }
 
-        // Password strength calculation
+        /// <summary>
+        /// Calculates password strength score based on complexity rules
+        /// </summary>
+        /// <param name="password">Password to evaluate</param>
+        /// <returns>Strength score from 0-100</returns>
         private static int CalculatePasswordStrength(string password)
         {
             if (string.IsNullOrEmpty(password))
@@ -627,6 +748,11 @@ namespace FASCloset.Forms
             return Math.Min(score, 100);
         }
 
+        /// <summary>
+        /// Validates email address format using regex
+        /// </summary>
+        /// <param name="email">Email address to validate</param>
+        /// <returns>True if email format is valid, otherwise false</returns>
         private static bool IsValidEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -644,6 +770,11 @@ namespace FASCloset.Forms
             }
         }
 
+        /// <summary>
+        /// Validates phone number format using regex
+        /// </summary>
+        /// <param name="phone">Phone number to validate</param>
+        /// <returns>True if phone number format is valid, otherwise false</returns>
         private static bool IsValidPhoneNumber(string phone)
         {
             if (string.IsNullOrWhiteSpace(phone))

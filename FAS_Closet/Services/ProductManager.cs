@@ -9,19 +9,29 @@ using FASCloset.Data;
 
 namespace FASCloset.Services
 {
+    /// <summary>
+    /// Provides methods for managing products, categories, and manufacturers.
+    /// </summary>
     public static class ProductManager
     {
         private const string DescriptionParameter = "@Description";
-        
+
+        /// <summary>
+        /// Gets the connection string for the database.
+        /// </summary>
+        /// <returns>Connection string.</returns>
         private static string GetConnectionString()
         {
             return DatabaseConnection.GetConnectionString();
         }
 
-        // Get all products with category and manufacturer names
+        /// <summary>
+        /// Retrieves all products with category and manufacturer names.
+        /// </summary>
+        /// <param name="includeInactive">Whether to include inactive products.</param>
+        /// <returns>List of products.</returns>
         public static List<Product> GetProducts(bool includeInactive = false)
         {
-            // Define SQL parameter name constants
             const string includeInactiveParam = "@IncludeInactive";
 
             string query = @"
@@ -50,12 +60,55 @@ namespace FASCloset.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Error retrieving products: {ex.Message}");
-                // Return empty list instead of throwing to avoid crashing UI
                 return new List<Product>();
             }
         }
 
-        // Get products by category with additional details
+        /// <summary>
+        /// Retrieves all products regardless of status.
+        /// This is an alias for GetProducts(true) for better code readability.
+        /// </summary>
+        /// <returns>List of all products.</returns>
+        public static List<Product> GetAllProducts()
+        {
+            // Include inactive products by default
+            return GetProducts(true);
+        }
+
+        /// <summary>
+        /// Gets all products with control over including inactive products.
+        /// </summary>
+        /// <param name="includeInactive">Whether to include inactive products</param>
+        /// <returns>List of products</returns>
+        public static List<Product> GetAllProducts(bool includeInactive)
+        {
+            return GetProducts(includeInactive);
+        }
+
+        /// <summary>
+        /// Retrieves all products with optional filtering by category.
+        /// </summary>
+        /// <param name="categoryId">Category ID to filter by, or null for all products.</param>
+        /// <param name="includeInactive">Whether to include inactive products.</param>
+        /// <returns>List of products filtered by category if specified.</returns>
+        public static List<Product> GetAllProducts(int? categoryId, bool includeInactive = false)
+        {
+            if (categoryId.HasValue)
+            {
+                return GetProductsByCategory(categoryId.Value, includeInactive);
+            }
+            else
+            {
+                return GetProducts(includeInactive);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves products by category with additional details.
+        /// </summary>
+        /// <param name="categoryId">Category ID to filter by.</param>
+        /// <param name="includeInactive">Whether to include inactive products.</param>
+        /// <returns>List of products in the specified category.</returns>
         public static List<Product> GetProductsByCategory(int categoryId, bool includeInactive = false)
         {
             string query = @"
@@ -79,7 +132,11 @@ namespace FASCloset.Services
             return DataAccessHelper.ExecuteReader(query, reader => MapProductWithDetails(reader), parameters);
         }
 
-        // Get product by name
+        /// <summary>
+        /// Retrieves a product by its name.
+        /// </summary>
+        /// <param name="name">Name of the product.</param>
+        /// <returns>Product object or null if not found.</returns>
         public static Product? GetProductByName(string name)
         {
             string query = "SELECT * FROM Product WHERE ProductName = @Name";
@@ -88,7 +145,11 @@ namespace FASCloset.Services
             return DataAccessHelper.ExecuteReaderSingle(query, reader => MapProduct(reader), parameters);
         }
 
-        // Get product by ID with related information
+        /// <summary>
+        /// Retrieves a product by its ID with related information.
+        /// </summary>
+        /// <param name="productId">ID of the product.</param>
+        /// <returns>Product object or null if not found.</returns>
         public static Product? GetProductById(int productId)
         {
             string query = @"
@@ -107,7 +168,10 @@ namespace FASCloset.Services
             return DataAccessHelper.ExecuteReaderSingle(query, reader => MapProductWithDetails(reader), parameters);
         }
 
-        // Add a new product
+        /// <summary>
+        /// Adds a new product to the database.
+        /// </summary>
+        /// <param name="product">Product object to add.</param>
         public static void AddProduct(Product product)
         {
             string query = @"
@@ -127,8 +191,7 @@ namespace FASCloset.Services
             };
 
             int productId = DataAccessHelper.ExecuteScalar<int>(query, parameters);
-            
-            // Add default inventory record
+
             string inventoryQuery = @"
                 INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) 
                 VALUES (@ProductID, @StockQuantity, @MinimumStockThreshold)";
@@ -137,16 +200,18 @@ namespace FASCloset.Services
             {
                 { "@ProductID", productId },
                 { "@StockQuantity", product.Stock },
-                { "@MinimumStockThreshold", 10 } // Default threshold
+                { "@MinimumStockThreshold", 10 }
             };
 
             DataAccessHelper.ExecuteNonQuery(inventoryQuery, inventoryParams);
         }
 
-        // Update an existing product
+        /// <summary>
+        /// Updates an existing product in the database.
+        /// </summary>
+        /// <param name="product">Updated product information.</param>
         public static void UpdateProduct(Product product)
         {
-            // Get the current product to check if stock changed
             Product? currentProduct = GetProductById(product.ProductID);
             bool stockChanged = currentProduct != null && currentProduct.Stock != product.Stock;
 
@@ -175,23 +240,27 @@ namespace FASCloset.Services
 
             DataAccessHelper.ExecuteNonQuery(query, parameters);
 
-            // If stock changed, update the inventory table as well
             if (stockChanged)
             {
                 InventoryManager.UpdateStock(product.ProductID, product.Stock);
             }
         }
 
-        // Delete a product (or mark as inactive)
+        /// <summary>
+        /// Marks a product as inactive in the database.
+        /// </summary>
+        /// <param name="productId">ID of the product to mark as inactive.</param>
         public static void DeleteProduct(int productId)
         {
-            // Instead of deleting, mark as inactive
             string query = "UPDATE Product SET IsActive = 0 WHERE ProductID = @ProductID";
             var parameters = new Dictionary<string, object> { { "@ProductID", productId } };
             DataAccessHelper.ExecuteNonQuery(query, parameters);
         }
 
-        // Permanently delete a product (only for admin use)
+        /// <summary>
+        /// Permanently deletes a product from the database.
+        /// </summary>
+        /// <param name="productId">ID of the product to delete.</param>
         public static void PermanentlyDeleteProduct(int productId)
         {
             string query = "DELETE FROM Product WHERE ProductID = @ProductID";
@@ -199,7 +268,10 @@ namespace FASCloset.Services
             DataAccessHelper.ExecuteNonQuery(query, parameters);
         }
 
-        // Get all categories
+        /// <summary>
+        /// Retrieves all active categories.
+        /// </summary>
+        /// <returns>List of categories.</returns>
         public static List<Category> GetCategories()
         {
             string query = "SELECT * FROM Category WHERE IsActive = 1 ORDER BY CategoryName";
@@ -213,7 +285,10 @@ namespace FASCloset.Services
             });
         }
 
-        // Get all manufacturers
+        /// <summary>
+        /// Retrieves all manufacturers.
+        /// </summary>
+        /// <returns>List of manufacturers.</returns>
         public static List<Manufacturer> GetManufacturers()
         {
             string query = "SELECT * FROM Manufacturer ORDER BY ManufacturerName";
@@ -225,7 +300,10 @@ namespace FASCloset.Services
             });
         }
 
-        // Add a category
+        /// <summary>
+        /// Adds a new category to the database.
+        /// </summary>
+        /// <param name="category">Category object to add.</param>
         public static void AddCategory(Category category)
         {
             string query = "INSERT INTO Category (CategoryName, Description, IsActive) VALUES (@CategoryName, @Description, @IsActive)";
@@ -238,7 +316,10 @@ namespace FASCloset.Services
             DataAccessHelper.ExecuteNonQuery(query, parameters);
         }
 
-        // Add a manufacturer
+        /// <summary>
+        /// Adds a new manufacturer to the database.
+        /// </summary>
+        /// <param name="manufacturer">Manufacturer object to add.</param>
         public static void AddManufacturer(Manufacturer manufacturer)
         {
             string query = "INSERT INTO Manufacturer (ManufacturerName, Description) VALUES (@ManufacturerName, @Description)";
@@ -250,7 +331,10 @@ namespace FASCloset.Services
             DataAccessHelper.ExecuteNonQuery(query, parameters);
         }
 
-        // Update a category 
+        /// <summary>
+        /// Updates an existing category in the database.
+        /// </summary>
+        /// <param name="category">Updated category information.</param>
         public static void UpdateCategory(Category category)
         {
             string query = "UPDATE Category SET CategoryName = @CategoryName, Description = @Description, IsActive = @IsActive WHERE CategoryID = @CategoryID";
@@ -264,7 +348,10 @@ namespace FASCloset.Services
             DataAccessHelper.ExecuteNonQuery(query, parameters);
         }
 
-        // Update a manufacturer
+        /// <summary>
+        /// Updates an existing manufacturer in the database.
+        /// </summary>
+        /// <param name="manufacturer">Updated manufacturer information.</param>
         public static void UpdateManufacturer(Manufacturer manufacturer)
         {
             string query = "UPDATE Manufacturer SET ManufacturerName = @ManufacturerName, Description = @Description WHERE ManufacturerID = @ManufacturerID";
@@ -277,7 +364,11 @@ namespace FASCloset.Services
             DataAccessHelper.ExecuteNonQuery(query, parameters);
         }
 
-        // Check if category name is already in use
+        /// <summary>
+        /// Checks if a category name is already in use.
+        /// </summary>
+        /// <param name="categoryName">Category name to check.</param>
+        /// <returns>True if the name is taken, otherwise false.</returns>
         public static bool IsCategoryNameTaken(string categoryName)
         {
             string query = "SELECT COUNT(*) FROM Category WHERE CategoryName = @CategoryName";
@@ -286,7 +377,11 @@ namespace FASCloset.Services
             return count > 0;
         }
 
-        // Check if manufacturer name is already in use
+        /// <summary>
+        /// Checks if a manufacturer name is already in use.
+        /// </summary>
+        /// <param name="manufacturerName">Manufacturer name to check.</param>
+        /// <returns>True if the name is taken, otherwise false.</returns>
         public static bool IsManufacturerNameTaken(string manufacturerName)
         {
             string query = "SELECT COUNT(*) FROM Manufacturer WHERE ManufacturerName = @ManufacturerName";
@@ -295,7 +390,12 @@ namespace FASCloset.Services
             return count > 0;
         }
 
-        // Search products by name or description
+        /// <summary>
+        /// Searches products by name or description.
+        /// </summary>
+        /// <param name="searchText">Text to search for.</param>
+        /// <param name="includeInactive">Whether to include inactive products.</param>
+        /// <returns>List of matching products.</returns>
         public static List<Product> SearchProducts(string searchText, bool includeInactive = false)
         {
             string query = @"
@@ -320,10 +420,14 @@ namespace FASCloset.Services
             return DataAccessHelper.ExecuteReader(query, reader => MapProductWithDetails(reader), parameters);
         }
 
-        // Get all products with warehouse-specific stock information
+        /// <summary>
+        /// Retrieves all products with warehouse-specific stock information.
+        /// </summary>
+        /// <param name="warehouseId">ID of the warehouse.</param>
+        /// <param name="includeInactive">Whether to include inactive products.</param>
+        /// <returns>List of products with warehouse-specific stock information.</returns>
         public static List<Product> GetProductsForWarehouse(int warehouseId, bool includeInactive = false)
         {
-            // Define SQL parameter name constants
             const string warehouseIdParam = "@WarehouseID";
             const string includeInactiveParam = "@IncludeInactive";
 
@@ -351,14 +455,13 @@ namespace FASCloset.Services
                 var products = DataAccessHelper.ExecuteReader(query, reader =>
                 {
                     var product = MapProductWithDetails(reader);
-                    
-                    // Get warehouse-specific stock if available
+
                     if (!reader.IsDBNull(reader.GetOrdinal("WarehouseStock")))
                         product.Stock = reader.GetInt32(reader.GetOrdinal("WarehouseStock"));
 
                     return product;
                 }, parameters);
-                    
+
                 Console.WriteLine($"Retrieved {products.Count} products for warehouse {warehouseId}");
                 return products;
             }
@@ -369,7 +472,11 @@ namespace FASCloset.Services
             }
         }
 
-        // Helper method to map reader to product
+        /// <summary>
+        /// Maps a database record to a Product object.
+        /// </summary>
+        /// <param name="reader">Data reader containing product data.</param>
+        /// <returns>Populated Product object.</returns>
         private static Product MapProduct(IDataReader reader)
         {
             return new Product
@@ -385,23 +492,26 @@ namespace FASCloset.Services
             };
         }
 
-        // Helper method to map reader to product with additional details
+        /// <summary>
+        /// Maps a database record to a Product object with additional details.
+        /// </summary>
+        /// <param name="reader">Data reader containing product data.</param>
+        /// <returns>Populated Product object with additional details.</returns>
         private static Product MapProductWithDetails(IDataReader reader)
         {
-            if (reader == null) 
+            if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
-                
+
             var product = MapProduct(reader);
 
-            // Add related information - safely check for column existence first
             DataTable schemaTable = reader.GetSchemaTable();
-            
+
             if (schemaTable != null)
             {
                 bool hasCategory = SchemaContainsColumn(schemaTable, "CategoryName");
                 bool hasManufacturer = SchemaContainsColumn(schemaTable, "ManufacturerName");
                 bool hasLowStock = SchemaContainsColumn(schemaTable, "IsLowStock");
-                
+
                 if (hasCategory && !reader.IsDBNull(reader.GetOrdinal("CategoryName")))
                     product.CategoryName = reader.GetString(reader.GetOrdinal("CategoryName"));
 
@@ -415,7 +525,12 @@ namespace FASCloset.Services
             return product;
         }
 
-        // Helper method to check if a column exists in schema
+        /// <summary>
+        /// Checks if a column exists in the schema.
+        /// </summary>
+        /// <param name="schema">Schema table.</param>
+        /// <param name="columnName">Column name to check.</param>
+        /// <returns>True if the column exists, otherwise false.</returns>
         private static bool SchemaContainsColumn(DataTable schema, string columnName)
         {
             foreach (DataRow row in schema.Rows)
@@ -426,6 +541,10 @@ namespace FASCloset.Services
             return false;
         }
 
+        /// <summary>
+        /// Ensures the Categories table exists in the database.
+        /// </summary>
+        /// <param name="connection">Database connection.</param>
         private static void EnsureCategoriesTableExists(SqliteConnection connection)
         {
             string checkTableQuery = "SELECT name FROM sqlite_master WHERE type='table' AND name='Category';";
@@ -448,6 +567,11 @@ namespace FASCloset.Services
             }
         }
 
+        /// <summary>
+        /// Retrieves products by category ID.
+        /// </summary>
+        /// <param name="categoryId">Category ID to filter by.</param>
+        /// <returns>List of products in the specified category.</returns>
         public static List<Product> GetProductsByCategory(int categoryId)
         {
             string query = @"

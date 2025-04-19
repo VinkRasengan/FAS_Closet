@@ -11,6 +11,9 @@ using FASCloset.Data;
 
 namespace FASCloset.Services
 {
+    /// <summary>
+    /// Manages user-related operations including authentication, registration, and user account management
+    /// </summary>
     public class UserManager
     {
         private static string GetConnectionString()
@@ -18,6 +21,12 @@ namespace FASCloset.Services
             return DatabaseConnection.GetConnectionString();
         }
 
+        /// <summary>
+        /// Authenticates a user and provides user information if successful
+        /// </summary>
+        /// <param name="username">Username to authenticate</param>
+        /// <param name="password">Plain text password to validate</param>
+        /// <returns>User object if authentication successful, null otherwise</returns>
         public User? Login(string username, string password)
         {
             try
@@ -39,6 +48,10 @@ namespace FASCloset.Services
             }
         }
 
+        /// <summary>
+        /// Registers a new user in the system
+        /// </summary>
+        /// <param name="user">User object with registration information</param>
         public static void RegisterUser(User user)
         {
             try
@@ -65,6 +78,11 @@ namespace FASCloset.Services
             }
         }
 
+        /// <summary>
+        /// Checks if a username is already taken
+        /// </summary>
+        /// <param name="username">Username to check</param>
+        /// <returns>True if username exists in the database</returns>
         public static bool IsUsernameTaken(string username)
         {
             try
@@ -84,6 +102,11 @@ namespace FASCloset.Services
             }
         }
 
+        /// <summary>
+        /// Checks if an email is already taken by an existing user
+        /// </summary>
+        /// <param name="email">Email to check</param>
+        /// <returns>True if email exists in the database</returns>
         public static bool IsEmailTaken(string email)
         {
             try
@@ -103,6 +126,11 @@ namespace FASCloset.Services
             }
         }
 
+        /// <summary>
+        /// Checks if a phone number is already taken by an existing user
+        /// </summary>
+        /// <param name="phone">Phone number to check</param>
+        /// <returns>True if phone exists in the database</returns>
         public static bool IsPhoneTaken(string phone)
         {
             try
@@ -122,6 +150,11 @@ namespace FASCloset.Services
             }
         }
 
+        /// <summary>
+        /// Retrieves a user by username
+        /// </summary>
+        /// <param name="username">Username to search for</param>
+        /// <returns>User object if found, null otherwise</returns>
         public static User? GetUserByUsername(string username)
         {
             try
@@ -149,6 +182,13 @@ namespace FASCloset.Services
             }
         }
 
+        /// <summary>
+        /// Verifies a password against stored hash and salt
+        /// </summary>
+        /// <param name="password">Plain text password to verify</param>
+        /// <param name="storedHashStr">Stored password hash as Base64 string</param>
+        /// <param name="storedSaltStr">Stored password salt as Base64 string</param>
+        /// <returns>True if password matches the stored hash and salt</returns>
         private static bool VerifyPasswordHash(string password, string storedHashStr, string storedSaltStr)
         {
             if (string.IsNullOrWhiteSpace(password)) return false;
@@ -177,7 +217,10 @@ namespace FASCloset.Services
             }
         }
 
-        // Add this method to retrieve all users for the warehouse management
+        /// <summary>
+        /// Gets all users from the database
+        /// </summary>
+        /// <returns>List of all users</returns>
         public static List<User> GetUsers()
         {
             string query = "SELECT * FROM User ORDER BY Name";

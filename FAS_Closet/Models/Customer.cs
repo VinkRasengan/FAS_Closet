@@ -10,6 +10,10 @@ namespace FASCloset.Models
         public string Phone { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
         public decimal TotalSpent { get; set; }
-
+        public int LoyaltyPoints { get; set; }
+        public decimal TotalPurchases { get; set; }
+        
+        // Property alias for compatibility
+        public int Id { get => CustomerID; set => CustomerID = value; }
     }
 }

@@ -1,3 +1,4 @@
+// This file contains the UcRevenueReport UserControl that handles revenue reporting functionality
 using System;
 using System.Data;
 using System.Drawing;
@@ -10,10 +11,21 @@ using FASCloset.Models;
 
 namespace FASCloset.Forms
 {
+    /// <summary>
+    /// User control for generating and displaying revenue reports
+    /// Provides functionality for viewing sales data by different criteria, exporting to CSV, and filtering by date range
+    /// </summary>
     public partial class UcRevenueReport : UserControl
     {
+        /// <summary>
+        /// Background worker for handling report generation operations without freezing the UI
+        /// </summary>
         private readonly BackgroundWorker backgroundWorker;
 
+        /// <summary>
+        /// Initializes a new instance of the UcRevenueReport user control
+        /// Sets up UI components, event handlers, and default date ranges
+        /// </summary>
         public UcRevenueReport()
         {
             InitializeComponent();
@@ -22,7 +34,7 @@ namespace FASCloset.Forms
             backgroundWorker.DoWork += BackgroundWorker_DoWork;
             backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
             
-            // Thiết lập khoảng thời gian mặc định là từ 2 năm trước đến hiện tại để đảm bảo bao gồm tất cả đơn hàng
+            // Set default date range to include all orders from the past 2 years to present
             DateTimePickerStartDate.Value = new DateTime(DateTime.Now.Year - 2, 1, 1, 0, 0, 0, DateTimeKind.Local);
             DateTimePickerEndDate.Value = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Local);
             
@@ -33,15 +45,15 @@ namespace FASCloset.Forms
             // Set up the report type dropdown
             cmbReportType.SelectedIndexChanged += CmbReportType_SelectedIndexChanged;
             
-            // Cài đặt style ban đầu cho DataGridView
+            // Set initial DataGridView styling
             SetupDataGridViewStyle();
             
-            // Tự động tải dữ liệu khi form được khởi tạo (sau khi tất cả control đã load xong)
+            // Automatically load data when form is initialized
             this.Load += (s, e) => {
-                // Hiển thị dữ liệu mẫu ngay để DataGridView luôn có nội dung
+                // Show sample data first so DataGridView is never empty
                 ShowSampleData();
                 
-                // Tải dữ liệu thực từ cơ sở dữ liệu
+                // Load actual data from database
                 if (!backgroundWorker.IsBusy)
                 {
                     ProgressBarReport.Visible = true;
@@ -50,9 +62,11 @@ namespace FASCloset.Forms
             };
         }
         
+        /// <summary>
+        /// Applies consistent styling to the DataGridView to ensure a professional appearance
+        /// </summary>
         private void SetupDataGridViewStyle()
         {
-            // Thiết lập style cơ bản cho DataGridView trước khi có dữ liệu
             DataGridViewReport.BorderStyle = BorderStyle.None;
             DataGridViewReport.BackgroundColor = Color.White;
             DataGridViewReport.GridColor = Color.FromArgb(230, 230, 230);
@@ -73,9 +87,15 @@ namespace FASCloset.Forms
             DataGridViewReport.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         }
         
+        /// <summary>
+        /// Event handler triggered when the user changes the report type
+        /// Refreshes the display with the new report type and triggers a data reload
+        /// </summary>
+        /// <param name="sender">The control that triggered the event</param>
+        /// <param name="e">Event arguments</param>
         private void CmbReportType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Hiển thị dữ liệu mẫu ngay lập tức khi thay đổi loại báo cáo
+            // Show sample data immediately when report type changes
             ShowSampleData();
             
             // Generate report when the report type changes
@@ -86,11 +106,17 @@ namespace FASCloset.Forms
             }
         }
 
+        /// <summary>
+        /// Event handler for export button click
+        /// Validates date range and triggers the export operation
+        /// </summary>
+        /// <param name="sender">The control that triggered the event</param>
+        /// <param name="e">Event arguments</param>
         private void btnExportDetailedReport_Click(object sender, EventArgs e)
         {
             if (DateTimePickerEndDate.Value < DateTimePickerStartDate.Value)
             {
-                MessageBox.Show("Ngày kết thúc không thể trước ngày bắt đầu", "Khoảng thời gian không hợp lệ", 
+                MessageBox.Show("End date cannot be before start date", "Invalid Date Range", 
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -102,74 +128,93 @@ namespace FASCloset.Forms
             }
         }
         
+        /// <summary>
+        /// Event handler for refresh button click
+        /// Resets date pickers to default range (past 2 years) and reloads report data
+        /// </summary>
+        /// <param name="sender">The control that triggered the event</param>
+        /// <param name="e">Event arguments</param>
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-            // Reset date pickers để mở rộng khoảng thời gian
+            // Reset date range to expand time coverage
             DateTimePickerStartDate.Value = new DateTime(DateTime.Now.Year - 2, 1, 1, 0, 0, 0, DateTimeKind.Local);
             DateTimePickerEndDate.Value = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Local);
             
-            // Hiện thanh tiến trình
+            // Show progress bar
             ProgressBarReport.Visible = true;
             
-            // Đảm bảo DataGridView luôn hiển thị bằng cách hiển thị dữ liệu mẫu ngay lập tức
+            // Ensure DataGridView always has content by showing sample data immediately
             ShowSampleData();
             
-            // Tải dữ liệu thực
+            // Load actual data
             if (!backgroundWorker.IsBusy)
             {
                 backgroundWorker.RunWorkerAsync("GenerateSalesReport");
             }
             else
             {
-                MessageBox.Show("Hệ thống đang xử lý yêu cầu trước đó, vui lòng đợi trong giây lát",
-                    "Đang xử lý", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("System is processing the previous request, please wait a moment",
+                    "Processing", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
                 ProgressBarReport.Visible = false;
             }
         }
 
-        // Thêm phương thức mới để thiết lập các cột mặc định trong trường hợp không có dữ liệu
+        /// <summary>
+        /// Sets up default columns in the DataGridView when no data is available
+        /// Creates appropriate columns based on the selected report type
+        /// </summary>
         private void SetupDefaultColumns()
         {
             DataGridViewReport.Columns.Clear();
             
-            // Tạo cấu trúc cột cơ bản dựa trên loại báo cáo hiện tại
+            // Create basic column structure based on the current report type
             switch (cmbReportType.SelectedIndex)
             {
-                case 1: // Báo cáo theo sản phẩm
-                    DataGridViewReport.Columns.Add("ProductID", "Mã sản phẩm");
-                    DataGridViewReport.Columns.Add("ProductName", "Tên sản phẩm");
-                    DataGridViewReport.Columns.Add("Quantity", "Số lượng");
-                    DataGridViewReport.Columns.Add("Revenue", "Doanh thu");
-                    DataGridViewReport.Columns.Add("Profit", "Lợi nhuận");
+                case 1: // Product report
+                    DataGridViewReport.Columns.Add("ProductID", "Product ID");
+                    DataGridViewReport.Columns.Add("ProductName", "Product Name");
+                    DataGridViewReport.Columns.Add("Quantity", "Quantity");
+                    DataGridViewReport.Columns.Add("Revenue", "Revenue");
+                    DataGridViewReport.Columns.Add("Profit", "Profit");
                     break;
                     
-                case 2: // Báo cáo theo khách hàng
-                    DataGridViewReport.Columns.Add("CustomerID", "Mã khách hàng");
-                    DataGridViewReport.Columns.Add("CustomerName", "Tên khách hàng");
-                    DataGridViewReport.Columns.Add("OrderCount", "Số đơn hàng");
-                    DataGridViewReport.Columns.Add("TotalSpend", "Tổng chi tiêu");
+                case 2: // Customer report
+                    DataGridViewReport.Columns.Add("CustomerID", "Customer ID");
+                    DataGridViewReport.Columns.Add("CustomerName", "Customer Name");
+                    DataGridViewReport.Columns.Add("OrderCount", "Order Count");
+                    DataGridViewReport.Columns.Add("TotalSpend", "Total Spend");
                     break;
                     
-                default: // Báo cáo tổng quan
-                    DataGridViewReport.Columns.Add("OrderDate", "Ngày");
-                    DataGridViewReport.Columns.Add("OrderID", "Mã đơn hàng");
-                    DataGridViewReport.Columns.Add("CustomerName", "Khách hàng");
-                    DataGridViewReport.Columns.Add("TotalAmount", "Tổng tiền");
-                    DataGridViewReport.Columns.Add("PaymentMethod", "Thanh toán");
+                default: // Overview report
+                    DataGridViewReport.Columns.Add("OrderDate", "Date");
+                    DataGridViewReport.Columns.Add("OrderID", "Order ID");
+                    DataGridViewReport.Columns.Add("CustomerName", "Customer");
+                    DataGridViewReport.Columns.Add("TotalAmount", "Total Amount");
+                    DataGridViewReport.Columns.Add("PaymentMethod", "Payment Method");
                     break;
             }
             
-            // Áp dụng định dạng cho các cột
+            // Apply formatting to columns
             FormatDataGridView();
         }
 
+        /// <summary>
+        /// Background worker DoWork event handler
+        /// Entry point for background processing tasks
+        /// </summary>
+        /// <param name="sender">The background worker object</param>
+        /// <param name="e">Event arguments containing the task to be processed</param>
         private void BackgroundWorker_DoWork(object? sender, DoWorkEventArgs e)
         {
             ProcessBackgroundTask(e);
         }
 
-        // Refactored to reduce cognitive complexity
+        /// <summary>
+        /// Processes background tasks based on the task type
+        /// Routes to appropriate processing method based on the task argument
+        /// </summary>
+        /// <param name="e">Event arguments containing the task to be processed</param>
         private void ProcessBackgroundTask(DoWorkEventArgs e)
         {
             string? task = e.Argument as string;
@@ -186,6 +231,13 @@ namespace FASCloset.Forms
             }
         }
 
+        /// <summary>
+        /// Generates sales report data based on selected report type and date range
+        /// Handles thread-safe access to UI controls from background thread
+        /// </summary>
+        /// <param name="e">Event arguments for storing the result</param>
+        /// <param name="startDate">Start date for the report period</param>
+        /// <param name="endDate">End date for the report period</param>
         private void ProcessGenerateSalesReport(DoWorkEventArgs e, DateTime startDate, DateTime endDate)
         {
             DataTable reportData = null;
@@ -198,13 +250,13 @@ namespace FASCloset.Forms
                     // Now you can safely access the SelectedIndex
                     switch (cmbReportType.SelectedIndex)
                     {
-                        case 1: // Báo cáo bán hàng theo sản phẩm
+                        case 1: // Product sales report
                             reportData = ReportManager.GenerateProductSalesReport(startDate, endDate);
                             break;
-                        case 2: // Báo cáo bán hàng theo khách hàng
+                        case 2: // Customer sales report
                             reportData = ReportManager.GenerateCustomerSalesReport(startDate, endDate);
                             break;
-                        default: // Tổng quan doanh số
+                        default: // Sales overview
                             reportData = ReportManager.GenerateSalesReport(startDate, endDate);
                             break;
                     }
@@ -215,13 +267,13 @@ namespace FASCloset.Forms
                 // You are on the UI thread, so you can directly access the control
                 switch (cmbReportType.SelectedIndex)
                 {
-                    case 1: // Báo cáo bán hàng theo sản phẩm
+                    case 1: // Product sales report
                         reportData = ReportManager.GenerateProductSalesReport(startDate, endDate);
                         break;
-                    case 2: // Báo cáo bán hàng theo khách hàng
+                    case 2: // Customer sales report
                         reportData = ReportManager.GenerateCustomerSalesReport(startDate, endDate);
                         break;
-                    default: // Tổng quan doanh số
+                    default: // Sales overview
                         reportData = ReportManager.GenerateSalesReport(startDate, endDate);
                         break;
                 }
@@ -230,7 +282,11 @@ namespace FASCloset.Forms
             e.Result = new object[] { "Report", reportData };
         }
 
-        // Static helper methods for CSV export
+        /// <summary>
+        /// Writes CSV header row with column names
+        /// </summary>
+        /// <param name="writer">StringWriter for output</param>
+        /// <param name="reportData">DataTable containing the report data</param>
         public static void WriteReportHeader(StringWriter writer, DataTable reportData)
         {
             for (int i = 0; i < reportData.Columns.Count; i++)
@@ -242,6 +298,11 @@ namespace FASCloset.Forms
             writer.WriteLine();
         }
 
+        /// <summary>
+        /// Writes CSV data rows with proper escaping for special characters
+        /// </summary>
+        /// <param name="writer">StringWriter for output</param>
+        /// <param name="reportData">DataTable containing the report data</param>
         public static void WriteReportData(StringWriter writer, DataTable reportData)
         {
             foreach (DataRow row in reportData.Rows)
@@ -264,13 +325,19 @@ namespace FASCloset.Forms
             }
         }
 
+        /// <summary>
+        /// Background worker completion event handler
+        /// Processes the results from background tasks and updates the UI accordingly
+        /// </summary>
+        /// <param name="sender">The background worker object</param>
+        /// <param name="e">Event arguments containing the task results</param>
         private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             ProgressBarReport.Visible = false;
 
             if (e.Error != null)
             {
-                MessageBox.Show($"Đã xảy ra lỗi: {e.Error.Message}", "Lỗi",
+                MessageBox.Show($"An error occurred: {e.Error.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -300,38 +367,45 @@ namespace FASCloset.Forms
             }
         }
         
+        /// <summary>
+        /// Updates the DataGridView with report data and applies formatting
+        /// Shows a message if no data is available for the selected date range
+        /// </summary>
+        /// <param name="reportData">DataTable containing the report data</param>
         private void UpdateDataGridViewWithReport(DataTable reportData)
         {
             if (reportData == null || reportData.Rows.Count == 0)
             {
-                MessageBox.Show("Không có dữ liệu báo cáo trong khoảng thời gian đã chọn", 
-                    "Không có dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("No report data available for the selected date range", 
+                    "No Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
-                // Hiển thị dữ liệu mẫu để không để trống bảng
+                // Show sample data to ensure the grid is not empty
                 ShowSampleData();
                 return;
             }
             
-            // Cập nhật DataSource với dữ liệu thực từ báo cáo
-            DataGridViewReport.DataSource = null; // Clear trước để tránh lỗi khi thay đổi cấu trúc DataTable
+            // Update DataSource with actual report data
+            DataGridViewReport.DataSource = null; // Clear first to avoid errors when changing DataTable structure
             DataGridViewReport.DataSource = reportData;
             
-            // Áp dụng định dạng và tính tổng
+            // Apply formatting and update summary
             FormatDataGridView();
             UpdateSummary(reportData);
             
-            // Cập nhật trạng thái để hiển thị rằng đây là dữ liệu thực
-            lblReportStatus.Text = $"✅ Đang hiển thị dữ liệu thực từ {DateTimePickerStartDate.Value:dd/MM/yyyy} đến {DateTimePickerEndDate.Value:dd/MM/yyyy}";
-            lblReportStatus.ForeColor = Color.FromArgb(40, 167, 69); // Màu xanh lá
+            // Update status to indicate that this is actual data
+            lblReportStatus.Text = $"✅ Displaying actual data from {DateTimePickerStartDate.Value:dd/MM/yyyy} to {DateTimePickerEndDate.Value:dd/MM/yyyy}";
+            lblReportStatus.ForeColor = Color.FromArgb(40, 167, 69); // Green color
             lblReportStatus.Visible = true;
         }
         
+        /// <summary>
+        /// Applies consistent formatting to the DataGridView columns
+        /// Sets appropriate formatting for currency, date, and ID columns
+        /// </summary>
         private void FormatDataGridView()
         {
-            // Format the data grid view with proper column styles
             if (DataGridViewReport.Columns.Count > 0)
             {
-                // Thiết lập thuộc tính cơ bản cho DataGridView
                 DataGridViewReport.EnableHeadersVisualStyles = false;
                 DataGridViewReport.BorderStyle = BorderStyle.None;
                 DataGridViewReport.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(238, 239, 249);
@@ -341,21 +415,18 @@ namespace FASCloset.Forms
                 DataGridViewReport.BackgroundColor = Color.White;
                 DataGridViewReport.RowHeadersVisible = false;
                 
-                // Định dạng tiêu đề cột
                 DataGridViewReport.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(37, 150, 190);
                 DataGridViewReport.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
                 DataGridViewReport.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 11, FontStyle.Bold);
                 DataGridViewReport.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
                 DataGridViewReport.ColumnHeadersHeight = 40;
                 
-                // Font chữ cơ bản cho nội dung
                 DataGridViewReport.DefaultCellStyle.Font = new Font("Segoe UI", 10);
                 
                 foreach (DataGridViewColumn column in DataGridViewReport.Columns)
                 {
-                    // Định dạng cột tiền tệ
-                    if (column.HeaderText.Contains("tiền") || column.HeaderText.Contains("thu") || 
-                        column.HeaderText.Contains("giá") || column.HeaderText.Contains("chi"))
+                    if (column.HeaderText.Contains("money") || column.HeaderText.Contains("revenue") || 
+                        column.HeaderText.Contains("price") || column.HeaderText.Contains("spend"))
                     {
                         column.DefaultCellStyle.Format = "N0";
                         column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -363,39 +434,33 @@ namespace FASCloset.Forms
                         column.DefaultCellStyle.Font = new Font("Segoe UI Semibold", 10, FontStyle.Bold);
                     }
                     
-                    // Định dạng cột ngày tháng
-                    if (column.HeaderText.Contains("Ngày"))
+                    if (column.HeaderText.Contains("Date"))
                     {
                         column.DefaultCellStyle.Format = "dd/MM/yyyy";
                         column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
                     }
                     
-                    // Định dạng cột mã (ID)
-                    if (column.HeaderText.Contains("Mã"))
+                    if (column.HeaderText.Contains("ID"))
                     {
                         column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
                     }
                     
-                    // Giới hạn chiều rộng cột và thêm tooltip khi nội dung bị cắt
-                    if (column.HeaderText.Contains("Tên") || column.HeaderText.Contains("Email") || 
-                        column.HeaderText.Contains("Địa chỉ") || column.HeaderText.Contains("sản phẩm"))
+                    if (column.HeaderText.Contains("Name") || column.HeaderText.Contains("Email") || 
+                        column.HeaderText.Contains("Address") || column.HeaderText.Contains("product"))
                     {
                         column.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
                         column.MinimumWidth = 150;
                     }
                     
-                    // Cột thanh toán
-                    if (column.HeaderText.Contains("Thanh toán") || column.HeaderText.Contains("Payment"))
+                    if (column.HeaderText.Contains("Payment"))
                     {
                         column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
                     }
                 }
                 
-                // Auto resize các cột theo nội dung tốt nhất
                 DataGridViewReport.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
                 DataGridViewReport.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
                 
-                // Giới hạn chiều rộng tối đa của cột
                 foreach (DataGridViewColumn column in DataGridViewReport.Columns)
                 {
                     if (column.Width > 250)
@@ -404,6 +469,11 @@ namespace FASCloset.Forms
             }
         }
         
+        /// <summary>
+        /// Updates the summary statistics displayed on the report
+        /// Calculates total revenue, order count, and average order value
+        /// </summary>
+        /// <param name="reportData">DataTable containing the report data</param>
         private void UpdateSummary(DataTable reportData)
         {
             try
@@ -411,15 +481,13 @@ namespace FASCloset.Forms
                 decimal totalRevenue = 0;
                 int orderCount = reportData.Rows.Count;
                 
-                // Find the column containing money information based on report type
                 string moneyColumnName = cmbReportType.SelectedIndex switch
                 {
-                    1 => "Doanh thu", // Product sales report
-                    2 => "Tổng chi tiêu", // Customer report
-                    _ => "Tổng tiền" // Default sales report
+                    1 => "Revenue", // Product sales report
+                    2 => "Total Spend", // Customer report
+                    _ => "Total Amount" // Default sales report
                 };
                 
-                // Find the column index
                 int moneyColumnIndex = -1;
                 for (int i = 0; i < reportData.Columns.Count; i++)
                 {
@@ -455,12 +523,16 @@ namespace FASCloset.Forms
             }
         }
         
-        // Static helpers
+        /// <summary>
+        /// Finds the column index containing total amount information in a report DataTable
+        /// </summary>
+        /// <param name="reportData">DataTable containing the report data</param>
+        /// <returns>Index of the total amount column, or -1 if not found</returns>
         public static int FindTotalAmountColumnIndex(DataTable reportData)
         {
             foreach (DataColumn column in reportData.Columns)
             {
-                if (column.ColumnName == "TotalAmount" || column.ColumnName == "Tổng tiền")
+                if (column.ColumnName == "TotalAmount" || column.ColumnName == "Total Amount")
                 {
                     return reportData.Columns.IndexOf(column);
                 }
@@ -468,23 +540,29 @@ namespace FASCloset.Forms
             return -1;
         }
 
+        /// <summary>
+        /// Processes the detailed report export request
+        /// Generates report data and converts it to CSV format
+        /// </summary>
+        /// <param name="e">Event arguments for storing the result</param>
+        /// <param name="startDate">Start date for the report period</param>
+        /// <param name="endDate">End date for the report period</param>
         private void ProcessExportDetailedReport(DoWorkEventArgs e, DateTime startDate, DateTime endDate)
         {
             DataTable reportData = null;
             
-            // Make sure this runs on the UI thread to get the report type
             if (cmbReportType.InvokeRequired)
             {
                 cmbReportType.Invoke(new Action(() => {
                     switch (cmbReportType.SelectedIndex)
                     {
-                        case 1: // Báo cáo bán hàng theo sản phẩm
+                        case 1: // Product sales report
                             reportData = ReportManager.GenerateProductSalesReport(startDate, endDate);
                             break;
-                        case 2: // Báo cáo bán hàng theo khách hàng
+                        case 2: // Customer sales report
                             reportData = ReportManager.GenerateCustomerSalesReport(startDate, endDate);
                             break;
-                        default: // Tổng quan doanh số
+                        default: // Sales overview
                             reportData = ReportManager.GenerateSalesReport(startDate, endDate);
                             break;
                     }
@@ -494,13 +572,13 @@ namespace FASCloset.Forms
             {
                 switch (cmbReportType.SelectedIndex)
                 {
-                    case 1: // Báo cáo bán hàng theo sản phẩm
+                    case 1: // Product sales report
                         reportData = ReportManager.GenerateProductSalesReport(startDate, endDate);
                         break;
-                    case 2: // Báo cáo bán hàng theo khách hàng
+                    case 2: // Customer sales report
                         reportData = ReportManager.GenerateCustomerSalesReport(startDate, endDate);
                         break;
-                    default: // Tổng quan doanh số
+                    default: // Sales overview
                         reportData = ReportManager.GenerateSalesReport(startDate, endDate);
                         break;
                 }
@@ -508,25 +586,24 @@ namespace FASCloset.Forms
 
             if (reportData == null)
             {
-                e.Result = new object[] { "Error", "Không thể tạo báo cáo" };
+                e.Result = new object[] { "Error", "Unable to generate report" };
                 return;
             }
 
-            // Define file name
-            string reportTypeName = "BaoCao";
+            string reportTypeName = "Report";
             if (cmbReportType.InvokeRequired)
             {
                 cmbReportType.Invoke(new Action(() => {
                     switch (cmbReportType.SelectedIndex)
                     {
                         case 1:
-                            reportTypeName = "BaoCaoSanPham";
+                            reportTypeName = "ProductReport";
                             break;
                         case 2:
-                            reportTypeName = "BaoCaoKhachHang";
+                            reportTypeName = "CustomerReport";
                             break;
                         default:
-                            reportTypeName = "BaoCaoTongHop";
+                            reportTypeName = "OverviewReport";
                             break;
                     }
                 }));
@@ -536,76 +613,82 @@ namespace FASCloset.Forms
                 switch (cmbReportType.SelectedIndex)
                 {
                     case 1:
-                        reportTypeName = "BaoCaoSanPham";
+                        reportTypeName = "ProductReport";
                         break;
                     case 2:
-                        reportTypeName = "BaoCaoKhachHang";
+                        reportTypeName = "CustomerReport";
                         break;
                     default:
-                        reportTypeName = "BaoCaoTongHop";
+                        reportTypeName = "OverviewReport";
                         break;
                 }
             }
 
-            string fileName = $"{reportTypeName}_{startDate:yyyyMMdd}_den_{endDate:yyyyMMdd}.csv";
+            string fileName = $"{reportTypeName}_{startDate:yyyyMMdd}_to_{endDate:yyyyMMdd}.csv";
 
             using (var writer = new StringWriter())
             {
-                // Write header
                 WriteCsvHeader(writer, reportData);
-
-                // Write data rows
                 WriteCsvData(writer, reportData);
-
-                // Return the result
                 e.Result = new object[] { "Export", fileName, writer.ToString() };
             }
         }
 
+        /// <summary>
+        /// Writes CSV header row with column names
+        /// </summary>
+        /// <param name="writer">StringWriter for output</param>
+        /// <param name="reportData">DataTable containing the report data</param>
         public static void WriteCsvHeader(StringWriter writer, DataTable reportData)
         {
-            // Write the headers (column names)
             for (int i = 0; i < reportData.Columns.Count; i++)
             {
                 writer.Write(reportData.Columns[i].ColumnName);
                 if (i < reportData.Columns.Count - 1)
                     writer.Write(",");
             }
-            writer.WriteLine(); // New line after header
+            writer.WriteLine();
         }
 
+        /// <summary>
+        /// Writes CSV data rows with proper escaping for special characters
+        /// </summary>
+        /// <param name="writer">StringWriter for output</param>
+        /// <param name="reportData">DataTable containing the report data</param>
         public static void WriteCsvData(StringWriter writer, DataTable reportData)
         {
-            // Loop through each row and write its data
             foreach (DataRow row in reportData.Rows)
             {
                 for (int i = 0; i < reportData.Columns.Count; i++)
                 {
                     var value = row[i].ToString();
 
-                    // If the value contains commas or quotes, escape it
                     if (value.Contains(",") || value.Contains("\""))
                     {
-                        value = "\"" + value.Replace("\"", "\"\"") + "\""; // Escape double quotes by doubling them
+                        value = "\"" + value.Replace("\"", "\"\"") + "\"";
                     }
 
                     writer.Write(value);
 
-                    // Separate with commas for each column except the last one
                     if (i < reportData.Columns.Count - 1)
                         writer.Write(",");
                 }
-                writer.WriteLine(); // New line after each row
+                writer.WriteLine();
             }
         }
 
+        /// <summary>
+        /// Handles the file export process
+        /// Shows a save dialog and writes the CSV file to disk with proper encoding
+        /// </summary>
+        /// <param name="fileName">Suggested file name</param>
+        /// <param name="fileContent">CSV content to write</param>
         private void HandleExport(string fileName, string fileContent)
         {
-            // Show SaveFileDialog for user to choose location to save the CSV file
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
                 Filter = "CSV Files (*.csv)|*.csv",
-                Title = "Lưu báo cáo",
+                Title = "Save Report",
                 FileName = fileName
             };
 
@@ -613,113 +696,94 @@ namespace FASCloset.Forms
             {
                 try
                 {
-                    // Write the content to the selected file with UTF-8 encoding with BOM
-                    // This ensures that Excel and other applications correctly recognize Vietnamese characters
                     File.WriteAllText(saveFileDialog.FileName, fileContent, new System.Text.UTF8Encoding(true));
-
-                    // Notify user of success
-                    MessageBox.Show($"Xuất báo cáo thành công đến {saveFileDialog.FileName}",
-                        "Xuất báo cáo thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Report successfully exported to {saveFileDialog.FileName}",
+                        "Export Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Lỗi khi lưu file: {ex.Message}", "Lỗi xuất báo cáo",
+                    MessageBox.Show($"Error saving file: {ex.Message}", "Export Error",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
 
-        // Hiển thị dữ liệu mẫu để bảng luôn xuất hiện ngay cả khi không có dữ liệu thực
+        /// <summary>
+        /// Shows sample data in the DataGridView when no actual data is available
+        /// Creates different sample data based on the selected report type
+        /// </summary>
         private void ShowSampleData()
         {
             try
             {
-                // Xóa dữ liệu nguồn hiện tại (nếu có)
                 DataGridViewReport.DataSource = null;
                 DataGridViewReport.Rows.Clear();
                 DataGridViewReport.Columns.Clear();
                 
-                // Đảm bảo DataGridView được hiển thị
                 DataGridViewReport.Visible = true;
                 DataGridViewReport.BringToFront();
                 
-                // Tạo dữ liệu mẫu dựa trên loại báo cáo được chọn
                 DataTable sampleData = new DataTable();
                 
                 switch (cmbReportType.SelectedIndex)
                 {
-                    case 1: // Báo cáo theo sản phẩm
-                        // Thêm cột vào DataTable
-                        sampleData.Columns.Add("Mã SP", typeof(string));
-                        sampleData.Columns.Add("Tên sản phẩm", typeof(string));
-                        sampleData.Columns.Add("Danh mục", typeof(string));
-                        sampleData.Columns.Add("Số lượng bán", typeof(int));
-                        sampleData.Columns.Add("Số đơn hàng", typeof(int));
-                        sampleData.Columns.Add("Doanh thu", typeof(decimal));
+                    case 1: // Product report
+                        sampleData.Columns.Add("Product ID", typeof(string));
+                        sampleData.Columns.Add("Product Name", typeof(string));
+                        sampleData.Columns.Add("Category", typeof(string));
+                        sampleData.Columns.Add("Quantity Sold", typeof(int));
+                        sampleData.Columns.Add("Order Count", typeof(int));
+                        sampleData.Columns.Add("Revenue", typeof(decimal));
                         
-                        // Thêm dữ liệu mẫu
-                        sampleData.Rows.Add("SP001", "Áo thun nam basic", "Áo", 15, 10, 1500000);
-                        sampleData.Rows.Add("SP002", "Quần jeans nữ", "Quần", 8, 7, 2400000);
-                        sampleData.Rows.Add("SP003", "Váy đầm dự tiệc", "Váy", 5, 5, 3250000);
-                        sampleData.Rows.Add("SP004", "Áo khoác denim", "Áo", 7, 6, 2100000);
+                        sampleData.Rows.Add("P001", "Basic T-Shirt", "Shirts", 15, 10, 1500000);
+                        sampleData.Rows.Add("P002", "Women's Jeans", "Pants", 8, 7, 2400000);
+                        sampleData.Rows.Add("P003", "Party Dress", "Dresses", 5, 5, 3250000);
+                        sampleData.Rows.Add("P004", "Denim Jacket", "Shirts", 7, 6, 2100000);
                         break;
                         
-                    case 2: // Báo cáo theo khách hàng
-                        sampleData.Columns.Add("Mã KH", typeof(string));
-                        sampleData.Columns.Add("Tên khách hàng", typeof(string));
+                    case 2: // Customer report
+                        sampleData.Columns.Add("Customer ID", typeof(string));
+                        sampleData.Columns.Add("Customer Name", typeof(string));
                         sampleData.Columns.Add("Email", typeof(string));
-                        sampleData.Columns.Add("Điện thoại", typeof(string));
-                        sampleData.Columns.Add("Tổng chi tiêu", typeof(decimal));
+                        sampleData.Columns.Add("Phone", typeof(string));
+                        sampleData.Columns.Add("Total Spend", typeof(decimal));
                         
-                        // Thêm dữ liệu mẫu
-                        sampleData.Rows.Add("KH001", "Nguyễn Văn An", "an@example.com", "0901234567", 2500000);
-                        sampleData.Rows.Add("KH002", "Trần Thị Bình", "binh@example.com", "0912345678", 4300000);
-                        sampleData.Rows.Add("KH003", "Lê Hoàng Cường", "cuong@example.com", "0923456789", 1800000);
-                        sampleData.Rows.Add("KH004", "Phạm Minh Dương", "duong@example.com", "0934567890", 3600000);
+                        sampleData.Rows.Add("C001", "John Doe", "john@example.com", "0901234567", 2500000);
+                        sampleData.Rows.Add("C002", "Jane Smith", "jane@example.com", "0912345678", 4300000);
+                        sampleData.Rows.Add("C003", "Michael Brown", "michael@example.com", "0923456789", 1800000);
+                        sampleData.Rows.Add("C004", "Emily Davis", "emily@example.com", "0934567890", 3600000);
                         break;
                         
-                    default: // Báo cáo tổng quan
-                        sampleData.Columns.Add("Ngày", typeof(DateTime));
-                        sampleData.Columns.Add("Mã đơn hàng", typeof(string));
-                        sampleData.Columns.Add("Khách hàng", typeof(string));
-                        sampleData.Columns.Add("Tổng tiền", typeof(decimal));
-                        sampleData.Columns.Add("Thanh toán", typeof(string));
+                    default: // Overview report
+                        sampleData.Columns.Add("Date", typeof(DateTime));
+                        sampleData.Columns.Add("Order ID", typeof(string));
+                        sampleData.Columns.Add("Customer", typeof(string));
+                        sampleData.Columns.Add("Total Amount", typeof(decimal));
+                        sampleData.Columns.Add("Payment Method", typeof(string));
                         
-                        // Thêm dữ liệu mẫu
-                        sampleData.Rows.Add(DateTime.Now.AddDays(-1), "DH001", "Nguyễn Văn An", 850000, "Tiền mặt");
-                        sampleData.Rows.Add(DateTime.Now.AddDays(-2), "DH002", "Trần Thị Bình", 1200000, "Chuyển khoản");
-                        sampleData.Rows.Add(DateTime.Now.AddDays(-3), "DH003", "Lê Hoàng Cường", 650000, "Tiền mặt");
-                        sampleData.Rows.Add(DateTime.Now.AddDays(-4), "DH004", "Phạm Minh Dương", 950000, "Momo");
+                        sampleData.Rows.Add(DateTime.Now.AddDays(-1), "O001", "John Doe", 850000, "Cash");
+                        sampleData.Rows.Add(DateTime.Now.AddDays(-2), "O002", "Jane Smith", 1200000, "Bank Transfer");
+                        sampleData.Rows.Add(DateTime.Now.AddDays(-3), "O003", "Michael Brown", 650000, "Cash");
+                        sampleData.Rows.Add(DateTime.Now.AddDays(-4), "O004", "Emily Davis", 950000, "Momo");
                         break;
                 }
                 
-                // Cập nhật DataSource với dữ liệu mẫu
                 DataGridViewReport.DataSource = sampleData;
                 
-                // Định dạng bảng và cập nhật tóm tắt
                 FormatDataGridView();
                 UpdateSummary(sampleData);
                 
-                // Hiển thị dialog để debug
-                MessageBox.Show($"Đã tạo dữ liệu mẫu với {sampleData.Rows.Count} dòng và {sampleData.Columns.Count} cột", "Debug");
-                
-                // In console để debug
-                Console.WriteLine($"Hiển thị dữ liệu mẫu với {sampleData.Rows.Count} dòng và {sampleData.Columns.Count} cột");
-                Console.WriteLine($"DataGridView có {DataGridViewReport.RowCount} dòng và {DataGridViewReport.ColumnCount} cột");
-                
-                // Thêm nhãn để nhận biết đây là dữ liệu mẫu
-                lblReportStatus.Text = "⚠️ Đang hiển thị dữ liệu mẫu. Vui lòng chọn khoảng thời gian và nhấn 'Làm mới' để xem dữ liệu thực.";
+                lblReportStatus.Text = "⚠️ Displaying sample data. Please select a date range and click 'Refresh' to view actual data.";
                 lblReportStatus.Visible = true;
                 lblReportStatus.ForeColor = Color.FromArgb(255, 128, 0);
                 
-                // Đảm bảo DataGridView được refresh
                 DataGridViewReport.Refresh();
                 this.Refresh();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi hiển thị dữ liệu mẫu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Console.WriteLine($"Lỗi hiển thị dữ liệu mẫu: {ex.Message}");
+                MessageBox.Show($"Error displaying sample data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Console.WriteLine($"Error displaying sample data: {ex.Message}");
                 Console.WriteLine(ex.StackTrace);
             }
         }

@@ -7,8 +7,18 @@ using FASCloset.Models;
 
 namespace FASCloset.Services
 {
+    /// <summary>
+    /// Manages report generation and data analysis functionality
+    /// </summary>
     public class ReportManager
     {
+        /// <summary>
+        /// Retrieves the best-selling products within a specified date range.
+        /// </summary>
+        /// <param name="startDate">Optional start date for filtering.</param>
+        /// <param name="endDate">Optional end date for filtering.</param>
+        /// <param name="limit">Maximum number of products to retrieve.</param>
+        /// <returns>List of best-selling products.</returns>
         public static List<Product> GetBestSellingProducts(DateTime? startDate = null, DateTime? endDate = null, int limit = 10)
         {
             var query = @"
@@ -66,6 +76,13 @@ namespace FASCloset.Services
             }, parameters);
         }
         
+        /// <summary>
+        /// Retrieves the top customers based on their spending within a specified date range.
+        /// </summary>
+        /// <param name="startDate">Optional start date for filtering.</param>
+        /// <param name="endDate">Optional end date for filtering.</param>
+        /// <param name="limit">Maximum number of customers to retrieve.</param>
+        /// <returns>List of top customers.</returns>
         public static List<Customer> GetTopCustomers(DateTime? startDate = null, DateTime? endDate = null, int limit = 10)
         {
             var query = @"
@@ -119,7 +136,12 @@ namespace FASCloset.Services
             }, parameters);
         }
         
-        // Enhanced compatibility methods for UC_RevenueReport.cs
+        /// <summary>
+        /// Generates a sales report compatible with UC_RevenueReport.cs.
+        /// </summary>
+        /// <param name="startDate">Optional start date for filtering.</param>
+        /// <param name="endDate">Optional end date for filtering.</param>
+        /// <returns>DataTable containing sales report data.</returns>
         public static DataTable GenerateSalesReport(DateTime? startDate = null, DateTime? endDate = null)
         {
             var reportData = GetSalesReport(startDate, endDate);
@@ -147,6 +169,12 @@ namespace FASCloset.Services
             return dt;
         }
         
+        /// <summary>
+        /// Generates a detailed sales report compatible with UC_RevenueReport.cs.
+        /// </summary>
+        /// <param name="startDate">Optional start date for filtering.</param>
+        /// <param name="endDate">Optional end date for filtering.</param>
+        /// <returns>DataTable containing detailed sales report data.</returns>
         public static DataTable GenerateDetailedSalesReport(DateTime? startDate = null, DateTime? endDate = null)
         {
             var reportData = GetDetailedSalesReport(startDate, endDate);
@@ -180,6 +208,12 @@ namespace FASCloset.Services
             return dt;
         }
         
+        /// <summary>
+        /// Generates a product sales report.
+        /// </summary>
+        /// <param name="startDate">Optional start date for filtering.</param>
+        /// <param name="endDate">Optional end date for filtering.</param>
+        /// <returns>DataTable containing product sales report data.</returns>
         public static DataTable GenerateProductSalesReport(DateTime? startDate = null, DateTime? endDate = null)
         {
             var products = GetBestSellingProducts(startDate, endDate, 100); // Get up to 100 products
@@ -210,6 +244,12 @@ namespace FASCloset.Services
             return dt;
         }
         
+        /// <summary>
+        /// Generates a customer sales report.
+        /// </summary>
+        /// <param name="startDate">Optional start date for filtering.</param>
+        /// <param name="endDate">Optional end date for filtering.</param>
+        /// <returns>DataTable containing customer sales report data.</returns>
         public static DataTable GenerateCustomerSalesReport(DateTime? startDate = null, DateTime? endDate = null)
         {
             var customers = GetTopCustomers(startDate, endDate, 100); // Get up to 100 customers
@@ -238,6 +278,12 @@ namespace FASCloset.Services
             return dt;
         }
 
+        /// <summary>
+        /// Retrieves sales report data within a specified date range.
+        /// </summary>
+        /// <param name="startDate">Optional start date for filtering.</param>
+        /// <param name="endDate">Optional end date for filtering.</param>
+        /// <returns>List of sales report data.</returns>
         private static List<ReportData> GetSalesReport(DateTime? startDate = null, DateTime? endDate = null)
         {
             var query = @"
@@ -281,6 +327,12 @@ namespace FASCloset.Services
             }, parameters);
         }
         
+        /// <summary>
+        /// Retrieves detailed sales report data within a specified date range.
+        /// </summary>
+        /// <param name="startDate">Optional start date for filtering.</param>
+        /// <param name="endDate">Optional end date for filtering.</param>
+        /// <returns>List of detailed sales report data.</returns>
         private static List<ReportDetail> GetDetailedSalesReport(DateTime? startDate = null, DateTime? endDate = null)
         {
             var query = @"
@@ -330,7 +382,12 @@ namespace FASCloset.Services
             }, parameters);
         }
         
-        // Generic method to convert List<T> to DataTable
+        /// <summary>
+        /// Converts a list of objects to a DataTable.
+        /// </summary>
+        /// <typeparam name="T">Type of objects in the list.</typeparam>
+        /// <param name="items">List of objects to convert.</param>
+        /// <returns>DataTable representation of the list.</returns>
         private static DataTable ConvertToDataTable<T>(List<T> items)
         {
             DataTable dataTable = new DataTable(typeof(T).Name);

@@ -7,6 +7,9 @@ using FASCloset.Models;
 
 namespace FASCloset.Services
 {
+    /// <summary>
+    /// Manages all order-related operations including creation, retrieval, and processing
+    /// </summary>
     public static class OrderManager
     {
         private static string GetConnectionString()
@@ -15,9 +18,9 @@ namespace FASCloset.Services
         }
         
         /// <summary>
-        /// Gets all orders from the database
+        /// Gets all orders in the system
         /// </summary>
-        /// <returns>A list of orders</returns>
+        /// <returns>List of all orders with customer information</returns>
         public static List<Order> GetOrders()
         {
             const string query = @"
@@ -39,10 +42,10 @@ namespace FASCloset.Services
         }
         
         /// <summary>
-        /// Gets an order by its ID
+        /// Gets a specific order by its ID
         /// </summary>
-        /// <param name="orderId">The order ID</param>
-        /// <returns>The order or null if not found</returns>
+        /// <param name="orderId">Order ID to retrieve</param>
+        /// <returns>Order object or null if not found</returns>
         public static Order GetOrderById(int orderId)
         {
             const string query = @"
@@ -69,10 +72,10 @@ namespace FASCloset.Services
         }
         
         /// <summary>
-        /// Gets all orders for a customer
+        /// Gets a list of orders for a specific customer
         /// </summary>
-        /// <param name="customerId">The customer ID</param>
-        /// <returns>A list of orders</returns>
+        /// <param name="customerId">Customer ID to filter by</param>
+        /// <returns>List of orders for the specified customer</returns>
         public static List<Order> GetOrdersByCustomerId(int customerId)
         {
             const string query = @"
@@ -102,8 +105,8 @@ namespace FASCloset.Services
         /// <summary>
         /// Adds a new order to the database
         /// </summary>
-        /// <param name="order">The order to add</param>
-        /// <returns>The ID of the newly added order</returns>
+        /// <param name="order">Order object with basic information</param>
+        /// <returns>ID of the newly added order</returns>
         public static int AddOrder(Order order)
         {
             const string query = @"
@@ -126,7 +129,7 @@ namespace FASCloset.Services
         /// <summary>
         /// Updates an existing order
         /// </summary>
-        /// <param name="order">The order to update</param>
+        /// <param name="order">Order object with updated information</param>
         public static void UpdateOrder(Order order)
         {
             const string query = @"
@@ -151,9 +154,9 @@ namespace FASCloset.Services
         }
 
         /// <summary>
-        /// Deletes an order and its details
+        /// Deletes an order and its associated details
         /// </summary>
-        /// <param name="orderId">The ID of the order to delete</param>
+        /// <param name="orderId">ID of the order to delete</param>
         public static void DeleteOrder(int orderId)
         {
             // First delete all order details
@@ -181,9 +184,9 @@ namespace FASCloset.Services
         /// <summary>
         /// Creates a new order with details using a transaction
         /// </summary>
-        /// <param name="order">The order to create</param>
-        /// <param name="orderDetails">The order details</param>
-        /// <returns>The ID of the newly created order</returns>
+        /// <param name="order">Order object with basic information</param>
+        /// <param name="orderDetails">List of order details with product information</param>
+        /// <returns>ID of the newly created order</returns>
         public static int CreateOrderWithDetails(Order order, List<OrderDetail> orderDetails)
         {
             return DatabaseConnection.ExecuteWithTransaction<int>((connection, transaction) =>
@@ -234,10 +237,10 @@ namespace FASCloset.Services
         /// <summary>
         /// Updates inventory after an order is placed
         /// </summary>
-        /// <param name="connection">The DB connection</param>
-        /// <param name="transaction">The transaction</param>
-        /// <param name="productId">The product ID</param>
-        /// <param name="quantity">The quantity to reduce</param>
+        /// <param name="connection">Active database connection</param>
+        /// <param name="transaction">Active database transaction</param>
+        /// <param name="productId">ID of the product to update</param>
+        /// <param name="quantity">Quantity to subtract from inventory</param>
         private static void UpdateProductStock(SqliteConnection connection, SqliteTransaction transaction, int productId, int quantity)
         {
             string updateStockQuery = @"
@@ -258,8 +261,8 @@ namespace FASCloset.Services
         /// <summary>
         /// Gets all order details for a specific order
         /// </summary>
-        /// <param name="orderId">The order ID</param>
-        /// <returns>A list of order details</returns>
+        /// <param name="orderId">Order ID to retrieve</param>
+        /// <returns>List of order details for the specified order</returns>
         public static List<OrderDetail> GetOrderDetails(int orderId)
         {
             string query = @"
@@ -288,8 +291,8 @@ namespace FASCloset.Services
         /// <summary>
         /// Gets all order details for a specific order (alias method for GetOrderDetails)
         /// </summary>
-        /// <param name="orderId">The order ID</param>
-        /// <returns>A list of order details</returns>
+        /// <param name="orderId">Order ID to retrieve</param>
+        /// <returns>List of order details for the specified order</returns>
         public static List<OrderDetail> GetOrderDetailsByOrderId(int orderId)
         {
             return GetOrderDetails(orderId);

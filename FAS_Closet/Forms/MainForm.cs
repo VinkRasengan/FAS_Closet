@@ -6,20 +6,37 @@ using FASCloset.Services;
 
 namespace FASCloset.Forms
 {
+    /// <summary>
+    /// Main application form that serves as the container for all user controls and provides the main UI framework.
+    /// This form handles user authentication, navigation, and hosts all user control modules in the application.
+    /// </summary>
     public partial class MainForm : Form
     {
-        private UcProductManagement? ucProductManagement = null;
-        private UcInventoryManagement? ucInventoryManagement = null;
-        private UcOrderManagement? ucOrderManagement = null;
-        private UcCustomerManagement? ucCustomerManagement = null;
-        private UcRevenueReport? ucRevenueReport = null;
-        private UcDashboard? ucDashboard = null;
-        private UcNotificationSettings? ucNotificationSettings = null;
-        
-        // Add reference to current active button
+        /// <summary>
+        /// Currently logged in user instance.
+        /// </summary>
+        private User CurrentUser { get; set; }
+
+        /// <summary>
+        /// Currently selected warehouse ID.
+        /// </summary>
+        private int CurrentWarehouseID { get; set; } = 1;
+
+        /// <summary>
+        /// Reference to the current active button in the navigation menu.
+        /// </summary>
         private Button? currentActiveButton = null;
+
+        /// <summary>
+        /// Label used to display the current navigation section.
+        /// </summary>
         private Label? navigationLabel = null;
 
+        /// <summary>
+        /// Initializes a new instance of the MainForm class.
+        /// Sets up the UI components and initializes the form with default values.
+        /// </summary>
+        /// <param name="user">The authenticated user object.</param>
         public MainForm(User user)
         {
             InitializeComponent();
@@ -30,7 +47,7 @@ namespace FASCloset.Forms
 
             // Add warehouse selector
             InitializeWarehouseSelector();
-            
+
             // Create navigation label to show current section
             navigationLabel = new Label
             {
@@ -50,49 +67,56 @@ namespace FASCloset.Forms
             btnDashboard_Click(this, EventArgs.Empty);
         }
 
-        private User CurrentUser { get; set; }
-        private int CurrentWarehouseID { get; set; } = 1;
-
+        /// <summary>
+        /// Initializes the warehouse selector dropdown.
+        /// Configures the dropdown style and loads warehouses for the current user.
+        /// </summary>
         private void InitializeWarehouseSelector()
         {
-            // Cấu hình warehouse dropdown
             cmbWarehouses.DropDownStyle = ComboBoxStyle.DropDownList;
 
             // Load warehouses for this user
         }
 
-        // Sự kiện cho nút Logout
+        /// <summary>
+        /// Event handler for the Logout button click.
+        /// Closes the application and logs out the current user.
+        /// </summary>
         private void btnLogout_Click(object sender, EventArgs e)
         {
             this.Close();
         }
 
-        // Method to set active button appearance
+        /// <summary>
+        /// Sets the appearance of the active button in the navigation menu.
+        /// Updates the navigation label to reflect the current section.
+        /// </summary>
+        /// <param name="button">The button to mark as active.</param>
+        /// <param name="sectionName">The name of the section associated with the button.</param>
         private void SetActiveButton(Button button, string sectionName)
         {
-            // Reset current active button if exists
             if (currentActiveButton != null)
             {
-                // Reset về màu mặc định của menu
                 currentActiveButton.BackColor = Color.FromArgb(248, 249, 250);
                 currentActiveButton.ForeColor = Color.FromArgb(52, 58, 64);
                 currentActiveButton.Font = new Font("Segoe UI", 11F, FontStyle.Regular);
             }
-            
-            // Set new active button
+
             currentActiveButton = button;
             currentActiveButton.BackColor = Color.FromArgb(0, 123, 255);
             currentActiveButton.ForeColor = Color.White;
             currentActiveButton.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            
-            // Update navigation label
+
             if (navigationLabel != null)
             {
                 navigationLabel.Text = "Đang xem: " + sectionName;
             }
         }
-        
-        // Các sự kiện điều hướng load các UserControl và cập nhật thanh tính năng
+
+        /// <summary>
+        /// Event handler for the Product Management button click.
+        /// Activates the product management user control and updates the feature toolbar.
+        /// </summary>
         private void btnProductManagement_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnProductManagement, "Quản lý Sản phẩm");
@@ -101,39 +125,16 @@ namespace FASCloset.Forms
             if (ucProductManagement == null)
             {
                 ucProductManagement = new UcProductManagement();
-                // KHÔNG gán lại btnAdd, btnEdit, btnDelete ở đây nữa
             }
 
             ucProductManagement.LoadCategories();
-
             LoadUserControl(ucProductManagement);
         }
 
-        // Make sure these handlers correctly call the product management methods
-        private void HandleProductAdd(object? sender, EventArgs e)
-        {
-            if (ucProductManagement != null)
-                ucProductManagement.btnAdd_Click(sender ?? this, e);
-            else
-                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
-        }
-
-        private void HandleProductEdit(object? sender, EventArgs e)
-        {
-            if (ucProductManagement != null)
-                ucProductManagement.btnEdit_Click(sender ?? this, e);
-            else
-                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
-        }
-
-        private void HandleProductDelete(object? sender, EventArgs e)
-        {
-            if (ucProductManagement != null)
-                ucProductManagement.btnDelete_Click(sender ?? this, e);
-            else
-                MessageBox.Show("Vui lòng chọn Quản lý sản phẩm trước.");
-        }
-
+        /// <summary>
+        /// Event handler for the Inventory Management button click.
+        /// Activates the inventory management user control and updates the feature toolbar.
+        /// </summary>
         private void btnInventoryManagement_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnInventoryManagement, "Quản lý Kho hàng");
@@ -146,10 +147,13 @@ namespace FASCloset.Forms
             }
 
             ucInventoryManagement.LoadCategories();
-
             LoadUserControl(ucInventoryManagement);
         }
 
+        /// <summary>
+        /// Event handler for the Order Management button click.
+        /// Activates the order management user control and updates the feature toolbar.
+        /// </summary>
         private void btnOrderManagement_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnOrderManagement, "Quản lý Đơn hàng");
@@ -159,12 +163,16 @@ namespace FASCloset.Forms
             {
                 ucOrderManagement = new UcOrderManagement();
             }
+
             ucOrderManagement.LoadProducts();
             ucOrderManagement.LoadCustomers();
-
             LoadUserControl(ucOrderManagement);
         }
 
+        /// <summary>
+        /// Event handler for the Customer Management button click.
+        /// Activates the customer management user control and updates the feature toolbar.
+        /// </summary>
         private void btnCustomerManagement_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnCustomerManagement, "Quản lý Khách hàng");
@@ -185,46 +193,27 @@ namespace FASCloset.Forms
             LoadUserControl(ucCustomerManagement);
         }
 
-        private void HandleCustomerAdd(object? sender, EventArgs e)
-        {
-            if (ucCustomerManagement != null)
-                ucCustomerManagement.btnAdd.PerformClick();
-            else
-                MessageBox.Show("Vui lòng chọn Quản lý khách hàng trước.");
-        }
-
-        private void HandleCustomerDelete(object? sender, EventArgs e)
-        {
-            if (ucCustomerManagement != null)
-                ucCustomerManagement.btnDelete.PerformClick();
-            else
-                MessageBox.Show("Vui lòng chọn khách hàng cần xóa.");
-        }
-
-        private void HandleCustomerRefresh(object? sender, EventArgs e)
-        {
-            if (ucCustomerManagement != null)
-                ucCustomerManagement.btnRefresh.PerformClick();
-            else
-                MessageBox.Show("Vui lòng chọn Quản lý khách hàng trước.");
-        }
-
+        /// <summary>
+        /// Event handler for the Revenue Report button click.
+        /// Activates the revenue report user control and updates the feature toolbar.
+        /// </summary>
         private void btnRevenueReport_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnRevenueReport, "Báo cáo Doanh thu");
-            // Removed duplicated toolbar buttons since UC_RevenueReport already has these buttons
             UpdateFeatureToolbar(new string[] { });
 
             if (ucRevenueReport == null)
             {
                 ucRevenueReport = new UcRevenueReport();
-                // Gỡ bỏ việc tạo lại các control vì đã được khởi tạo trong InitializeComponent
-                // của UC_RevenueReport.Designer.cs
             }
 
             LoadUserControl(ucRevenueReport);
         }
 
+        /// <summary>
+        /// Event handler for the Dashboard button click.
+        /// Activates the dashboard user control and updates the feature toolbar.
+        /// </summary>
         private void btnDashboard_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnDashboard, "Bảng điều khiển");
@@ -235,13 +224,14 @@ namespace FASCloset.Forms
                 ucDashboard = new UcDashboard();
             }
 
-            // First add the dashboard to the form 
             LoadUserControl(ucDashboard);
-            
-            // Then load the data after it's visible in the UI
             ucDashboard.LoadDashboardData();
         }
 
+        /// <summary>
+        /// Event handler for the Notification Settings button click.
+        /// Activates the notification settings user control and updates the feature toolbar.
+        /// </summary>
         private void btnNotificationSettings_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnNotificationSettings, "Cài đặt Thông báo");
@@ -255,7 +245,11 @@ namespace FASCloset.Forms
             LoadUserControl(ucNotificationSettings);
         }
 
-        // Hàm phụ trợ để load một UserControl vào contentPanel
+        /// <summary>
+        /// Loads the specified user control into the content panel.
+        /// Clears existing controls and docks the new user control.
+        /// </summary>
+        /// <param name="userControl">The user control to load.</param>
         private void LoadUserControl(UserControl userControl)
         {
             contentPanel.Controls.Clear();
@@ -263,7 +257,11 @@ namespace FASCloset.Forms
             contentPanel.Controls.Add(userControl);
         }
 
-        // Refactored method to reduce cognitive complexity
+        /// <summary>
+        /// Updates the feature toolbar with buttons for the specified features.
+        /// Clears existing buttons and adds new ones based on the provided feature list.
+        /// </summary>
+        /// <param name="features">An array of feature names to display in the toolbar.</param>
         private void UpdateFeatureToolbar(string[] features)
         {
             featureToolbarPanel.Controls.Clear();
@@ -275,6 +273,12 @@ namespace FASCloset.Forms
             }
         }
 
+        /// <summary>
+        /// Creates a button for the specified feature.
+        /// Configures the button appearance and assigns an event handler based on the feature name.
+        /// </summary>
+        /// <param name="feature">The name of the feature associated with the button.</param>
+        /// <returns>A configured Button control.</returns>
         private Button CreateFeatureButton(string feature)
         {
             var btn = new Button
@@ -287,11 +291,15 @@ namespace FASCloset.Forms
                 FlatStyle = FlatStyle.Flat
             };
 
-            // Assign event handler based on feature
             AssignFeatureButtonHandler(btn, feature);
             return btn;
         }
 
+        /// <summary>
+        /// Assigns an event handler to the specified button based on the feature name.
+        /// </summary>
+        /// <param name="btn">The button to assign the event handler to.</param>
+        /// <param name="feature">The name of the feature associated with the button.</param>
         private void AssignFeatureButtonHandler(Button btn, string feature)
         {
             switch (feature)
@@ -327,13 +335,15 @@ namespace FASCloset.Forms
                     btn.Click += (s, e) => ShowBestSellingProductsDetail(s, e);
                     break;
                 case "Làm mới báo cáo":
-                    btn.Click += (s, e) => {
+                    btn.Click += (s, e) =>
+                    {
                         if (ucRevenueReport != null)
                             ucRevenueReport.btnRefresh.PerformClick();
                     };
                     break;
                 case "Xuất báo cáo":
-                    btn.Click += (s, e) => {
+                    btn.Click += (s, e) =>
+                    {
                         if (ucRevenueReport != null)
                             ucRevenueReport.btnExport.PerformClick();
                     };
@@ -344,36 +354,15 @@ namespace FASCloset.Forms
             }
         }
 
-        private void HandleOrderCreate(object? sender, EventArgs e)
-        {
-            if (ucOrderManagement != null)
-                ucOrderManagement.btnCreateOrder_Click(sender ?? this, e);
-            else
-                MessageBox.Show("Vui lòng chọn Quản lý đơn hàng trước.");
-        }        
-        
-        private void HandlePrintInvoice(object? sender, EventArgs e)
-        {
-            if (ucOrderManagement != null)
-                ucOrderManagement.btnPrintInvoice_Click(sender ?? this, e);
-            else
-                MessageBox.Show("Vui lòng chọn Quản lý đơn hàng trước.");
-        }
-
-        private void HandleInventoryUpdate(object? sender, EventArgs e)
-        {
-            if (ucInventoryManagement != null)
-                ucInventoryManagement.btnUpdateStock_Click(sender ?? this, e);
-            else
-                MessageBox.Show("Vui lòng chọn Quản lý kho hàng trước.");
-        }
-
-        // Add this public navigation method for low stock items that can be accessed from other controls
+        /// <summary>
+        /// Navigates to the Inventory Management section.
+        /// Optionally sets a product ID in the inventory management UI.
+        /// </summary>
+        /// <param name="productId">The product ID to set in the inventory management UI (optional).</param>
         public void NavigateToInventoryManagement(int productId = 0)
         {
             btnInventoryManagement_Click(this, EventArgs.Empty);
 
-            // If a product ID was provided, set it in the inventory management UI
             if (productId > 0 && ucInventoryManagement != null)
             {
                 ucInventoryManagement.txtProductId.Text = productId.ToString();
@@ -381,6 +370,10 @@ namespace FASCloset.Forms
             }
         }
 
+        /// <summary>
+        /// Displays detailed information about best-selling products in a separate form.
+        /// Allows filtering by date range and exporting data to Excel.
+        /// </summary>
         private void ShowBestSellingProductsDetail(object? sender, EventArgs e)
         {
             if (ucDashboard == null)
@@ -398,7 +391,6 @@ namespace FASCloset.Forms
                     return;
                 }
 
-                // Create a Form to display detailed information
                 Form detailForm = new Form
                 {
                     Text = "Chi tiết sản phẩm bán chạy",
@@ -409,7 +401,6 @@ namespace FASCloset.Forms
                     MinimizeBox = false
                 };
 
-                // Create DataGridView with detailed information
                 DataGridView dgvDetailedProducts = new DataGridView
                 {
                     Dock = DockStyle.Fill,
@@ -424,7 +415,6 @@ namespace FASCloset.Forms
                     RowHeadersVisible = false
                 };
 
-                // Style the DataGridView
                 dgvDetailedProducts.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 123, 255);
                 dgvDetailedProducts.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
                 dgvDetailedProducts.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
@@ -432,7 +422,6 @@ namespace FASCloset.Forms
                 dgvDetailedProducts.DefaultCellStyle.Font = new Font("Segoe UI", 9);
                 dgvDetailedProducts.RowTemplate.Height = 35;
 
-                // Add columns
                 dgvDetailedProducts.Columns.Add("ProductID", "Mã SP");
                 dgvDetailedProducts.Columns.Add("ProductName", "Tên Sản Phẩm");
                 dgvDetailedProducts.Columns.Add("CategoryName", "Danh Mục");
@@ -441,7 +430,6 @@ namespace FASCloset.Forms
                 dgvDetailedProducts.Columns.Add("Revenue", "Doanh Thu");
                 dgvDetailedProducts.Columns.Add("CurrentStock", "Tồn Kho");
 
-                // Configure column formatting
                 dgvDetailedProducts.Columns["ProductID"].Width = 70;
                 dgvDetailedProducts.Columns["Price"].DefaultCellStyle.Format = "N0";
                 dgvDetailedProducts.Columns["Price"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -450,10 +438,8 @@ namespace FASCloset.Forms
                 dgvDetailedProducts.Columns["Revenue"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
                 dgvDetailedProducts.Columns["CurrentStock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
-                // Add alternating row color
                 dgvDetailedProducts.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(242, 242, 242);
 
-                // Add the data
                 foreach (var product in bestSellingProducts)
                 {
                     var currentStock = ProductManager.GetProductById(product.ProductID)?.Stock ?? 0;
@@ -468,7 +454,6 @@ namespace FASCloset.Forms
                     );
                 }
 
-                // Create a title label
                 Label titleLabel = new Label
                 {
                     Text = "Chi tiết sản phẩm bán chạy",
@@ -479,7 +464,6 @@ namespace FASCloset.Forms
                     Height = 40
                 };
 
-                // Create DateTimePicker controls for filtering by date range
                 Label lblDateRange = new Label
                 {
                     Text = "Chọn khoảng thời gian:",
@@ -511,11 +495,9 @@ namespace FASCloset.Forms
                     Size = new Size(120, 25)
                 };
 
-                // Set default date range (last 30 days)
                 dtpStartDate.Value = DateTime.Now.AddDays(-30);
                 dtpEndDate.Value = DateTime.Now;
 
-                // Create filter button
                 Button btnFilter = new Button
                 {
                     Text = "Lọc",
@@ -527,7 +509,6 @@ namespace FASCloset.Forms
                     ForeColor = Color.White
                 };
 
-                // Create export button
                 Button btnExport = new Button
                 {
                     Text = "Xuất Excel",
@@ -539,7 +520,6 @@ namespace FASCloset.Forms
                     ForeColor = Color.White
                 };
 
-                // Create Panel for controls
                 Panel controlsPanel = new Panel
                 {
                     Dock = DockStyle.Top,
@@ -553,7 +533,6 @@ namespace FASCloset.Forms
                 controlsPanel.Controls.Add(btnFilter);
                 controlsPanel.Controls.Add(btnExport);
 
-                // Create close button
                 Button btnClose = new Button
                 {
                     Text = "Đóng",
@@ -566,18 +545,19 @@ namespace FASCloset.Forms
                 };
 
                 btnClose.Click += (s, ev) => detailForm.Close();
-                btnFilter.Click += (s, ev) => {
+                btnFilter.Click += (s, ev) =>
+                {
                     try
                     {
                         var filteredProducts = ReportManager.GetBestSellingProducts(dtpStartDate.Value, dtpEndDate.Value);
                         dgvDetailedProducts.Rows.Clear();
-                        
+
                         if (filteredProducts == null || filteredProducts.Count == 0)
                         {
                             MessageBox.Show("Không có dữ liệu sản phẩm bán chạy trong khoảng thời gian này.");
                             return;
                         }
-                        
+
                         foreach (var product in filteredProducts)
                         {
                             var currentStock = ProductManager.GetProductById(product.ProductID)?.Stock ?? 0;
@@ -598,17 +578,16 @@ namespace FASCloset.Forms
                     }
                 };
 
-                btnExport.Click += (s, ev) => {
+                btnExport.Click += (s, ev) =>
+                {
                     MessageBox.Show("Tính năng xuất Excel sẽ được phát triển trong phiên bản tới.");
                 };
 
-                // Add all controls to the form
                 detailForm.Controls.Add(dgvDetailedProducts);
                 detailForm.Controls.Add(btnClose);
                 detailForm.Controls.Add(controlsPanel);
                 detailForm.Controls.Add(titleLabel);
 
-                // Show the form
                 detailForm.ShowDialog();
             }
             catch (Exception ex)

@@ -11,6 +11,9 @@ namespace FASCloset.Models
         public decimal UnitPrice { get; set; }
         
         // Add property required by OrderManager.cs
-        public string ProductName { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        
+        // Calculated property for the total price of this order detail
+        public decimal TotalPrice => Quantity * UnitPrice;
     }
 }

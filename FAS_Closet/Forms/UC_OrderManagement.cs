@@ -6,8 +6,19 @@ using FASCloset.Services;
 
 namespace FASCloset.Forms
 {
+    /// <summary>
+    /// User Control for managing customer orders, including:
+    /// - Creating new orders
+    /// - Managing draft orders
+    /// - Viewing and processing existing orders
+    /// - Printing invoices
+    /// </summary>
     public partial class UcOrderManagement : UserControl
     {
+        /// <summary>
+        /// Initializes a new instance of the Order Management user control
+        /// Sets up the UI components and loads initial data
+        /// </summary>
         public UcOrderManagement()
         {
             InitializeComponent();
@@ -43,6 +54,12 @@ namespace FASCloset.Forms
             this.Controls.Add(btnViewOrderDetails);
         }
 
+        /// <summary>
+        /// Handles viewing details for a selected order
+        /// Displays order information and product details in a popup
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event arguments</param>
         private void btnViewOrderDetail_Click(object sender, EventArgs e)
         {
             if (dgvOrders.SelectedRows.Count == 0)
@@ -68,6 +85,11 @@ namespace FASCloset.Forms
             ShowOrderDetailPopup(order, orderDetails);
         }
 
+        /// <summary>
+        /// Creates and displays a popup window showing full order details
+        /// </summary>
+        /// <param name="order">The order to display</param>
+        /// <param name="orderDetails">List of products in this order</param>
         private void ShowOrderDetailPopup(Order order, List<OrderDetail> orderDetails)
         {
             // Create the popup form
@@ -148,6 +170,12 @@ namespace FASCloset.Forms
             popup.ShowDialog();
         }
 
+        /// <summary>
+        /// Handles cancellation of an existing order
+        /// Removes the order from the database after confirmation
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event arguments</param>
         private void btnCancelOrder_Click(object sender, EventArgs e)
         {
             if (dgvOrders.SelectedRows.Count == 0)
@@ -189,6 +217,12 @@ namespace FASCloset.Forms
             }
         }
 
+        /// <summary>
+        /// Handles click events on the product list grid
+        /// Opens quantity edit popup when a product row is clicked
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event arguments with cell information</param>
         private void productList_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             // Ensure it's not the header row
@@ -208,6 +242,11 @@ namespace FASCloset.Forms
             }
         }
 
+        /// <summary>
+        /// Creates and displays a popup window for editing product quantity
+        /// Validates that requested quantity doesn't exceed available stock
+        /// </summary>
+        /// <param name="selectedProduct">The order detail to modify</param>
         private void OpenEditQuantityPopup(OrderDetail selectedProduct)
         {
             // Create the popup form
