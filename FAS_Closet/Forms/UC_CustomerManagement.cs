@@ -256,19 +256,61 @@ namespace FASCloset.Forms
             btnCancel.Visible = false;
             btnCancel.Click += BtnCancel_Click;
 
-            // Adjusted width for dgvCustomers
+            // Configuración del DataGridView de clientes
             dgvCustomers.Location = new Point(20, 310);
             dgvCustomers.Size = new Size(400, 280); 
             dgvCustomers.AllowUserToAddRows = false;
             dgvCustomers.ReadOnly = true;
-            dgvCustomers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvCustomers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvCustomers.SelectionChanged += dgvCustomers_SelectionChanged;
-
-            // Apply unified styling to dgvCustomers using the DataGridViewStyleHelper
-            // Use a purple color theme for customer management
+            
+            // Configuración inicial de columnas para evitar problemas de visualización
+            dgvCustomers.AutoGenerateColumns = false;
+            dgvCustomers.Columns.Clear();
+            
+            dgvCustomers.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "CustomerID",
+                HeaderText = "Mã KH",
+                Width = 60,
+                Name = "CustomerID"
+            });
+            
+            dgvCustomers.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Name",
+                HeaderText = "Tên khách hàng",
+                Width = 150,
+                Name = "Name"
+            });
+            
+            dgvCustomers.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Email",
+                HeaderText = "Email",
+                Width = 120,
+                Name = "Email"
+            });
+            
+            dgvCustomers.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Phone",
+                HeaderText = "Số điện thoại",
+                Width = 100,
+                Name = "Phone"
+            });
+            
+            dgvCustomers.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Address",
+                HeaderText = "Địa chỉ",
+                Width = 200,
+                Name = "Address"
+            });
+            
+            // Aplicar optimizaciones completas de visibilidad
             Color customerHeaderColor = Color.FromArgb(93, 64, 150); // Dark Purple
-            FASCloset.Extensions.DataGridViewStyleHelper.ApplyFullStyle(dgvCustomers, customerHeaderColor);
+            FASCloset.Extensions.DataGridViewStyleHelper.ApplyCompleteVisibilityOptimization(dgvCustomers, customerHeaderColor);
 
             // Create label for purchase history
             Label lblPurchaseHistory = new Label();
@@ -278,16 +320,14 @@ namespace FASCloset.Forms
             lblPurchaseHistory.Font = new Font("Segoe UI Semibold", 10F);
             lblPurchaseHistory.ForeColor = Color.FromArgb(93, 64, 150);
             
-            // Adjusted width for dataGridViewPurchaseHistory
+            // Configuración del DataGridView de historial de compras
             dataGridViewPurchaseHistory.Location = new Point(440, 310); 
             dataGridViewPurchaseHistory.Size = new Size(400, 280); 
             dataGridViewPurchaseHistory.AllowUserToAddRows = false;
             dataGridViewPurchaseHistory.ReadOnly = true;
-            dataGridViewPurchaseHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-
-            // Apply unified styling to dataGridViewPurchaseHistory using the DataGridViewStyleHelper
-            // Use the same purple color theme for consistency in the customer management screen
-            FASCloset.Extensions.DataGridViewStyleHelper.ApplyFullStyle(dataGridViewPurchaseHistory, customerHeaderColor);
+            
+            // Aplicar optimizaciones completas de visibilidad al historial de compras
+            FASCloset.Extensions.DataGridViewStyleHelper.ApplyCompleteVisibilityOptimization(dataGridViewPurchaseHistory, customerHeaderColor);
 
             // Add controls to form
             customerDetailPanel.Controls.Add(lblCustomerName);
@@ -669,34 +709,90 @@ namespace FASCloset.Forms
             {
                 var orders = OrderManager.GetOrdersByCustomerId(customerId);
                 
-                // Clear existing rows and columns
-                dataGridViewPurchaseHistory.Rows.Clear();
+                // First clear the data source to avoid data binding conflict
+                dataGridViewPurchaseHistory.DataSource = null;
+                
+                // Clear columns after unbinding the data source
                 dataGridViewPurchaseHistory.Columns.Clear();
                 
                 // Add columns with appropriate headers and formatting
-                dataGridViewPurchaseHistory.Columns.Add("OrderID", "Mã đơn hàng");
-                dataGridViewPurchaseHistory.Columns.Add("OrderDate", "Ngày mua");
-                dataGridViewPurchaseHistory.Columns.Add("TotalAmount", "Tổng tiền");
-                dataGridViewPurchaseHistory.Columns.Add("PaymentMethod", "Thanh toán");
+                dataGridViewPurchaseHistory.AutoGenerateColumns = false;
                 
-                // Add orders to the purchase history grid
-                foreach (var order in orders)
+                dataGridViewPurchaseHistory.Columns.Add(new DataGridViewTextBoxColumn
                 {
-                    dataGridViewPurchaseHistory.Rows.Add(
-                        order.OrderID,
-                        order.OrderDate.ToString("dd/MM/yyyy"),
-                        order.TotalAmount,
-                        order.PaymentMethod
-                    );
+                    Name = "OrderID",
+                    DataPropertyName = "OrderID",
+                    HeaderText = "Order ID",
+                    Width = 60
+                });
+                
+                dataGridViewPurchaseHistory.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "OrderDate",
+                    DataPropertyName = "OrderDate",
+                    HeaderText = "Order Date",
+                    Width = 100,
+                    DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" }
+                });
+                
+                dataGridViewPurchaseHistory.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "TotalAmount",
+                    DataPropertyName = "TotalAmount",
+                    HeaderText = "Total Amount",
+                    Width = 120,
+                    DefaultCellStyle = new DataGridViewCellStyle 
+                    { 
+                        Format = "N0", 
+                        Alignment = DataGridViewContentAlignment.MiddleRight,
+                        Font = new Font("Segoe UI Semibold", 9.5F)
+                    }
+                });
+                
+                dataGridViewPurchaseHistory.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "PaymentMethod",
+                    DataPropertyName = "PaymentMethod",
+                    HeaderText = "Payment Method",
+                    Width = 100
+                });
+                
+                // Now assign the data source after configuring columns
+                dataGridViewPurchaseHistory.DataSource = orders;
+                
+                // Apply complete optimization for visibility
+                Color historyHeaderColor = Color.FromArgb(93, 64, 150); // Purple
+                FASCloset.Extensions.DataGridViewStyleHelper.ApplyCompleteVisibilityOptimization(dataGridViewPurchaseHistory, historyHeaderColor);
+                
+                // Optimize column widths if there are few rows to display
+                if (orders.Count <= 5)
+                {
+                    FASCloset.Extensions.DataGridViewStyleHelper.OptimizeColumnWidths(dataGridViewPurchaseHistory);
                 }
                 
-                // Apply column formatting to ensure monetary values display correctly
-                FASCloset.Extensions.DataGridViewStyleHelper.ApplyColumnFormatting(dataGridViewPurchaseHistory);
+                // Handle the data error event to prevent exceptions
+                dataGridViewPurchaseHistory.DataError += (s, e) => {
+                    e.ThrowException = false;
+                    Console.WriteLine($"Data error in purchase history: {e.Exception?.Message}");
+                };
             }
             catch (Exception ex)
             {
                 // Just log the exception but don't show message box to avoid overwhelming the user
                 Console.WriteLine($"Error loading purchase history: {ex.Message}");
+                
+                // Show a friendly message in the empty grid
+                dataGridViewPurchaseHistory.DataSource = null;
+                dataGridViewPurchaseHistory.Columns.Clear();
+                
+                dataGridViewPurchaseHistory.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "Message",
+                    HeaderText = "Purchase History",
+                    Width = 390
+                });
+                
+                dataGridViewPurchaseHistory.Rows.Add("No data available or there was an error loading data");
             }
         }
 

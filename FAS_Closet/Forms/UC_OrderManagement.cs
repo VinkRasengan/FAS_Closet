@@ -563,8 +563,18 @@ namespace FASCloset.Forms
                 // Set the data source after column configuration
                 dgvOrders.DataSource = orders;
                 
-                // Apply the standardized style using the helper
-                FASCloset.Extensions.DataGridViewStyleHelper.ApplyFullStyle(dgvOrders);
+                // Apply complete visibility optimization
+                Color orderHeaderColor = Color.FromArgb(0, 123, 255); // Blue theme for orders
+                FASCloset.Extensions.DataGridViewStyleHelper.ApplyCompleteVisibilityOptimization(dgvOrders, orderHeaderColor);
+                
+                // Add row numbers
+                FASCloset.Extensions.DataGridViewStyleHelper.AddRowNumbers(dgvOrders);
+                
+                // Handle data error event to prevent exceptions
+                dgvOrders.DataError += (s, e) => {
+                    e.ThrowException = false;
+                    Console.WriteLine($"DataError in dgvOrders: {e.Exception?.Message}");
+                };
             }
             catch (Exception ex)
             {
@@ -784,7 +794,65 @@ namespace FASCloset.Forms
         // Method to load draft orders into DataGridView
         private void LoadDraftOrders()
         {
-            dgvDraftOrders.DataSource = null;
+            // Configure columns before setting data source
+            dgvDraftOrders.AutoGenerateColumns = false;
+            dgvDraftOrders.Columns.Clear();
+            
+            // Add custom columns with better headers and styling
+            dgvDraftOrders.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "DraftID",
+                HeaderText = "ID Borrador",
+                Width = 60
+            });
+            
+            dgvDraftOrders.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "CustomerID",
+                HeaderText = "Mã KH",
+                Width = 60,
+                Visible = false // Hide CustomerID column as CustomerName is sufficient
+            });
+            
+            dgvDraftOrders.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "CustomerName",
+                HeaderText = "Khách Hàng",
+                Width = 150
+            });
+            
+            dgvDraftOrders.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "TotalAmount",
+                HeaderText = "Tổng Tiền",
+                Width = 100,
+                DefaultCellStyle = new DataGridViewCellStyle
+                {
+                    Format = "N0",
+                    Alignment = DataGridViewContentAlignment.MiddleRight,
+                    Font = new Font("Segoe UI Semibold", 9.5F)
+                }
+            });
+            
+            dgvDraftOrders.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "PaymentMethod",
+                HeaderText = "Thanh Toán",
+                Width = 120
+            });
+            
+            dgvDraftOrders.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "OrderDate",
+                HeaderText = "Ngày Tạo",
+                Width = 100,
+                DefaultCellStyle = new DataGridViewCellStyle
+                {
+                    Format = "dd/MM/yyyy"
+                }
+            });
+            
+            // Set the data source with draft orders
             dgvDraftOrders.DataSource = draftOrders.Select((x, i) => new
             {
                 DraftID = i + 1,
@@ -795,10 +863,13 @@ namespace FASCloset.Forms
                 OrderDate = x.Order.OrderDate
             }).ToList();
             
-            // Apply the standardized style using the helper
-            FASCloset.Extensions.DataGridViewStyleHelper.ApplyFullStyle(dgvDraftOrders);
+            // Apply full UI visibility optimization with purple theme
+            Color draftHeaderColor = Color.FromArgb(128, 0, 128); // Purple theme for draft orders
+            FASCloset.Extensions.DataGridViewStyleHelper.ApplyCompleteVisibilityOptimization(dgvDraftOrders, draftHeaderColor);
+            
+            // Add row numbers for better readability
+            FASCloset.Extensions.DataGridViewStyleHelper.AddRowNumbers(dgvDraftOrders);
         }
-
 
         // Revert to original method naming
         private void btnProcessPayment_Click(object sender, EventArgs e)
