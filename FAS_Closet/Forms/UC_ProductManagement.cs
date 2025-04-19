@@ -137,8 +137,11 @@ namespace FASCloset.Forms
             ProductDisplay.ReadOnly = true;
             ProductDisplay.AllowUserToOrderColumns = true;
             
-            // Áp dụng style chuẩn từ helper
-            FASCloset.Extensions.DataGridViewStyleHelper.ApplyBasicStyle(ProductDisplay);
+            // Aplicar estilo completo usando el helper (con color de encabezado personalizado para productos)
+            FASCloset.Extensions.DataGridViewStyleHelper.ApplyFullStyle(ProductDisplay, Color.FromArgb(0, 123, 255));
+            
+            // Aplicar formato específico para las columnas basado en su contenido
+            FASCloset.Extensions.DataGridViewStyleHelper.ApplyColumnFormatting(ProductDisplay);
             
             // Add DataError handler to avoid binding errors
             ProductDisplay.DataError += (s, e) => {

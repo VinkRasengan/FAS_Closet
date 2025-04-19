@@ -5,111 +5,162 @@ using System.Windows.Forms;
 namespace FASCloset.Extensions
 {
     /// <summary>
-    /// Lớp tiện ích để áp dụng style đồng nhất cho tất cả các DataGridView trong ứng dụng
+    /// Helper class for applying consistent styles to DataGridViews across the application
     /// </summary>
     public static class DataGridViewStyleHelper
     {
         /// <summary>
-        /// Áp dụng style cơ bản cho DataGridView để đồng bộ giao diện toàn ứng dụng
+        /// Apply basic styling to a DataGridView (colors, fonts, borders)
         /// </summary>
-        /// <param name="dataGridView">DataGridView cần áp dụng style</param>
+        /// <param name="dataGridView">The DataGridView to style</param>
         public static void ApplyBasicStyle(DataGridView dataGridView)
         {
             if (dataGridView == null)
                 return;
-
-            // Thiết lập thuộc tính cơ bản
+                
+            // Styling
             dataGridView.BorderStyle = BorderStyle.None;
             dataGridView.BackgroundColor = Color.White;
             dataGridView.GridColor = Color.FromArgb(230, 230, 230);
-            dataGridView.EnableHeadersVisualStyles = false;
-            dataGridView.RowHeadersVisible = false;
-            dataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-            dataGridView.AllowUserToAddRows = false;
-            dataGridView.ReadOnly = true;
-            dataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-
-            // Định dạng tiêu đề cột
-            dataGridView.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(37, 150, 190);
-            dataGridView.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dataGridView.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 11, FontStyle.Bold);
-            dataGridView.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridView.ColumnHeadersHeight = 40;
-
-            // Định dạng dòng
-            dataGridView.DefaultCellStyle.Font = new Font("Segoe UI", 10);
+            
+            // Alternative row coloring
             dataGridView.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(238, 239, 249);
-            dataGridView.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            dataGridView.DefaultCellStyle.BackColor = Color.White;
+            
+            // Font settings
+            dataGridView.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
+            
+            // Selection styling
             dataGridView.DefaultCellStyle.SelectionBackColor = Color.FromArgb(208, 215, 229);
             dataGridView.DefaultCellStyle.SelectionForeColor = Color.Black;
+            
+            // Row styling
             dataGridView.RowTemplate.Height = 35;
+            dataGridView.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            
+            // Selection behavior
+            dataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         }
-
+        
         /// <summary>
-        /// Áp dụng định dạng cho các cột trong DataGridView theo kiểu dữ liệu hoặc tên cột
+        /// Apply full styling including header styling to a DataGridView
         /// </summary>
-        /// <param name="dataGridView">DataGridView cần định dạng cột</param>
-        public static void FormatColumns(DataGridView dataGridView)
+        /// <param name="dataGridView">The DataGridView to style</param>
+        /// <param name="headerBackColor">Optional background color for headers</param>
+        public static void ApplyFullStyle(DataGridView dataGridView, Color? headerBackColor = null)
+        {
+            if (dataGridView == null)
+                return;
+                
+            // Apply basic styling first
+            ApplyBasicStyle(dataGridView);
+            
+            // Disable default header styling
+            dataGridView.EnableHeadersVisualStyles = false;
+            
+            // Header styling
+            dataGridView.ColumnHeadersDefaultCellStyle.BackColor = headerBackColor ?? Color.FromArgb(37, 150, 190);
+            dataGridView.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dataGridView.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
+            dataGridView.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridView.ColumnHeadersHeight = 40;
+            
+            // Hide row headers
+            dataGridView.RowHeadersVisible = false;
+        }
+        
+        /// <summary>
+        /// Apply specific column formatting based on column content type
+        /// </summary>
+        /// <param name="dataGridView">The DataGridView to format</param>
+        public static void ApplyColumnFormatting(DataGridView dataGridView)
         {
             if (dataGridView == null || dataGridView.Columns.Count == 0)
                 return;
 
             foreach (DataGridViewColumn column in dataGridView.Columns)
             {
-                // Định dạng cột tiền tệ
-                if (column.HeaderText.Contains("tiền") || column.HeaderText.Contains("thu") || 
-                    column.HeaderText.Contains("giá") || column.HeaderText.Contains("chi") ||
-                    column.HeaderText.Contains("phí"))
+                string headerText = column.HeaderText.ToLower();
+                
+                // Currency columns
+                if (headerText.Contains("tiền") || headerText.Contains("giá") || 
+                    headerText.Contains("thu") || headerText.Contains("chi") ||
+                    headerText.Contains("total") || headerText.Contains("price") || 
+                    headerText.Contains("amount"))
                 {
                     column.DefaultCellStyle.Format = "N0";
                     column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
                     column.DefaultCellStyle.ForeColor = Color.FromArgb(31, 111, 139);
-                    column.DefaultCellStyle.Font = new Font("Segoe UI Semibold", 10, FontStyle.Bold);
+                    column.DefaultCellStyle.Font = new Font("Segoe UI Semibold", 9.5F, FontStyle.Bold);
                 }
                 
-                // Định dạng cột ngày tháng
-                if (column.HeaderText.Contains("Ngày") || column.HeaderText.Contains("ngày") ||
-                    column.HeaderText.Contains("Date") || column.HeaderText.Contains("date"))
+                // Date columns
+                else if (headerText.Contains("ngày") || headerText.Contains("date"))
                 {
                     column.DefaultCellStyle.Format = "dd/MM/yyyy";
                     column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
                 }
                 
-                // Định dạng cột mã (ID)
-                if (column.HeaderText.Contains("Mã") || column.HeaderText.Contains("ID"))
+                // ID columns
+                else if (headerText.Contains("mã") || headerText.Contains("id"))
                 {
                     column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
                 }
                 
-                // Giới hạn chiều rộng cột và thêm tooltip khi nội dung bị cắt
-                if (column.HeaderText.Contains("Tên") || column.HeaderText.Contains("Name") || 
-                    column.HeaderText.Contains("Email") || column.HeaderText.Contains("Địa chỉ") || 
-                    column.HeaderText.Contains("Mô tả") || column.HeaderText.Contains("Description"))
+                // Text columns that might need word wrap
+                else if (headerText.Contains("tên") || headerText.Contains("name") || 
+                         headerText.Contains("mô tả") || headerText.Contains("description"))
                 {
                     column.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-                    column.MinimumWidth = 150;
+                    if (column.Width > 250)
+                        column.Width = 250;
+                }
+                
+                // Payment method/status columns
+                else if (headerText.Contains("thanh toán") || headerText.Contains("payment") || 
+                         headerText.Contains("status") || headerText.Contains("trạng thái"))
+                {
+                    column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
                 }
             }
+        }
+        
+        /// <summary>
+        /// Apply sorted row style highlighting based on a condition
+        /// </summary>
+        /// <param name="dataGridView">The DataGridView to apply conditional formatting to</param>
+        /// <param name="rowFormatFunc">Function that returns a cell style for each row</param>
+        public static void ApplyConditionalFormatting(DataGridView dataGridView, Func<DataGridViewRow, DataGridViewCellStyle?> rowFormatFunc)
+        {
+            if (dataGridView == null || rowFormatFunc == null)
+                return;
 
-            // Auto resize các cột theo nội dung tốt nhất
-            dataGridView.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
-            
-            // Giới hạn chiều rộng tối đa của cột
-            foreach (DataGridViewColumn column in dataGridView.Columns)
+            foreach (DataGridViewRow row in dataGridView.Rows)
             {
-                if (column.Width > 250)
-                    column.Width = 250;
+                var style = rowFormatFunc(row);
+                if (style != null)
+                {
+                    row.DefaultCellStyle = style;
+                }
             }
         }
-
+        
         /// <summary>
-        /// Áp dụng tất cả các style cho DataGridView (kết hợp ApplyBasicStyle và FormatColumns)
+        /// Create a highlight style for important rows
         /// </summary>
-        /// <param name="dataGridView">DataGridView cần áp dụng toàn bộ style</param>
-        public static void ApplyFullStyle(DataGridView dataGridView)
+        /// <param name="backColor">Background color</param>
+        /// <param name="foreColor">Foreground color</param>
+        /// <returns>A DataGridViewCellStyle for highlighting</returns>
+        public static DataGridViewCellStyle CreateHighlightStyle(Color backColor, Color foreColor)
         {
-            ApplyBasicStyle(dataGridView);
-            FormatColumns(dataGridView);
+            var style = new DataGridViewCellStyle
+            {
+                BackColor = backColor,
+                ForeColor = foreColor,
+                Font = new Font("Segoe UI Semibold", 9.5F, FontStyle.Bold)
+            };
+            
+            return style;
         }
     }
 }

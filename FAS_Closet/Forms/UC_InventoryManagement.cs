@@ -70,20 +70,8 @@ namespace FASCloset.Forms
                 // Set the data source after column configuration
                 dataGridViewCategories.DataSource = categories;
                 
-                // Apply modern styling
-                dataGridViewCategories.BorderStyle = BorderStyle.None;
-                dataGridViewCategories.BackgroundColor = Color.White;
-                dataGridViewCategories.GridColor = Color.FromArgb(230, 230, 230);
-                dataGridViewCategories.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 123, 255);
-                dataGridViewCategories.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-                dataGridViewCategories.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
-                dataGridViewCategories.ColumnHeadersHeight = 40;
-                dataGridViewCategories.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
-                dataGridViewCategories.RowTemplate.Height = 35;
-                dataGridViewCategories.RowsDefaultCellStyle.BackColor = Color.White;
-                dataGridViewCategories.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
-                dataGridViewCategories.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-                dataGridViewCategories.RowHeadersVisible = false;
+                // Apply styling using the helper
+                FASCloset.Extensions.DataGridViewStyleHelper.ApplyFullStyle(dataGridViewCategories);
                 
                 // Refresh the UI
                 dataGridViewCategories.Refresh();
@@ -234,6 +222,40 @@ namespace FASCloset.Forms
                 // Lấy danh sách sản phẩm sắp hết hàng và gán vào DataGridView
                 var lowStockItems = InventoryManager.GetLowStockProducts();
                 dataGridViewLowStock.DataSource = lowStockItems;
+                
+                // Apply styling using the helper
+                FASCloset.Extensions.DataGridViewStyleHelper.ApplyFullStyle(dataGridViewLowStock);
+                
+                // Apply special column formatting for monetary and quantity values
+                FASCloset.Extensions.DataGridViewStyleHelper.ApplyColumnFormatting(dataGridViewLowStock);
+                
+                // Apply conditional formatting to highlight very low stock items (less than minimum threshold)
+                FASCloset.Extensions.DataGridViewStyleHelper.ApplyConditionalFormatting(dataGridViewLowStock, row =>
+                {
+                    if (row?.DataBoundItem == null) return null;
+                    
+                    // Safely extract stock quantity and threshold using reflection
+                    var item = row.DataBoundItem;
+                    var stockProp = item.GetType().GetProperty("StockQuantity");
+                    var thresholdProp = item.GetType().GetProperty("MinimumStockThreshold");
+                    
+                    if (stockProp != null && thresholdProp != null)
+                    {
+                        var stock = (int?)stockProp.GetValue(item) ?? 0;
+                        var threshold = (int?)thresholdProp.GetValue(item) ?? 0;
+                        
+                        // Highlight rows where stock is below or equal to the threshold
+                        if (stock <= threshold)
+                        {
+                            return FASCloset.Extensions.DataGridViewStyleHelper.CreateHighlightStyle(
+                                Color.FromArgb(255, 240, 240), // Light red background
+                                Color.FromArgb(180, 0, 0)      // Dark red text
+                            );
+                        }
+                    }
+                    
+                    return null;
+                });
             }
             catch (Exception ex)
             {

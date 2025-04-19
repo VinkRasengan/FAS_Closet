@@ -265,19 +265,10 @@ namespace FASCloset.Forms
             dgvCustomers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvCustomers.SelectionChanged += dgvCustomers_SelectionChanged;
 
-            // Apply modern styling for dgvCustomers
-            dgvCustomers.BorderStyle = BorderStyle.None;
-            dgvCustomers.BackgroundColor = Color.White;
-            dgvCustomers.GridColor = Color.FromArgb(230, 230, 230);
-            dgvCustomers.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(93, 64, 150); // Dark Purple
-            dgvCustomers.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dgvCustomers.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
-            dgvCustomers.ColumnHeadersHeight = 40;
-            dgvCustomers.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
-            dgvCustomers.RowTemplate.Height = 35;
-            dgvCustomers.RowsDefaultCellStyle.BackColor = Color.White;
-            dgvCustomers.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
-            dgvCustomers.RowHeadersVisible = false;
+            // Apply unified styling to dgvCustomers using the DataGridViewStyleHelper
+            // Use a purple color theme for customer management
+            Color customerHeaderColor = Color.FromArgb(93, 64, 150); // Dark Purple
+            FASCloset.Extensions.DataGridViewStyleHelper.ApplyFullStyle(dgvCustomers, customerHeaderColor);
 
             // Create label for purchase history
             Label lblPurchaseHistory = new Label();
@@ -294,19 +285,9 @@ namespace FASCloset.Forms
             dataGridViewPurchaseHistory.ReadOnly = true;
             dataGridViewPurchaseHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
-            // Apply modern styling for dataGridViewPurchaseHistory
-            dataGridViewPurchaseHistory.BorderStyle = BorderStyle.None;
-            dataGridViewPurchaseHistory.BackgroundColor = Color.White;
-            dataGridViewPurchaseHistory.GridColor = Color.FromArgb(230, 230, 230);
-            dataGridViewPurchaseHistory.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(93, 64, 150); // Dark Purple
-            dataGridViewPurchaseHistory.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dataGridViewPurchaseHistory.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 10F);
-            dataGridViewPurchaseHistory.ColumnHeadersHeight = 40;
-            dataGridViewPurchaseHistory.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
-            dataGridViewPurchaseHistory.RowTemplate.Height = 35;
-            dataGridViewPurchaseHistory.RowsDefaultCellStyle.BackColor = Color.White;
-            dataGridViewPurchaseHistory.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 249, 252);
-            dataGridViewPurchaseHistory.RowHeadersVisible = false;
+            // Apply unified styling to dataGridViewPurchaseHistory using the DataGridViewStyleHelper
+            // Use the same purple color theme for consistency in the customer management screen
+            FASCloset.Extensions.DataGridViewStyleHelper.ApplyFullStyle(dataGridViewPurchaseHistory, customerHeaderColor);
 
             // Add controls to form
             customerDetailPanel.Controls.Add(lblCustomerName);
@@ -688,8 +669,15 @@ namespace FASCloset.Forms
             {
                 var orders = OrderManager.GetOrdersByCustomerId(customerId);
                 
-                // Clear existing rows
+                // Clear existing rows and columns
                 dataGridViewPurchaseHistory.Rows.Clear();
+                dataGridViewPurchaseHistory.Columns.Clear();
+                
+                // Add columns with appropriate headers and formatting
+                dataGridViewPurchaseHistory.Columns.Add("OrderID", "Mã đơn hàng");
+                dataGridViewPurchaseHistory.Columns.Add("OrderDate", "Ngày mua");
+                dataGridViewPurchaseHistory.Columns.Add("TotalAmount", "Tổng tiền");
+                dataGridViewPurchaseHistory.Columns.Add("PaymentMethod", "Thanh toán");
                 
                 // Add orders to the purchase history grid
                 foreach (var order in orders)
@@ -701,6 +689,9 @@ namespace FASCloset.Forms
                         order.PaymentMethod
                     );
                 }
+                
+                // Apply column formatting to ensure monetary values display correctly
+                FASCloset.Extensions.DataGridViewStyleHelper.ApplyColumnFormatting(dataGridViewPurchaseHistory);
             }
             catch (Exception ex)
             {
