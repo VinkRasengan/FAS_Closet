@@ -613,8 +613,9 @@ namespace FASCloset.Forms
             {
                 try
                 {
-                    // Write the content to the selected file
-                    File.WriteAllText(saveFileDialog.FileName, fileContent);
+                    // Write the content to the selected file with UTF-8 encoding with BOM
+                    // This ensures that Excel and other applications correctly recognize Vietnamese characters
+                    File.WriteAllText(saveFileDialog.FileName, fileContent, new System.Text.UTF8Encoding(true));
 
                     // Notify user of success
                     MessageBox.Show($"Xuất báo cáo thành công đến {saveFileDialog.FileName}",
