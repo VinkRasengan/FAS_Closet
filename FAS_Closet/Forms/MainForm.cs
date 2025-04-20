@@ -96,7 +96,7 @@ namespace FASCloset.Forms
         private void btnProductManagement_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnProductManagement, "Quản lý Sản phẩm");
-            UpdateFeatureToolbar(new string[] { "Thêm", "Sửa", "Xóa", "Phân loại" });
+            UpdateFeatureToolbar(new string[] { "Thêm", "Sửa", "Xóa" });
 
             if (ucProductManagement == null)
             {
