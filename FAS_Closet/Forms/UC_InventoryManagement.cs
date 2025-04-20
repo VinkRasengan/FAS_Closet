@@ -13,6 +13,7 @@ namespace FASCloset.Forms
         {
             InitializeComponent();
             LoadCategories();
+            LoadProducts();
             LoadLowStockProducts();
         }
 
@@ -79,6 +80,67 @@ namespace FASCloset.Forms
             catch (Exception ex)
             {
                 MessageBox.Show("Error loading categories: " + ex.Message);
+            }
+        }
+
+        // Load products into ComboBox
+        public void LoadProducts()
+        {
+            try
+            {
+                // Get all active products from the database
+                var products = ProductManager.GetAllProducts(onlyActive: true);
+                
+                if (products != null && products.Count > 0)
+                {
+                    // Configure the ComboBox
+                    cmbProducts.DataSource = null;
+                    cmbProducts.DisplayMember = "ProductName";
+                    cmbProducts.ValueMember = "ProductID";
+                    cmbProducts.DataSource = products;
+
+                    // Add placeholder text if possible
+                    if (cmbProducts.Items.Count > 0)
+                        cmbProducts.SelectedIndex = 0;
+                    else
+                        cmbProducts.SelectedIndex = -1;
+                }
+                else
+                {
+                    // If no products, show a message
+                    MessageBox.Show("No products found. Please add products first.", "No Products", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading products: " + ex.Message);
+            }
+        }
+
+        // Helper method to select a specific product in the combo box
+        public void SelectProductInComboBox(int productId)
+        {
+            if (cmbProducts?.Items.Count == 0) 
+                return;
+            
+            // Iterate through the items in the ComboBox to find the product with the specified ID
+            for (int i = 0; i < cmbProducts.Items.Count; i++)
+            {
+                if (cmbProducts.Items[i] is Product product && product.ProductID == productId)
+                {
+                    cmbProducts.SelectedIndex = i;
+                    return;
+                }
+            }
+        }
+
+        // Handle ComboBox selection change
+        private void cmbProducts_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbProducts.SelectedItem is Product selectedProduct)
+            {
+                // Optionally, you can display the current stock value when a product is selected
+                txtStockQuantity.Text = selectedProduct.Stock.ToString();
             }
         }
 
@@ -171,9 +233,10 @@ namespace FASCloset.Forms
         {
             try
             {
-                if (!int.TryParse(txtProductId.Text.Trim(), out int productId))
+                // Get the selected product from the ComboBox
+                if (cmbProducts.SelectedItem is not Product selectedProduct)
                 {
-                    MessageBox.Show("Please enter a valid numeric Product ID.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Please select a product.", "No Product Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -183,23 +246,20 @@ namespace FASCloset.Forms
                     return;
                 }
 
-                var product = ProductManager.GetProductById(productId);
-                if (product == null)
-                {
-                    MessageBox.Show("No product found with that ID.", "Product Not Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
                 var confirmResult = MessageBox.Show(
-                    $"Are you sure you want to update the stock of '{product.ProductName}' to {quantity}?",
+                    $"Are you sure you want to update the stock of '{selectedProduct.ProductName}' to {quantity}?",
                     "Confirm Stock Update", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
                 if (confirmResult != DialogResult.Yes) return;
 
-                InventoryManager.UpdateStock(productId, quantity);
+                // Update the stock
+                InventoryManager.UpdateStock(selectedProduct.ProductID, quantity);
 
-                txtProductId.Clear();
+                // Clear the stock quantity field
                 txtStockQuantity.Clear();
+                
+                // Refresh product list to reflect updated stock values
+                LoadProducts();
                 
                 // Refresh the low stock products list to reflect changes
                 LoadLowStockProducts();

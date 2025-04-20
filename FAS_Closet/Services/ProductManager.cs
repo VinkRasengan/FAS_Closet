@@ -55,6 +55,13 @@ namespace FASCloset.Services
             }
         }
 
+        // Get all products (alias for GetProducts for backward compatibility)
+        public static List<Product> GetAllProducts(bool onlyActive = true)
+        {
+            // Inverted logic between methods - onlyActive = true means includeInactive = false
+            return GetProducts(!onlyActive);
+        }
+
         // Get products by category with additional details
         public static List<Product> GetProductsByCategory(int categoryId, bool includeInactive = false)
         {

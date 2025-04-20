@@ -376,7 +376,7 @@ namespace FASCloset.Forms
             // If a product ID was provided, set it in the inventory management UI
             if (productId > 0 && ucInventoryManagement != null)
             {
-                ucInventoryManagement.txtProductId.Text = productId.ToString();
+                ucInventoryManagement.SelectProductInComboBox(productId);
                 ucInventoryManagement.BringToFront();
             }
         }

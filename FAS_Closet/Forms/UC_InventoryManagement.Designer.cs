@@ -130,16 +130,16 @@ namespace FASCloset.Forms
             this.panel1 = new Panel();
             this.panel2 = new Panel();
             this.dataGridViewLowStock = new DataGridView();
-            this.txtProductId = new TextBox();
+            this.cmbProducts = new ComboBox();
             this.txtStockQuantity = new TextBox();
             this.btnUpdateStock = new Button();
             this.btnTransferStock = new Button();
             this.btnViewProductsByCategory = new Button();
 
             this.panel1.BorderStyle = BorderStyle.FixedSingle;
-            this.panel1.Controls.Add(new Label() { Text = "Product ID:", AutoSize = true, Location = new Point(10, 15) });
+            this.panel1.Controls.Add(new Label() { Text = "Select Product:", AutoSize = true, Location = new Point(10, 15) });
             this.panel1.Controls.Add(new Label() { Text = "New Quantity:", AutoSize = true, Location = new Point(10, 45) });
-            this.panel1.Controls.Add(this.txtProductId);
+            this.panel1.Controls.Add(this.cmbProducts);
             this.panel1.Controls.Add(this.txtStockQuantity);
             this.panel1.Controls.Add(this.btnUpdateStock);
             this.panel1.Controls.Add(this.btnTransferStock);
@@ -221,7 +221,8 @@ namespace FASCloset.Forms
                 if (this.dataGridViewLowStock.SelectedRows.Count > 0 && 
                     this.dataGridViewLowStock.SelectedRows[0].DataBoundItem is Product product)
                 {
-                    this.txtProductId.Text = product.ProductID.ToString();
+                    // Set the ComboBox selection to the selected product
+                    SelectProductInComboBox(product.ProductID);
                     this.txtStockQuantity.Focus();
                 }
             };
@@ -235,10 +236,13 @@ namespace FASCloset.Forms
             this.dataGridViewLowStock.RowHeadersVisible = false;
             this.panel2.Controls.Add(this.dataGridViewLowStock);
 
-            this.txtProductId.Location = new Point(106, 12);
-            this.txtProductId.Name = "txtProductId";
-            this.txtProductId.Size = new Size(100, 23);
-            this.txtProductId.TabIndex = 2;
+            // Configure the products ComboBox
+            this.cmbProducts.Location = new Point(106, 12);
+            this.cmbProducts.Name = "cmbProducts";
+            this.cmbProducts.Size = new Size(200, 23);
+            this.cmbProducts.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.cmbProducts.TabIndex = 2;
+            this.cmbProducts.SelectedIndexChanged += cmbProducts_SelectedIndexChanged;
 
             this.txtStockQuantity.Location = new Point(106, 42);
             this.txtStockQuantity.Name = "txtStockQuantity";
@@ -286,7 +290,7 @@ namespace FASCloset.Forms
         public Panel panel1;
         public Panel panel2;
         public DataGridView dataGridViewLowStock;
-        public TextBox txtProductId;
+        public ComboBox cmbProducts;
         public TextBox txtStockQuantity;
         public Button btnUpdateStock;
         public Button btnTransferStock;

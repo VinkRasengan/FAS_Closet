@@ -579,7 +579,7 @@ namespace FASCloset.Forms
             btnSave.Visible = true;
             btnCancel.Visible = true;
         }
-
+        
         private void btnDeleteCustomer_Click(object sender, EventArgs e)
         {
             if (dgvCustomers.SelectedRows.Count == 0)
@@ -635,8 +635,17 @@ namespace FASCloset.Forms
                     Address = txtCustomerAddress.Text
                 };
 
-                CustomerManager.UpdateCustomer(customer);
-                MessageBox.Show("Cập nhật khách hàng thành công", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Sử dụng isEditMode để quyết định thêm hoặc cập nhật
+                if (isEditMode)
+                {
+                    CustomerManager.UpdateCustomer(customer);
+                    MessageBox.Show("Cập nhật khách hàng thành công", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    CustomerManager.AddCustomer(customer);
+                    MessageBox.Show("Thêm khách hàng thành công", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
                 
                 // Cập nhật danh sách và đặt lại form
                 RefreshCustomerList();
@@ -644,7 +653,7 @@ namespace FASCloset.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi cập nhật khách hàng: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi khi {(isEditMode ? "cập nhật" : "thêm")} khách hàng: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
