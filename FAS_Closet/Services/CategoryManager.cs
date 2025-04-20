@@ -70,14 +70,33 @@ namespace FASCloset.Services
         {
             try
             {
-                using (var connection = new SqliteConnection(GetConnectionString()))
+                // First check if any products are using this category
+                if (IsCategoryUsed(categoryId))
                 {
-                    connection.Open();
-                    string query = "DELETE FROM Category WHERE CategoryID = @CategoryID";
-                    using (var command = new SqliteCommand(query, connection))
+                    // Instead of deleting, mark the category as inactive to maintain database integrity
+                    using (var connection = new SqliteConnection(GetConnectionString()))
                     {
-                        command.Parameters.AddWithValue(ParamCategoryId, categoryId);
-                        command.ExecuteNonQuery();
+                        connection.Open();
+                        string query = "UPDATE Category SET IsActive = 0 WHERE CategoryID = @CategoryID";
+                        using (var command = new SqliteCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue(ParamCategoryId, categoryId);
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                }
+                else
+                {
+                    // If no products are using this category, delete it completely
+                    using (var connection = new SqliteConnection(GetConnectionString()))
+                    {
+                        connection.Open();
+                        string query = "DELETE FROM Category WHERE CategoryID = @CategoryID";
+                        using (var command = new SqliteCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue(ParamCategoryId, categoryId);
+                            command.ExecuteNonQuery();
+                        }
                     }
                 }
             }

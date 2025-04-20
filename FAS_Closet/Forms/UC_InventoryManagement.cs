@@ -229,19 +229,46 @@ namespace FASCloset.Forms
             if (dataGridViewCategories.SelectedRows.Count > 0 &&
                 dataGridViewCategories.SelectedRows[0].DataBoundItem is Category selected)
             {
+                string message;
                 if (CategoryManager.IsCategoryUsed(selected.CategoryID))
                 {
-                    MessageBox.Show("Cannot delete. This category is in use.");
-                    return;
+                    message = $"Category '{selected.CategoryName}' is in use by products. It will be marked as inactive instead of being deleted. Continue?";
+                }
+                else
+                {
+                    message = $"Are you sure you want to delete category '{selected.CategoryName}'?";
                 }
 
-                if (MessageBox.Show($"Delete category '{selected.CategoryName}'?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                if (MessageBox.Show(message, "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    CategoryManager.DeleteCategory(selected.CategoryID);
-                    LoadCategories();
-                    txtCategoryName.Clear();
-                    txtCategoryDescription.Clear();
+                    try
+                    {
+                        CategoryManager.DeleteCategory(selected.CategoryID);
+                        
+                        // Clear selections and inputs
+                        txtCategoryName.Clear();
+                        txtCategoryDescription.Clear();
+                        
+                        // Refresh both category list and product data
+                        LoadCategories();
+                        LoadProducts();
+                        LoadLowStockProducts();
+                        
+                        string resultMessage = CategoryManager.IsCategoryUsed(selected.CategoryID) ? 
+                            "Category has been marked as inactive." : 
+                            "Category has been deleted.";
+                            
+                        MessageBox.Show(resultMessage, "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
+            }
+            else
+            {
+                MessageBox.Show("Please select a category to delete.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -278,23 +305,95 @@ namespace FASCloset.Forms
 
                 if (confirmResult != DialogResult.Yes) return;
 
-                // Update the stock
-                InventoryManager.UpdateStock(selectedProduct.ProductID, quantity);
-
-                // Clear the stock quantity field
-                txtStockQuantity.Clear();
+                // Store values to use in background worker
+                int productId = selectedProduct.ProductID;
+                string productName = selectedProduct.ProductName;
                 
-                // Refresh product list to reflect updated stock values
-                LoadProducts();
+                // Show progress cursor
+                this.Cursor = Cursors.WaitCursor;
                 
-                // Refresh the low stock products list to reflect changes
-                LoadLowStockProducts();
-
-                MessageBox.Show("Stock updated successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Disable the button to prevent multiple clicks
+                var updateButton = btnUpdateStock;
+                if (updateButton != null) 
+                    updateButton.Enabled = false;
+                
+                // Run the stock update in a background worker
+                System.ComponentModel.BackgroundWorker worker = new System.ComponentModel.BackgroundWorker();
+                worker.DoWork += (s, e) => 
+                {
+                    try
+                    {
+                        // Update the stock
+                        InventoryManager.UpdateStock(productId, quantity);
+                        e.Result = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        e.Result = ex;
+                    }
+                };
+                
+                worker.RunWorkerCompleted += (s, e) => 
+                {
+                    // Reset cursor and re-enable button
+                    this.Cursor = Cursors.Default;
+                    if (updateButton != null) 
+                        updateButton.Enabled = true;
+                    
+                    if (e.Result is Exception ex)
+                    {
+                        MessageBox.Show($"Error updating stock: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                    
+                    // Clear the stock quantity field
+                    txtStockQuantity.Clear();
+                    
+                    // Force refresh of data
+                    RefreshAfterStockUpdate(productId);
+                    
+                    MessageBox.Show($"Stock for '{productName}' updated successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                };
+                
+                // Start the background work
+                worker.RunWorkerAsync();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating stock: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                this.Cursor = Cursors.Default;
+                MessageBox.Show($"Error preparing stock update: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        
+        // Method to specifically refresh data after a stock update
+        private void RefreshAfterStockUpdate(int updatedProductId)
+        {
+            try
+            {
+                // Refresh product list
+                var currentSelectedIndex = cmbProducts.SelectedIndex;
+                LoadProducts();
+                
+                // Try to reselect the same product
+                if (currentSelectedIndex >= 0 && currentSelectedIndex < cmbProducts.Items.Count)
+                    cmbProducts.SelectedIndex = currentSelectedIndex;
+                else
+                    SelectProductInComboBox(updatedProductId);
+                
+                // Force refresh of low stock products
+                LoadLowStockProducts();
+                
+                // Force the low stock grid to repaint
+                dataGridViewLowStock.Invalidate();
+                dataGridViewLowStock.Refresh();
+                dataGridViewLowStock.Update();
+                
+                // Force application to process messages and refresh UI
+                Application.DoEvents();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error refreshing data after stock update: {ex.Message}");
             }
         }
 
@@ -302,6 +401,37 @@ namespace FASCloset.Forms
         
         // Handle button click for manual refresh
         public void btnRefreshLowStock_Click(object? sender, EventArgs e) => RefreshLowStockData();
+
+        // Mở form cập nhật số lượng riêng
+        private void btnQuickUpdateStock_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                // Lấy sản phẩm đã chọn từ ComboBox
+                if (cmbProducts.SelectedItem is not Product selectedProduct)
+                {
+                    MessageBox.Show("Vui lòng chọn một sản phẩm.", "Chưa chọn sản phẩm", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Mở form cập nhật stock riêng
+                using (var stockUpdateForm = new StockUpdateForm(selectedProduct))
+                {
+                    if (stockUpdateForm.ShowDialog() == DialogResult.OK)
+                    {
+                        // Sau khi cập nhật thành công, làm mới dữ liệu
+                        LoadProducts();
+                        LoadLowStockProducts();
+                        
+                        // Hiển thị thông báo thành công (đã được hiển thị trong form riêng)
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
         // Override the OnVisibleChanged method to start/stop the timer
         protected override void OnVisibleChanged(EventArgs e)

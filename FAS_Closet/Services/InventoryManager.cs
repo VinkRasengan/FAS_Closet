@@ -16,24 +16,50 @@ namespace FASCloset.Services
             return $"Data Source={AppSettings.DatabasePath}";
         }
 
-        // Update stock quantity for a product
+        // Update stock quantity for a product - optimized version
         public static void UpdateStock(int productId, int newStock)
         {
-            DatabaseConnection.ExecuteWithTransaction((connection, transaction) =>
+            string connectionString = GetConnectionString();
+            string productUpdate = "UPDATE Product SET Stock = @Stock WHERE ProductID = @ProductID";
+            string inventoryUpsert = @"
+                INSERT INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) 
+                VALUES (@ProductID, @StockQuantity, @MinimumStockThreshold)
+                ON CONFLICT(ProductID) DO UPDATE SET 
+                StockQuantity = @StockQuantity";
+
+            try
             {
-                try
+                using (var connection = new SqliteConnection(connectionString))
                 {
-                    string updateProductQuery = "UPDATE Product SET Stock = @Stock WHERE ProductID = @ProductID";
-                    using var productCmd = new SqliteCommand(updateProductQuery, connection, transaction);
-                    productCmd.Parameters.AddWithValue("@ProductID", productId);
-                    productCmd.Parameters.AddWithValue("@Stock", newStock);
-                    productCmd.ExecuteNonQuery();
+                    connection.Open();
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        // Update Product table
+                        using (var cmd = new SqliteCommand(productUpdate, connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@ProductID", productId);
+                            cmd.Parameters.AddWithValue("@Stock", newStock);
+                            cmd.ExecuteNonQuery();
+                        }
+                        
+                        // Update or insert into Inventory table with a single operation
+                        using (var cmd = new SqliteCommand(inventoryUpsert, connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@ProductID", productId);
+                            cmd.Parameters.AddWithValue("@StockQuantity", newStock);
+                            cmd.Parameters.AddWithValue("@MinimumStockThreshold", 5); // Default
+                            cmd.ExecuteNonQuery();
+                        }
+                        
+                        transaction.Commit();
+                    }
                 }
-                catch (Exception ex)
-                {
-                    throw new ApplicationException($"Error updating stock: {ex.Message}", ex);
-                }
-            });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating stock: {ex.Message}");
+                throw new ApplicationException($"Failed to update stock quantity: {ex.Message}", ex);
+            }
         }
 
         // Get products with low stock (based on individual product thresholds in the Inventory table)

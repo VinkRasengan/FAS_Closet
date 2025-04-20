@@ -146,6 +146,21 @@ namespace FASCloset.Forms
             this.btnUpdateStock = new Button();
             this.btnTransferStock = new Button();
             this.btnViewProductsByCategory = new Button();
+            
+            // NEW: Quick update stock button
+            this.btnQuickUpdateStock = new Button
+            {
+                Location = new Point(212, 71),
+                Size = new Size(100, 30),
+                Text = "Cập nhật riêng",
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            this.btnQuickUpdateStock.FlatAppearance.BorderSize = 0;
+            this.btnQuickUpdateStock.Click += new EventHandler(this.btnQuickUpdateStock_Click);
 
             this.panel1.BorderStyle = BorderStyle.FixedSingle;
             this.panel1.Controls.Add(new Label() { Text = "Select Product:", AutoSize = true, Location = new Point(10, 15) });
@@ -153,7 +168,7 @@ namespace FASCloset.Forms
             this.panel1.Controls.Add(this.cmbProducts);
             this.panel1.Controls.Add(this.txtStockQuantity);
             this.panel1.Controls.Add(this.btnUpdateStock);
-            this.panel1.Controls.Add(this.btnTransferStock);
+            this.panel1.Controls.Add(this.btnQuickUpdateStock); // NEW: Add quick update button
             this.panel1.Location = new Point(12, 270);
             this.panel1.Name = "panel1";
             this.panel1.Size = new Size(325, 119);
@@ -341,6 +356,7 @@ namespace FASCloset.Forms
         public ComboBox cmbProducts;
         public TextBox txtStockQuantity;
         public Button btnUpdateStock;
+        public Button btnQuickUpdateStock; // NEW: Quick update button field
         public Button btnTransferStock;
         public Button btnViewProductsByCategory;
         public Label lblLowStockCount;
