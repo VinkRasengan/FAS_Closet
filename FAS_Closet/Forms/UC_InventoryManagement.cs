@@ -396,10 +396,19 @@ namespace FASCloset.Forms
                 // Get low stock products asynchronously
                 var lowStockItems = await InventoryManager.GetLowStockProductsAsync();
                 
+                // Debug - kiểm tra dữ liệu đã nhận được
+                Console.WriteLine($"Received {lowStockItems.Count} low stock items");
+                if (lowStockItems.Count > 0)
+                {
+                    Console.WriteLine($"Sample item: {lowStockItems[0].ProductName}, Stock: {lowStockItems[0].StockQuantity}");
+                }
+                
                 // Update UI on the UI thread
                 if (this.InvokeRequired)
                 {
-                    this.Invoke(new Action(() => UpdateLowStockGridUI(lowStockItems)));
+                    this.Invoke((MethodInvoker)delegate {
+                        UpdateLowStockGridUI(lowStockItems);
+                    });
                 }
                 else
                 {

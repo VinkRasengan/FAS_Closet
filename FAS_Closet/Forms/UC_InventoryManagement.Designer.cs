@@ -73,61 +73,6 @@ namespace FASCloset.Forms
                 Size = new Size(150, 23)
             };
 
-            btnAdd = new Button
-            {
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                FlatAppearance = { BorderSize = 0 },
-                Cursor = Cursors.Hand,
-                Text = "Thêm",
-                Location = new Point(530, 110),
-                Size = new Size(80, 30)
-            };
-            btnAdd.Click += BtnAddCategory_Click;
-
-            btnEdit = new Button
-            {
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(40, 167, 69),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                FlatAppearance = { BorderSize = 0 },
-                Cursor = Cursors.Hand,
-                Text = "Sửa",
-                Location = new Point(620, 110),
-                Size = new Size(80, 30)
-            };
-            btnEdit.Click += BtnUpdateCategory_Click;
-
-            btnDelete = new Button
-            {
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(220, 53, 69),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                FlatAppearance = { BorderSize = 0 },
-                Cursor = Cursors.Hand,
-                Text = "Xóa",
-                Location = new Point(710, 110),
-                Size = new Size(80, 30)
-            };
-            btnDelete.Click += BtnDeleteCategory_Click;
-
-            btnRefresh = new Button
-            {
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(108, 117, 125),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10F),
-                FlatAppearance = { BorderSize = 0 },
-                Cursor = Cursors.Hand,
-                Text = "Làm mới",
-                Location = new Point(800, 110),
-                Size = new Size(80, 30)
-            };
-
             // INVENTORY SECTION
             this.lblTitle = new Label();
             this.lblTitle.AutoSize = true;
@@ -236,46 +181,68 @@ namespace FASCloset.Forms
             this.dataGridViewLowStock.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridViewLowStock.ReadOnly = true;
             this.dataGridViewLowStock.AutoGenerateColumns = false;
-            
-            // Add custom columns with better headers and styling
+
+            // Ensure the low stock alert table is properly initialized
+            this.dataGridViewLowStock.DataSource = null;
+            this.dataGridViewLowStock.Columns.Clear();
+            this.dataGridViewLowStock.AutoGenerateColumns = false;
+
+            // Add necessary columns for low stock alert table
             this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "ProductID",
                 HeaderText = "Mã SP",
                 Width = 50
             });
-            
+
             this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "ProductName",
                 HeaderText = "Tên Sản Phẩm",
                 Width = 200
             });
-            
+
             this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
             {
-                DataPropertyName = "Stock",
-                HeaderText = "Kho",
+                DataPropertyName = "StockQuantity",
+                HeaderText = "Tồn Kho",
                 Width = 70,
                 DefaultCellStyle = new DataGridViewCellStyle
                 {
-                    ForeColor = Color.Red,
-                    Font = new Font("Segoe UI", 9.5F, FontStyle.Bold)
+                    Alignment = DataGridViewContentAlignment.MiddleCenter
                 }
             });
-            
+
+            this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "MinimumStockThreshold",
+                HeaderText = "Ngưỡng",
+                Width = 70,
+                DefaultCellStyle = new DataGridViewCellStyle
+                {
+                    Alignment = DataGridViewContentAlignment.MiddleCenter
+                }
+            });
+
             this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Price",
                 HeaderText = "Giá",
-                Width = 100,
+                Width = 80,
                 DefaultCellStyle = new DataGridViewCellStyle
                 {
                     Format = "N0",
                     Alignment = DataGridViewContentAlignment.MiddleRight
                 }
             });
-            
+
+            this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "CategoryName",
+                HeaderText = "Danh Mục",
+                Width = 100
+            });
+
             // Apply styling to alternating rows
             this.dataGridViewLowStock.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(255, 248, 230);
             
@@ -334,14 +301,16 @@ namespace FASCloset.Forms
             this.Controls.Add(this.txtCategoryName);
             this.Controls.Add(lblCategoryDesc);
             this.Controls.Add(this.txtCategoryDescription);
-            this.Controls.Add(this.btnAdd);
-            this.Controls.Add(this.btnEdit);
-            this.Controls.Add(this.btnDelete);
-            this.Controls.Add(this.btnRefresh);
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.btnViewProductsByCategory);
+
+            // Remove buttons for Add, Edit, Delete, Refresh
+            this.Controls.Remove(this.btnAdd);
+            this.Controls.Remove(this.btnEdit);
+            this.Controls.Remove(this.btnDelete);
+            this.Controls.Remove(this.btnRefresh);
 
             this.AutoScaleDimensions = new SizeF(7F, 15F);
             this.AutoScaleMode = AutoScaleMode.Font;
