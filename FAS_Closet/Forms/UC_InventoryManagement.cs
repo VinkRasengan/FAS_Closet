@@ -13,16 +13,9 @@ namespace FASCloset.Forms
 {
     public partial class UcInventoryManagement : UserControl
     {
-        private System.Windows.Forms.Timer refreshTimer;
-        private const int REFRESH_INTERVAL = 30000; // 30 seconds
-        private bool _isRefreshing = false; // Flag to prevent multiple simultaneous refreshes
-
         public UcInventoryManagement()
         {
             InitializeComponent();
-            
-            // Initialize refresh timer
-            InitializeRefreshTimer();
             
             // Load data directly in the constructor or in a Load event handler instead of a background thread
             // This ensures the control's handle is created before we try to access it
@@ -35,35 +28,6 @@ namespace FASCloset.Forms
             LoadCategories();
             // Use Task.Run to load products asynchronously
             _ = LoadProducts();
-            LoadLowStockProducts();
-        }
-
-        private void InitializeRefreshTimer()
-        {
-            // Create and configure the timer for auto-refresh
-            refreshTimer = new System.Windows.Forms.Timer();
-            refreshTimer.Interval = REFRESH_INTERVAL;
-            refreshTimer.Tick += (s, e) => RefreshLowStockData();
-            refreshTimer.Start();
-        }
-
-        // Method to refresh low stock data
-        private async void RefreshLowStockData()
-        {
-            // Only refresh if the control is visible to save resources
-            // and if we're not already refreshing
-            if (this.Visible && this.ParentForm != null && this.ParentForm.Visible && !_isRefreshing)
-            {
-                _isRefreshing = true;
-                try
-                {
-                    await LoadLowStockProductsAsync();
-                }
-                finally
-                {
-                    _isRefreshing = false;
-                }
-            }
         }
 
         public void LoadCategories()
@@ -327,9 +291,6 @@ namespace FASCloset.Forms
                 else
                     SelectProductInComboBox(updatedProductId);
                 
-                // Force refresh of low stock products
-                await LoadLowStockProductsAsync();
-                
                 // Update the main dashboard if available
                 var mainForm = this.ParentForm as MainForm;
                 mainForm?.RefreshDashboard();
@@ -368,203 +329,6 @@ namespace FASCloset.Forms
             }
         }
 
-        // Override the OnVisibleChanged method to start/stop the timer
-        protected override void OnVisibleChanged(EventArgs e)
-        {
-            base.OnVisibleChanged(e);
-            
-            // When the control becomes visible, refresh data and ensure timer is running
-            if (this.Visible)
-            {
-                RefreshLowStockData();
-                if (!refreshTimer.Enabled)
-                    refreshTimer.Start();
-            }
-            else
-            {
-                // When hidden, stop the timer to save resources
-                if (refreshTimer.Enabled)
-                    refreshTimer.Stop();
-            }
-        }
-
-        // Async version of LoadLowStockProducts        
-        private async Task LoadLowStockProductsAsync()
-        {
-            try
-            {
-                // Get low stock products asynchronously
-                var lowStockItems = await InventoryManager.GetLowStockProductsAsync();
-                
-                // Debug - kiểm tra dữ liệu đã nhận được
-                Console.WriteLine($"Received {lowStockItems.Count} low stock items");
-                if (lowStockItems.Count > 0)
-                {
-                    Console.WriteLine($"Sample item: {lowStockItems[0].ProductName}, Stock: {lowStockItems[0].StockQuantity}");
-                }
-                
-                // Update UI on the UI thread
-                if (this.InvokeRequired)
-                {
-                    this.Invoke((MethodInvoker)delegate {
-                        UpdateLowStockGridUI(lowStockItems);
-                    });
-                }
-                else
-                {
-                    UpdateLowStockGridUI(lowStockItems);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading low stock products: {ex.Message}");
-                MessageBox.Show("Error loading low stock products: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        
-        // UI updating part of low stock loading
-        private void UpdateLowStockGridUI(List<LowStockProductView> lowStockItems)
-        {
-            // Capture selected row index if any for restoring selection after refresh
-            int selectedRowIndex = -1;
-            if (dataGridViewLowStock.CurrentRow != null)
-                selectedRowIndex = dataGridViewLowStock.CurrentRow.Index;
-
-            // Clear existing columns and set up new ones for better display
-            dataGridViewLowStock.DataSource = null;
-            dataGridViewLowStock.Columns.Clear();
-            dataGridViewLowStock.AutoGenerateColumns = false;
-                
-            // Add custom columns for better display
-            dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "ProductID",
-                HeaderText = "Mã SP",
-                Width = 50
-            });
-                
-            dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "ProductName",
-                HeaderText = "Tên Sản Phẩm",
-                Width = 200
-            });
-                
-            dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "StockQuantity",
-                HeaderText = "Tồn Kho",
-                Width = 70,
-                DefaultCellStyle = new DataGridViewCellStyle
-                {
-                    Alignment = DataGridViewContentAlignment.MiddleCenter
-                }
-            });
-                
-            dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "MinimumStockThreshold",
-                HeaderText = "Ngưỡng",
-                Width = 70,
-                DefaultCellStyle = new DataGridViewCellStyle
-                {
-                    Alignment = DataGridViewContentAlignment.MiddleCenter
-                }
-            });
-                
-            dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Price",
-                HeaderText = "Giá",
-                Width = 80,
-                DefaultCellStyle = new DataGridViewCellStyle
-                {
-                    Format = "N0",
-                    Alignment = DataGridViewContentAlignment.MiddleRight
-                }
-            });
-                
-            dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "CategoryName",
-                HeaderText = "Danh Mục",
-                Width = 100
-            });
-                
-            // Set the data source after column configuration
-            dataGridViewLowStock.DataSource = lowStockItems;
-                
-            // Apply styling using the helper
-            FASCloset.Extensions.DataGridViewStyleHelper.ApplyFullStyle(dataGridViewLowStock);
-                
-            // Apply conditional formatting to highlight very low stock items
-            FASCloset.Extensions.DataGridViewStyleHelper.ApplyConditionalFormatting(dataGridViewLowStock, row =>
-            {
-                if (row?.DataBoundItem == null) return null;
-                
-                if (row.DataBoundItem is LowStockProductView product)
-                {
-                    // Out of stock (red)
-                    if (product.StockQuantity <= 0)
-                    {
-                        return FASCloset.Extensions.DataGridViewStyleHelper.CreateHighlightStyle(
-                            Color.FromArgb(255, 220, 220), // Stronger red background
-                            Color.FromArgb(180, 0, 0),     // Dark red text
-                            true                           // Bold text
-                        );
-                    }
-                    // Very low stock (still < 25% of threshold) - orange
-                    else if (product.StockQuantity <= product.MinimumStockThreshold * 0.25)
-                    {
-                        return FASCloset.Extensions.DataGridViewStyleHelper.CreateHighlightStyle(
-                            Color.FromArgb(255, 240, 220), // Light orange background
-                            Color.FromArgb(180, 80, 0)     // Dark orange text
-                        );
-                    }
-                    // Low stock (< 50% of threshold) - yellow
-                    else if (product.StockQuantity <= product.MinimumStockThreshold * 0.5)
-                    {
-                        return FASCloset.Extensions.DataGridViewStyleHelper.CreateHighlightStyle(
-                            Color.FromArgb(255, 252, 220), // Light yellow background
-                            Color.FromArgb(150, 150, 0)    // Dark yellow text
-                        );
-                    }
-                    // At threshold level - light blue
-                    else if (product.StockQuantity <= product.MinimumStockThreshold)
-                    {
-                        return FASCloset.Extensions.DataGridViewStyleHelper.CreateHighlightStyle(
-                            Color.FromArgb(240, 248, 255), // Light blue background
-                            Color.FromArgb(0, 90, 150)     // Dark blue text
-                        );
-                    }
-                }
-                
-                return null;
-            });
-
-            // Try to restore selection
-            if (selectedRowIndex >= 0 && selectedRowIndex < dataGridViewLowStock.Rows.Count)
-            {
-                dataGridViewLowStock.CurrentCell = dataGridViewLowStock.Rows[selectedRowIndex].Cells[0];
-                dataGridViewLowStock.Rows[selectedRowIndex].Selected = true;
-            }
-            
-            // Update the low stock count label if it exists
-            if (lblLowStockCount != null)
-            {
-                lblLowStockCount.Text = $"Sản phẩm sắp hết hàng ({lowStockItems.Count})";
-            }
-        }
-        
-        private void LoadLowStockProducts()
-        {
-            // Start the async operation
-            _ = LoadLowStockProductsAsync();
-        }
-
         public void btnUpdateStock_Click(object? sender, EventArgs e) => UpdateProductStock();
-        
-        // Handle button click for manual refresh
-        public void btnRefreshLowStock_Click(object? sender, EventArgs e) => RefreshLowStockData();
     }
 }

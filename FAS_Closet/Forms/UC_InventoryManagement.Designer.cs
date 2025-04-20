@@ -6,20 +6,9 @@ namespace FASCloset.Forms
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && (components != null))
             {
-                // Clean up timer resources
-                if (refreshTimer != null)
-                {
-                    refreshTimer.Stop();
-                    refreshTimer.Dispose();
-                }
-                
-                // Clean up designer resources
-                if (components != null)
-                {
-                    components.Dispose();
-                }
+                components.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -84,8 +73,6 @@ namespace FASCloset.Forms
             this.lblTitle.Text = "Inventory Management";
 
             this.panel1 = new Panel();
-            this.panel2 = new Panel();
-            this.dataGridViewLowStock = new DataGridView();
             this.cmbProducts = new ComboBox();
             this.txtStockQuantity = new TextBox();
             this.btnUpdateStock = new Button();
@@ -118,153 +105,6 @@ namespace FASCloset.Forms
             this.panel1.Name = "panel1";
             this.panel1.Size = new Size(325, 119);
             this.panel1.TabIndex = 1;
-
-            // Set up the low stock panel
-            this.panel2.BorderStyle = BorderStyle.FixedSingle;
-            this.panel2.Location = new Point(12, 400);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new Size(680, 300);
-            this.panel2.TabIndex = 8;
-            
-            // Add low stock header panel with title and refresh button
-            Panel pnlLowStockHeader = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 40,
-                BackColor = Color.Transparent
-            };
-            
-            // Create label for low stock with count
-            lblLowStockCount = new Label
-            {
-                Text = "Sản phẩm sắp hết hàng",
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-                Location = new Point(10, 10),
-                AutoSize = true
-            };
-            
-            // Create refresh button
-            btnRefreshLowStock = new Button
-            {
-                Text = "↻ Làm mới",
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
-                Size = new Size(100, 30),
-                Location = new Point(570, 5),
-                Cursor = Cursors.Hand
-            };
-            btnRefreshLowStock.Click += btnRefreshLowStock_Click;
-            
-            // Add controls to header panel
-            pnlLowStockHeader.Controls.Add(lblLowStockCount);
-            pnlLowStockHeader.Controls.Add(btnRefreshLowStock);
-            
-            // Add header panel to main panel
-            this.panel2.Controls.Add(pnlLowStockHeader);
-            
-            // Add label to panel2
-            Label lblLowStock = new Label
-            {
-                Text = "Sản phẩm sắp hết hàng",
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-                Location = new Point(10, 10),
-                AutoSize = true
-            };
-            this.panel2.Controls.Add(lblLowStock);
-            
-            // Set up dataGridViewLowStock
-            this.dataGridViewLowStock.Location = new Point(10, 40);
-            this.dataGridViewLowStock.Name = "dataGridViewLowStock";
-            this.dataGridViewLowStock.Size = new Size(660, 250);
-            this.dataGridViewLowStock.TabIndex = 0;
-            this.dataGridViewLowStock.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            this.dataGridViewLowStock.ReadOnly = true;
-            this.dataGridViewLowStock.AutoGenerateColumns = false;
-
-            // Ensure the low stock alert table is properly initialized
-            this.dataGridViewLowStock.DataSource = null;
-            this.dataGridViewLowStock.Columns.Clear();
-            this.dataGridViewLowStock.AutoGenerateColumns = false;
-
-            // Add necessary columns for low stock alert table
-            this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "ProductID",
-                HeaderText = "Mã SP",
-                Width = 50
-            });
-
-            this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "ProductName",
-                HeaderText = "Tên Sản Phẩm",
-                Width = 200
-            });
-
-            this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "StockQuantity",
-                HeaderText = "Tồn Kho",
-                Width = 70,
-                DefaultCellStyle = new DataGridViewCellStyle
-                {
-                    Alignment = DataGridViewContentAlignment.MiddleCenter
-                }
-            });
-
-            this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "MinimumStockThreshold",
-                HeaderText = "Ngưỡng",
-                Width = 70,
-                DefaultCellStyle = new DataGridViewCellStyle
-                {
-                    Alignment = DataGridViewContentAlignment.MiddleCenter
-                }
-            });
-
-            this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Price",
-                HeaderText = "Giá",
-                Width = 80,
-                DefaultCellStyle = new DataGridViewCellStyle
-                {
-                    Format = "N0",
-                    Alignment = DataGridViewContentAlignment.MiddleRight
-                }
-            });
-
-            this.dataGridViewLowStock.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "CategoryName",
-                HeaderText = "Danh Mục",
-                Width = 100
-            });
-
-            // Apply styling to alternating rows
-            this.dataGridViewLowStock.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(255, 248, 230);
-            
-            // Add selection handler
-            this.dataGridViewLowStock.SelectionChanged += (s, e) => {
-                if (this.dataGridViewLowStock.SelectedRows.Count > 0 && 
-                    this.dataGridViewLowStock.SelectedRows[0].DataBoundItem is Product product)
-                {
-                    // Set the ComboBox selection to the selected product
-                    SelectProductInComboBox(product.ProductID);
-                    this.txtStockQuantity.Focus();
-                }
-            };
-            
-            this.dataGridViewLowStock.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(255, 128, 0);
-            this.dataGridViewLowStock.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            this.dataGridViewLowStock.ColumnHeadersHeight = 40;
-            this.dataGridViewLowStock.BorderStyle = BorderStyle.None;
-            this.dataGridViewLowStock.BackgroundColor = Color.White;
-            this.dataGridViewLowStock.GridColor = Color.FromArgb(230, 230, 230);
-            this.dataGridViewLowStock.RowHeadersVisible = false;
-            this.panel2.Controls.Add(this.dataGridViewLowStock);
 
             // Configure the products ComboBox
             this.cmbProducts.Location = new Point(106, 12);
@@ -303,14 +143,7 @@ namespace FASCloset.Forms
             this.Controls.Add(this.txtCategoryDescription);
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.panel2);
             this.Controls.Add(this.btnViewProductsByCategory);
-
-            // Remove buttons for Add, Edit, Delete, Refresh
-            this.Controls.Remove(this.btnAdd);
-            this.Controls.Remove(this.btnEdit);
-            this.Controls.Remove(this.btnDelete);
-            this.Controls.Remove(this.btnRefresh);
 
             this.AutoScaleDimensions = new SizeF(7F, 15F);
             this.AutoScaleMode = AutoScaleMode.Font;
@@ -320,23 +153,15 @@ namespace FASCloset.Forms
 
         public Label lblTitle;
         public Panel panel1;
-        public Panel panel2;
-        public DataGridView dataGridViewLowStock;
         public ComboBox cmbProducts;
         public TextBox txtStockQuantity;
         public Button btnUpdateStock;
         public Button btnQuickUpdateStock; // NEW: Quick update button field
         public Button btnTransferStock;
         public Button btnViewProductsByCategory;
-        public Label lblLowStockCount;
-        public Button btnRefreshLowStock;
 
         private DataGridView dataGridViewCategories;
         private TextBox txtCategoryName;
         private TextBox txtCategoryDescription;
-        private Button btnAdd;
-        private Button btnEdit;
-        private Button btnDelete;
-        private Button btnRefresh;
     }
 }

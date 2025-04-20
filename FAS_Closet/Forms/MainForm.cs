@@ -142,7 +142,6 @@ namespace FASCloset.Forms
             if (ucInventoryManagement == null)
             {
                 ucInventoryManagement = new UcInventoryManagement();
-                ucInventoryManagement.dataGridViewLowStock = new DataGridView();
             }
 
             ucInventoryManagement.LoadCategories();
