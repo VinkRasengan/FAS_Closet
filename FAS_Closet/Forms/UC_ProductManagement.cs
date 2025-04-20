@@ -190,7 +190,6 @@ namespace FASCloset.Forms
 
         #region Data Loading Methods
 
-        // Add a method to load products with a specific warehouse ID
         public void LoadProducts()
         {
             try
@@ -199,9 +198,24 @@ namespace FASCloset.Forms
 
                 if (showOnlyLowStock)
                 {
-                    // Lấy các sản phẩm tồn kho thấp (Stock < 5)
-                    resultProducts = InventoryManager.GetLowStockProducts()
+                    // Convert LowStockProductView to Product for consistent display
+                    var lowStockItems = InventoryManager.GetLowStockProducts();
+                    resultProducts = lowStockItems
                         .Where(p => showInactiveProducts || p.IsActive)
+                        .Select(p => new Product
+                        {
+                            ProductID = p.ProductID,
+                            ProductName = p.ProductName,
+                            CategoryID = p.CategoryID,
+                            ManufacturerID = p.ManufacturerID,
+                            Price = p.Price,
+                            Stock = p.StockQuantity,
+                            Description = p.Description,
+                            IsActive = p.IsActive,
+                            CategoryName = p.CategoryName,
+                            ManufacturerName = p.ManufacturerName,
+                            IsLowStock = true
+                        })
                         .ToList();
                 }
                 else

@@ -6,9 +6,20 @@ namespace FASCloset.Forms
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                // Clean up timer resources
+                if (refreshTimer != null)
+                {
+                    refreshTimer.Stop();
+                    refreshTimer.Dispose();
+                }
+                
+                // Clean up designer resources
+                if (components != null)
+                {
+                    components.Dispose();
+                }
             }
             base.Dispose(disposing);
         }
@@ -155,6 +166,43 @@ namespace FASCloset.Forms
             this.panel2.Size = new Size(680, 300);
             this.panel2.TabIndex = 8;
             
+            // Add low stock header panel with title and refresh button
+            Panel pnlLowStockHeader = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 40,
+                BackColor = Color.Transparent
+            };
+            
+            // Create label for low stock with count
+            lblLowStockCount = new Label
+            {
+                Text = "Sản phẩm sắp hết hàng",
+                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
+                Location = new Point(10, 10),
+                AutoSize = true
+            };
+            
+            // Create refresh button
+            btnRefreshLowStock = new Button
+            {
+                Text = "↻ Làm mới",
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Size = new Size(100, 30),
+                Location = new Point(570, 5),
+                Cursor = Cursors.Hand
+            };
+            btnRefreshLowStock.Click += btnRefreshLowStock_Click;
+            
+            // Add controls to header panel
+            pnlLowStockHeader.Controls.Add(lblLowStockCount);
+            pnlLowStockHeader.Controls.Add(btnRefreshLowStock);
+            
+            // Add header panel to main panel
+            this.panel2.Controls.Add(pnlLowStockHeader);
+            
             // Add label to panel2
             Label lblLowStock = new Label
             {
@@ -295,6 +343,8 @@ namespace FASCloset.Forms
         public Button btnUpdateStock;
         public Button btnTransferStock;
         public Button btnViewProductsByCategory;
+        public Label lblLowStockCount;
+        public Button btnRefreshLowStock;
 
         private DataGridView dataGridViewCategories;
         private TextBox txtCategoryName;

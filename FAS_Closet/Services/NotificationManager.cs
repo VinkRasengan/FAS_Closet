@@ -8,6 +8,7 @@ using FASCloset.Models;
 using FASCloset.Data;
 using Microsoft.Data.Sqlite;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace FASCloset.Services
 {
@@ -43,7 +44,7 @@ namespace FASCloset.Services
                 
                 if (AppSettings.SmsNotificationsEnabled)
                 {
-                    SendSmsNotification(subject, GetSmsMessage(lowStockItems));
+                    SendSmsNotification(message, GetSmsMessage(lowStockItems));
                 }
                 
                 // Log notification
@@ -57,7 +58,7 @@ namespace FASCloset.Services
             }
         }
 
-         public static void ShowLowStockPopup(List<Product> lowStockItems)
+        public static void ShowLowStockPopup(List<LowStockProductView> lowStockItems)
         {
             if (lowStockItems == null || lowStockItems.Count == 0)
                 return;
@@ -65,7 +66,7 @@ namespace FASCloset.Services
             StringBuilder sb = new StringBuilder("⚠ Low stock warning:\n\n");
             foreach (var product in lowStockItems.Take(5))
             {
-                sb.AppendLine($"- {product.ProductName} (Stock: {product.Stock})");
+                sb.AppendLine($"- {product.ProductName} (Stock: {product.StockQuantity})");
             }
 
             if (lowStockItems.Count > 5)
@@ -77,14 +78,15 @@ namespace FASCloset.Services
         /// <summary>
         /// Creates a nicely formatted message for low stock items
         /// </summary>
-        private static string BuildLowStockMessage(List<Product> lowStockItems)
+        private static string BuildLowStockMessage(List<LowStockProductView> lowStockItems)
         {
             var message = "The following products are low on stock and may need reordering:\n\n";
             
             foreach (var product in lowStockItems)
             {
                 message += $"• {product.ProductName}\n";
-                message += $"  Current stock: {product.Stock}\n";
+                message += $"  Current stock: {product.StockQuantity}\n";
+                message += $"  Minimum threshold: {product.MinimumStockThreshold}\n";
                 message += $"  Category: {product.CategoryName}\n";
                 message += $"  ID: {product.ProductID}\n\n";
             }
@@ -96,10 +98,10 @@ namespace FASCloset.Services
         /// <summary>
         /// Creates a shorter SMS-friendly message for low stock items
         /// </summary>
-        private static string GetSmsMessage(List<Product> lowStockItems)
+        private static string GetSmsMessage(List<LowStockProductView> lowStockItems)
         {
-            var criticalItems = lowStockItems.Where(p => p.Stock == 0).ToList();
-            var lowItems = lowStockItems.Where(p => p.Stock > 0).ToList();
+            var criticalItems = lowStockItems.Where(p => p.StockQuantity <= 0).ToList();
+            var lowItems = lowStockItems.Where(p => p.StockQuantity > 0).ToList();
             
             string message = $"FAS Closet Alert: ";
             

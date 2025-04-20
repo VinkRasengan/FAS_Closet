@@ -193,6 +193,14 @@ namespace FASCloset.Forms
                 MessageBox.Show("Vui lòng chọn Quản lý khách hàng trước.");
         }
 
+        private void HandleCustomerEdit(object? sender, EventArgs e)
+        {
+            if (ucCustomerManagement != null)
+                ucCustomerManagement.btnEdit.PerformClick();
+            else
+                MessageBox.Show("Vui lòng chọn khách hàng cần chỉnh sửa.");
+        }
+
         private void HandleCustomerDelete(object? sender, EventArgs e)
         {
             if (ucCustomerManagement != null)
@@ -316,6 +324,9 @@ namespace FASCloset.Forms
                     break;
                 case "Thêm khách hàng":
                     btn.Click += (s, e) => HandleCustomerAdd(s, e);
+                    break;
+                case "Chỉnh sửa thông tin khách hàng":
+                    btn.Click += (s, e) => HandleCustomerEdit(s, e);
                     break;
                 case "Xóa khách hàng":
                     btn.Click += (s, e) => HandleCustomerDelete(s, e);

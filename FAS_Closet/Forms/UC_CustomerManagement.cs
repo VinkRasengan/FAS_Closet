@@ -561,23 +561,65 @@ namespace FASCloset.Forms
                 return;
             }
 
-            // Lấy khách hàng được chọn
-            var selectedRow = dgvCustomers.SelectedRows[0];
-            editingCustomerId = Convert.ToInt32(selectedRow.Cells["CustomerID"].Value);
+            // Nếu đang ở chế độ chỉnh sửa, xử lý lưu thông tin
+            if (isEditMode)
+            {
+                if (!ValidateCustomerData())
+                {
+                    MessageBox.Show("Vui lòng điền đầy đủ thông tin khách hàng hợp lệ", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
-            // Hiển thị thông tin khách hàng lên form
-            txtCustomerName.Text = selectedRow.Cells["Name"].Value.ToString();
-            txtCustomerEmail.Text = selectedRow.Cells["Email"].Value.ToString();
-            txtCustomerPhone.Text = selectedRow.Cells["Phone"].Value.ToString();
-            txtCustomerAddress.Text = selectedRow.Cells["Address"].Value.ToString();
+                var result = MessageBox.Show("Bạn có muốn lưu thay đổi cho khách hàng này?", "Xác nhận", 
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
-            // Chuyển sang chế độ chỉnh sửa
-            isEditMode = true;
-            
-            // Hiển thị nút Lưu và Hủy, ẩn nút Thêm
-            btnAdd.Visible = false;
-            btnSave.Visible = true;
-            btnCancel.Visible = true;
+                if (result == DialogResult.Yes)
+                {
+                    try
+                    {
+                        var customer = new Customer
+                        {
+                            CustomerID = editingCustomerId,
+                            Name = txtCustomerName.Text,
+                            Email = txtCustomerEmail.Text,
+                            Phone = txtCustomerPhone.Text,
+                            Address = txtCustomerAddress.Text
+                        };
+
+                        CustomerManager.UpdateCustomer(customer);
+                        MessageBox.Show("Cập nhật khách hàng thành công", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        
+                        // Cập nhật danh sách và đặt lại form
+                        RefreshCustomerList();
+                        ClearInputFields();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Lỗi khi cập nhật khách hàng: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            else
+            {
+                // Lấy khách hàng được chọn
+                var selectedRow = dgvCustomers.SelectedRows[0];
+                editingCustomerId = Convert.ToInt32(selectedRow.Cells["CustomerID"].Value);
+
+                // Hiển thị thông tin khách hàng lên form
+                txtCustomerName.Text = selectedRow.Cells["Name"].Value.ToString();
+                txtCustomerEmail.Text = selectedRow.Cells["Email"].Value.ToString();
+                txtCustomerPhone.Text = selectedRow.Cells["Phone"].Value.ToString();
+                txtCustomerAddress.Text = selectedRow.Cells["Address"].Value.ToString();
+
+                // Chuyển sang chế độ chỉnh sửa
+                isEditMode = true;
+                
+                // Hiển thị nút Lưu và Hủy, ẩn nút Thêm
+                btnAdd.Visible = false;
+                btnSave.Visible = false;
+                btnCancel.Visible = true;
+                btnEdit.Text = "Lưu thay đổi";
+            }
         }
         
         private void btnDeleteCustomer_Click(object sender, EventArgs e)

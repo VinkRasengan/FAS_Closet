@@ -226,7 +226,7 @@ namespace FASCloset.Forms
             }
         }
 
-        private void UpdateLowStockAlertPanel(List<Product> lowStockItems)
+        private void UpdateLowStockAlertPanel(List<LowStockProductView> lowStockItems)
         {
             // Debug information
             Console.WriteLine($"Updating low stock panel with {lowStockItems?.Count ?? 0} items");
@@ -251,7 +251,7 @@ namespace FASCloset.Forms
             Console.WriteLine($"Low stock panel configured with {Math.Min(lowStockItems.Count, 5)} items. Panel visible: {lowStockAlertPanel.Visible}");
         }
         
-        private bool ValidateLowStockPanel(List<Product> lowStockItems)
+        private bool ValidateLowStockPanel(List<LowStockProductView> lowStockItems)
         {
             // Check if panel exists
             if (lowStockAlertPanel == null)
@@ -288,7 +288,7 @@ namespace FASCloset.Forms
             }
         }
         
-        private void AddLowStockItems(List<Product> lowStockItems)
+        private void AddLowStockItems(List<LowStockProductView> lowStockItems)
         {
             int yPos = 70;
             int itemHeight = 32;
@@ -307,7 +307,7 @@ namespace FASCloset.Forms
             }
         }
         
-        private void AddSingleLowStockItem(Product product, int yPosition)
+        private void AddSingleLowStockItem(LowStockProductView product, int yPosition)
         {
             Console.WriteLine($"Adding product {product.ProductName} to low stock panel");
             
@@ -326,17 +326,17 @@ namespace FASCloset.Forms
                 Location = new Point(5, 7),
                 Size = new Size(180, 20),
                 Font = new Font(DEFAULT_FONT_FAMILY, 9),
-                ForeColor = product.Stock == 0 ? Color.Red : Color.FromArgb(68, 68, 68)
+                ForeColor = product.StockQuantity == 0 ? Color.Red : Color.FromArgb(68, 68, 68)
             };
             
             // Current stock
             Label stockLabel = new Label
             {
-                Text = product.Stock.ToString(),
+                Text = product.StockQuantity.ToString(),
                 Location = new Point(215, 7),
                 Size = new Size(30, 20),
-                Font = new Font(DEFAULT_FONT_FAMILY, 9, product.Stock == 0 ? FontStyle.Bold : FontStyle.Regular),
-                ForeColor = product.Stock == 0 ? Color.Red : Color.FromArgb(102, 102, 102),
+                Font = new Font(DEFAULT_FONT_FAMILY, 9, product.StockQuantity == 0 ? FontStyle.Bold : FontStyle.Regular),
+                ForeColor = product.StockQuantity == 0 ? Color.Red : Color.FromArgb(102, 102, 102),
                 TextAlign = ContentAlignment.MiddleRight
             };
             
