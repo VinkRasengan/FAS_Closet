@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using System.Threading.Tasks;
 using FASCloset.Models;
 using FASCloset.Services;
 
@@ -27,50 +28,49 @@ namespace FASCloset.Forms
 
         private void InitializeComponent()
         {
-            this.SuspendLayout();
-            
-            // Form settings
-            this.Text = "Cập nhật số lượng";
+            this.AutoScaleMode = AutoScaleMode.Font;
+            this.ClientSize = new Size(420, 370);
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
-            this.MinimizeBox = false;
+            this.Text = "Update Stock";
             this.StartPosition = FormStartPosition.CenterParent;
-            this.ShowInTaskbar = false;
-            this.Size = new Size(450, 400);
-            this.Padding = new Padding(15);
-            this.Font = new Font("Segoe UI", 9.75F);
             
-            // Header panel
+            // Setup panels
             Panel pnlHeader = new Panel
             {
                 Dock = DockStyle.Top,
-                BackColor = Color.FromArgb(0, 123, 255),
-                Height = 60
+                Height = 50,
+                BackColor = Color.FromArgb(0, 123, 255)
             };
             
             Label lblHeader = new Label
             {
-                Text = "Cập nhật số lượng kho",
+                Text = "Stock Update",
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 16F, FontStyle.Bold),
-                TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(15, 0, 0, 0),
+                TextAlign = ContentAlignment.MiddleCenter,
                 Dock = DockStyle.Fill
             };
-            
             pnlHeader.Controls.Add(lblHeader);
             
-            // Main panel
             Panel pnlMain = new Panel
             {
-                Dock = DockStyle.Fill,
+                Location = new Point(0, 50),
+                Size = new Size(420, 270),
                 Padding = new Padding(20)
             };
             
-            // Product info
+            Panel pnlActions = new Panel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 50,
+                BackColor = Color.FromArgb(240, 240, 240)
+            };
+            
+            // Product details fields
             Label lblProductName = new Label
             {
-                Text = "Sản phẩm:",
+                Text = "Tên sản phẩm:",
                 Location = new Point(20, 20),
                 Size = new Size(120, 25),
                 TextAlign = ContentAlignment.MiddleRight
@@ -81,14 +81,13 @@ namespace FASCloset.Forms
                 Location = new Point(150, 20),
                 Size = new Size(250, 25),
                 TextAlign = ContentAlignment.MiddleLeft,
-                Font = new Font("Segoe UI", 9.75F, FontStyle.Bold),
                 BackColor = Color.FromArgb(250, 250, 250),
                 BorderStyle = BorderStyle.FixedSingle
             };
             
             Label lblCurrentStock = new Label
             {
-                Text = "Số lượng hiện tại:",
+                Text = "Tồn kho hiện tại:",
                 Location = new Point(20, 60),
                 Size = new Size(120, 25),
                 TextAlign = ContentAlignment.MiddleRight
@@ -99,8 +98,7 @@ namespace FASCloset.Forms
                 Location = new Point(150, 60),
                 Size = new Size(100, 25),
                 TextAlign = ContentAlignment.MiddleCenter,
-                Font = new Font("Segoe UI", 9.75F, FontStyle.Bold),
-                BackColor = Color.FromArgb(250, 250, 250), 
+                BackColor = Color.FromArgb(250, 250, 250),
                 BorderStyle = BorderStyle.FixedSingle
             };
             
@@ -195,55 +193,48 @@ namespace FASCloset.Forms
             };
             btnPlus10.FlatAppearance.BorderSize = 0;
             
+            // Note field
             Label lblNote = new Label
             {
                 Text = "Ghi chú:",
-                Location = new Point(20, 230),
+                Location = new Point(20, 225),
                 Size = new Size(120, 25),
                 TextAlign = ContentAlignment.MiddleRight
             };
             
             TextBox txtNote = new TextBox
             {
-                Location = new Point(150, 230),
-                Size = new Size(250, 50),
+                Location = new Point(150, 225),
+                Size = new Size(250, 25),
                 Multiline = true
             };
-            
-            Panel pnlActions = new Panel
-            {
-                Location = new Point(0, 300),
-                Size = new Size(450, 60),
-                Dock = DockStyle.Bottom
-            };
-            
+
+            // Action buttons
             Button btnUpdate = new Button
             {
                 Text = "Cập nhật",
-                Location = new Point(150, 15),
-                Size = new Size(120, 35),
-                BackColor = Color.FromArgb(0, 123, 255),
+                Location = new Point(220, 10),
+                Size = new Size(90, 35),
+                BackColor = Color.FromArgb(40, 167, 69),
                 ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                DialogResult = DialogResult.None
+                FlatStyle = FlatStyle.Flat
             };
             btnUpdate.FlatAppearance.BorderSize = 0;
             
             Button btnCancel = new Button
             {
                 Text = "Hủy",
-                Location = new Point(280, 15),
-                Size = new Size(120, 35),
+                DialogResult = DialogResult.Cancel,
+                Location = new Point(320, 10),
+                Size = new Size(80, 35),
                 BackColor = Color.FromArgb(108, 117, 125),
                 ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 10F),
-                DialogResult = DialogResult.Cancel
+                FlatStyle = FlatStyle.Flat
             };
             btnCancel.FlatAppearance.BorderSize = 0;
             
-            // Status label for displaying messages
+            // Status label
             Label lblStatus = new Label
             {
                 Location = new Point(20, 270),
@@ -341,110 +332,69 @@ namespace FASCloset.Forms
         
         private async void BtnUpdate_Click(object sender, EventArgs e)
         {
+            // Check if we're already processing a request
             if (_isProcessing)
                 return;
-                
+            
+            // Get the new stock quantity
             int newStock = (int)numNewStock.Value;
             
-            // Confirm if this is a significant change
-            if (Math.Abs(newStock - _currentStock) > 20)
+            // No change, no need to update
+            if (newStock == _currentStock)
             {
-                var result = MessageBox.Show(
-                    $"Bạn đang thay đổi số lượng từ {_currentStock} thành {newStock}.\nThay đổi này khá lớn, bạn có chắc chắn không?",
-                    "Xác nhận thay đổi lớn",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Warning);
-                    
-                if (result != DialogResult.Yes)
-                    return;
+                DialogResult = DialogResult.Cancel;
+                return;
             }
+            
+            _isProcessing = true;
+            
+            // Show progress indicators
+            progressBar.Value = 0;
+            progressBar.Visible = true;
+            lblStatus.Text = "Đang cập nhật số lượng...";
+            lblStatus.ForeColor = Color.Blue;
+            lblStatus.Visible = true;
             
             try
             {
-                _isProcessing = true;
+                // Disable the update button during processing
+                ((Button)sender).Enabled = false;
                 
-                // Show progress indicator
-                progressBar.Visible = true;
-                lblStatus.Text = "Đang cập nhật số lượng...";
-                lblStatus.ForeColor = Color.Blue;
-                lblStatus.Visible = true;
+                // Use the async method to avoid blocking the UI
+                await InventoryManager.UpdateStockAsync(_product.ProductID, newStock);
                 
-                // Use BackgroundWorker for better UI responsiveness
-                var worker = new BackgroundWorker();
-                worker.DoWork += (s, args) =>
-                {
-                    try
-                    {
-                        // Update stock in database
-                        InventoryManager.UpdateStock(_product.ProductID, newStock);
-                        
-                        // Optional: Log the stock change with note
-                        if (!string.IsNullOrWhiteSpace(txtNote.Text))
-                        {
-                            // You could implement a method to log inventory changes
-                            // InventoryManager.LogInventoryChange(_product.ProductID, _currentStock, newStock, txtNote.Text);
-                        }
-                        
-                        args.Result = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        args.Result = ex;
-                    }
-                };
+                // Update the form's current values
+                _currentStock = newStock;
+                txtCurrentStock.Text = newStock.ToString();
                 
-                worker.RunWorkerCompleted += (s, args) =>
-                {
-                    progressBar.Visible = false;
-                    _isProcessing = false;
-                    
-                    if (args.Result is Exception ex)
-                    {
-                        lblStatus.Text = $"Lỗi: {ex.Message}";
-                        lblStatus.ForeColor = Color.Red;
-                    }
-                    else
-                    {
-                        lblStatus.Text = $"Đã cập nhật số lượng thành công!";
-                        lblStatus.ForeColor = Color.Green;
-                        
-                        // Update the form's current values
-                        _currentStock = newStock;
-                        txtCurrentStock.Text = newStock.ToString();
-                        
-                        // Also update the product object in case it's used later
-                        _product.Stock = newStock;
-                        
-                        // Close form after a brief delay
-                        System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-                        timer.Interval = 1500;
-                        timer.Tick += (sender, e) => 
-                        {
-                            timer.Stop();
-                            this.DialogResult = DialogResult.OK;
-                            this.Close();
-                        };
-                        timer.Start();
-                    }
-                    
-                    lblStatus.Visible = true;
-                };
+                // Also update the product object in case it's used later
+                _product.Stock = newStock;
                 
-                worker.RunWorkerAsync();
+                // Show success message
+                lblStatus.Text = $"Đã cập nhật số lượng thành công!";
+                lblStatus.ForeColor = Color.Green;
+                
+                // Close form after a brief delay
+                await Task.Delay(1000);
+                DialogResult = DialogResult.OK;
             }
             catch (Exception ex)
             {
-                _isProcessing = false;
-                progressBar.Visible = false;
+                // Show error message
                 lblStatus.Text = $"Lỗi: {ex.Message}";
                 lblStatus.ForeColor = Color.Red;
-                lblStatus.Visible = true;
+                ((Button)sender).Enabled = true; // Re-enable the button
+            }
+            finally
+            {
+                progressBar.Visible = false;
+                _isProcessing = false;
             }
         }
         
         private void BtnCancel_Click(object sender, EventArgs e)
         {
-            this.DialogResult = DialogResult.Cancel;
+            DialogResult = DialogResult.Cancel;
             this.Close();
         }
         
@@ -453,44 +403,20 @@ namespace FASCloset.Forms
         {
             base.OnPaint(e);
             
-            // Remove when applied to real buttons
-            ApplyRoundedCorners(e.Graphics);
-        }
-        
-        private void ApplyRoundedCorners(Graphics g)
-        {
-            int radius = 10;
-            Rectangle rect = new Rectangle(0, 0, this.Width - 1, this.Height - 1);
-            using (GraphicsPath path = CreateRoundedRectangle(rect, radius))
-            {
-                using (Pen pen = new Pen(Color.FromArgb(200, 200, 200), 1))
-                {
-                    g.SmoothingMode = SmoothingMode.AntiAlias;
-                    this.Region = new Region(path);
-                    g.DrawPath(pen, path);
-                }
-            }
-        }
-        
-        private GraphicsPath CreateRoundedRectangle(Rectangle rect, int radius)
-        {
+            // Create rounded corners
             GraphicsPath path = new GraphicsPath();
-            int diameter = radius * 2;
+            int radius = 15;
             
-            // Top left corner
-            path.AddArc(rect.X, rect.Y, diameter, diameter, 180, 90);
+            path.AddArc(0, 0, radius * 2, radius * 2, 180, 90);
+            path.AddLine(radius, 0, this.Width - radius, 0);
+            path.AddArc(this.Width - radius * 2, 0, radius * 2, radius * 2, 270, 90);
+            path.AddLine(this.Width, radius, this.Width, this.Height - radius);
+            path.AddArc(this.Width - radius * 2, this.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+            path.AddLine(this.Width - radius, this.Height, radius, this.Height);
+            path.AddArc(0, this.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+            path.CloseFigure();
             
-            // Top edge and top right corner
-            path.AddArc(rect.Width - diameter, rect.Y, diameter, diameter, 270, 90);
-            
-            // Right edge and bottom right corner
-            path.AddArc(rect.Width - diameter, rect.Height - diameter, diameter, diameter, 0, 90);
-            
-            // Bottom edge and bottom left corner
-            path.AddArc(rect.X, rect.Height - diameter, diameter, diameter, 90, 90);
-            
-            path.CloseAllFigures();
-            return path;
+            this.Region = new Region(path);
         }
     }
 }

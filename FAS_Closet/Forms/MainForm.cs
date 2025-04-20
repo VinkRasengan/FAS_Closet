@@ -391,6 +391,16 @@ namespace FASCloset.Forms
                 ucInventoryManagement.BringToFront();
             }
         }
+        
+        // Method to refresh the dashboard when needed from other forms
+        public void RefreshDashboard()
+        {
+            // Only refresh if dashboard exists and is visible
+            if (ucDashboard != null && ucDashboard.Visible)
+            {
+                ucDashboard.LoadDashboardData();
+            }
+        }
 
         private void ShowBestSellingProductsDetail(object? sender, EventArgs e)
         {

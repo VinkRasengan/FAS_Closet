@@ -6,6 +6,7 @@ using FASCloset.Models;
 using FASCloset.Data;
 using FASCloset.Config;
 using Microsoft.Data.Sqlite;
+using System.Threading.Tasks;
 
 namespace FASCloset.Services
 {
@@ -62,6 +63,12 @@ namespace FASCloset.Services
             }
         }
 
+        // Async version of UpdateStock to prevent UI freezing
+        public static async Task UpdateStockAsync(int productId, int newStock)
+        {
+            await Task.Run(() => UpdateStock(productId, newStock));
+        }
+
         // Get products with low stock (based on individual product thresholds in the Inventory table)
         public static List<LowStockProductView> GetLowStockProducts()
         {
@@ -103,6 +110,12 @@ namespace FASCloset.Services
                 ManufacturerName = reader.IsDBNull(reader.GetOrdinal("ManufacturerName")) ? string.Empty : reader.GetString(reader.GetOrdinal("ManufacturerName")),
                 MinimumStockThreshold = reader.IsDBNull(reader.GetOrdinal("MinimumStockThreshold")) ? 5 : reader.GetInt32(reader.GetOrdinal("MinimumStockThreshold"))
             });
+        }
+
+        // Async version of GetLowStockProducts
+        public static async Task<List<LowStockProductView>> GetLowStockProductsAsync()
+        {
+            return await Task.Run(() => GetLowStockProducts());
         }
 
         // Get out of stock products (Stock = 0)
@@ -157,6 +170,12 @@ namespace FASCloset.Services
                 ManufacturerName = reader.IsDBNull(reader.GetOrdinal("ManufacturerName")) ? string.Empty : reader.GetString(reader.GetOrdinal("ManufacturerName")),
                 IsLowStock = reader.GetInt32(reader.GetOrdinal("Stock")) < 5
             });
+        }
+
+        // Async version of GetAllProducts
+        public static async Task<List<Product>> GetAllProductsAsync(bool onlyActive = true)
+        {
+            return await Task.Run(() => GetAllProducts(onlyActive));
         }
     }
 }

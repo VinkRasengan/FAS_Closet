@@ -10,7 +10,13 @@
     <Compile Update="Forms\CategoryForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Forms\CustomerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\FormViewCategoryProducts.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\InventoryItemForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Forms\MainForm.cs">
@@ -19,7 +25,13 @@
     <Compile Update="Forms\ManufacturerForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Forms\OrderForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\ProductForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\StockUpdateForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Forms\TransferStockForm.cs">

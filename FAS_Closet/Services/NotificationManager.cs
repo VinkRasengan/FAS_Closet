@@ -44,7 +44,7 @@ namespace FASCloset.Services
                 
                 if (AppSettings.SmsNotificationsEnabled)
                 {
-                    SendSmsNotification(message, GetSmsMessage(lowStockItems));
+                    SendSmsNotification(subject, GetSmsMessage(lowStockItems));
                 }
                 
                 // Log notification

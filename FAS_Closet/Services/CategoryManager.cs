@@ -148,7 +148,7 @@ namespace FASCloset.Services
                 using (var connection = new SqliteConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    string query = $"SELECT CategoryID, CategoryName, Description, IsActive, CreatedDate FROM Categories WHERE CategoryID = {ParamCategoryId}";
+                    string query = $"SELECT CategoryID, CategoryName, Description, IsActive, CreatedDate FROM Category WHERE CategoryID = {ParamCategoryId}";
                     using (var command = new SqliteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue(ParamCategoryId, categoryId);
@@ -196,6 +196,13 @@ namespace FASCloset.Services
             {
                 throw new InvalidOperationException("Database error occurred while checking category usage.", ex);
             }
+        }
+
+        // Added method to maintain compatibility with code that expects GetAllCategories
+        public static List<Category> GetAllCategories()
+        {
+            // Simply calls the existing GetCategories method
+            return GetCategories();
         }
     }
 }

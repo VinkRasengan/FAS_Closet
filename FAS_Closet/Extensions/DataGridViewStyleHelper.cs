@@ -422,9 +422,13 @@ namespace FASCloset.Extensions
         
         private static void AdjustLastColumnWidth(DataGridView dgv)
         {
-            // Ensure that the last column isn't partially visible
-            if (dgv.Columns.Count > 0)
+            // Ensure the DataGridView exists and has columns
+            if (dgv == null || dgv.Columns.Count == 0)
+                return;
+
+            try
             {
+                // Ensure that the last column isn't partially visible
                 var lastVisibleColumn = GetLastVisibleColumn(dgv);
                 if (lastVisibleColumn != null)
                 {
@@ -434,7 +438,7 @@ namespace FASCloset.Extensions
                     
                     foreach (DataGridViewColumn column in dgv.Columns)
                     {
-                        if (column.Visible && column != lastVisibleColumn)
+                        if (column != null && column.Visible && column != lastVisibleColumn)
                         {
                             usedWidth += column.Width;
                         }
@@ -443,9 +447,29 @@ namespace FASCloset.Extensions
                     int remainingWidth = availableWidth - usedWidth;
                     if (remainingWidth > 50) // If there's enough space
                     {
-                        lastVisibleColumn.Width = Math.Max(lastVisibleColumn.Width, remainingWidth - 5);
+                        try
+                        {
+                            // Check if the column isn't frozen or read-only before changing its width
+                            // This addresses the NullReferenceException in DataGridViewBand.set_Thickness
+                            if (lastVisibleColumn.Frozen == false && 
+                                !lastVisibleColumn.ReadOnly && 
+                                lastVisibleColumn.DividerWidth >= 0)
+                            {
+                                lastVisibleColumn.Width = Math.Max(lastVisibleColumn.Width, remainingWidth - 5);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log but swallow exceptions from column width adjustment
+                            Console.WriteLine($"Error adjusting column width: {ex.Message}");
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't let it crash the application
+                Console.WriteLine($"Error in AdjustLastColumnWidth: {ex.Message}");
             }
         }
         
