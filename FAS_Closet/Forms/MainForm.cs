@@ -137,7 +137,7 @@ namespace FASCloset.Forms
         private void btnInventoryManagement_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnInventoryManagement, "Quản lý Kho hàng");
-            UpdateFeatureToolbar(new string[] { "Cập nhật tồn kho", "Cảnh báo sắp hết" });
+            UpdateFeatureToolbar(new string[] { "Cập nhật tồn kho" });
 
             if (ucInventoryManagement == null)
             {
