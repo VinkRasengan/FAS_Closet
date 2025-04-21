@@ -167,23 +167,17 @@ namespace FASCloset.Forms
         private void btnCustomerManagement_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnCustomerManagement, "Quản lý Khách hàng");
-            UpdateFeatureToolbar(new string[] { "Thêm khách hàng", "Chỉnh sửa thông tin khách hàng", "Xóa khách hàng", "Làm mới" });
+            UpdateFeatureToolbar(new string[] { }); // Removed all buttons
 
             if (ucCustomerManagement == null)
             {
                 ucCustomerManagement = new UcCustomerManagement();
-
-                ucCustomerManagement.btnAdd = new Button();
-                ucCustomerManagement.btnAdd.Text = "Thêm khách hàng";
-                ucCustomerManagement.btnDelete = new Button();
-                ucCustomerManagement.btnDelete.Text = "Xóa khách hàng";
-                ucCustomerManagement.btnRefresh = new Button();
-                ucCustomerManagement.btnRefresh.Text = "Làm mới";
             }
 
             LoadUserControl(ucCustomerManagement);
         }
 
+        // These handler methods are kept for potential future use, but they're no longer connected to UI buttons
         private void HandleCustomerAdd(object? sender, EventArgs e)
         {
             if (ucCustomerManagement != null)
