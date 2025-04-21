@@ -11,6 +11,9 @@ namespace FASCloset.Forms
 {
     public partial class ProductForm : Form
     {
+        // Sự kiện tĩnh để thông báo khi có thay đổi ở category
+        public static event EventHandler CategoryChanged;
+
         private Product _product;
         private readonly bool _isEditMode;
         private readonly ErrorProvider _errorProvider = new ErrorProvider();
@@ -199,6 +202,9 @@ namespace FASCloset.Forms
                             break;
                         }
                     }
+
+                    // Raise the CategoryChanged event
+                    CategoryChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }

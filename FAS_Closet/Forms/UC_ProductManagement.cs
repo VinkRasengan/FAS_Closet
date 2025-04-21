@@ -32,9 +32,32 @@ namespace FASCloset.Forms
             productsBindingSource.DataSource = typeof(List<Product>);
             ProductDisplay.DataSource = productsBindingSource;
             
+            // Đăng ký lắng nghe sự kiện CategoryChanged từ ProductForm
+            ProductForm.CategoryChanged += ProductForm_CategoryChanged;
+            
             // Load data
             LoadProducts();
             LoadCategories();
+        }
+        
+        // Xử lý khi có sự kiện CategoryChanged từ ProductForm
+        private void ProductForm_CategoryChanged(object? sender, EventArgs e)
+        {
+            // Cập nhật lại danh sách category trong filter
+            LoadCategories();
+        }
+
+        // Hủy đăng ký sự kiện khi control bị hủy
+        protected override void Dispose(bool disposing)
+        {
+            // Hủy đăng ký sự kiện CategoryChanged
+            ProductForm.CategoryChanged -= ProductForm_CategoryChanged;
+            
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
         }
 
         #region DataGridView Setup and Formatting
