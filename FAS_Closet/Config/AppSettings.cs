@@ -6,12 +6,13 @@ namespace FASCloset.Config
 {
     public static class AppSettings
     {
-        // Use a relative path instead of hardcoded absolute path
-        private static readonly string _defaultDatabaseDirectory = Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory, "Data");
-            
+        // Get the project directory path (not the bin directory)
+        private static readonly string _projectDirectory = GetProjectDirectory();
+        
+        // Use the project directory to locate the database file
         private static readonly string _defaultDatabasePath = Path.Combine(
-            _defaultDatabaseDirectory,
+            _projectDirectory, 
+            "Data", 
             "FASClosetDB.sqlite");
 
         /// <summary>
@@ -38,6 +39,51 @@ namespace FASCloset.Config
                     Console.WriteLine($"Error reading DatabasePath from configuration: {ex.Message}");
                     return _defaultDatabasePath;
                 }
+            }
+        }
+
+        // Get the project directory (not the bin directory)
+        private static string GetProjectDirectory()
+        {
+            try
+            {
+                // Start with the directory where the application is running
+                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                
+                // Navigate up from bin\Debug or bin\Release to get to the project directory
+                DirectoryInfo? directory = new DirectoryInfo(baseDirectory);
+                
+                // Go up until we find the project directory that contains "Data" folder
+                while (directory != null && !Directory.Exists(Path.Combine(directory.FullName, "Data")))
+                {
+                    directory = directory.Parent;
+                }
+                
+                // If we found the directory with Data folder, use that
+                if (directory != null && Directory.Exists(Path.Combine(directory.FullName, "Data")))
+                {
+                    Console.WriteLine($"Found project directory: {directory.FullName}");
+                    return directory.FullName;
+                }
+                
+                // If we didn't find it, go back to a fixed location
+                // Uses d:\Project\FAS_Closet as the base directory
+                string fixedProjectPath = @"d:\Project\FAS_Closet\FAS_Closet";
+                if (Directory.Exists(fixedProjectPath))
+                {
+                    Console.WriteLine($"Using fixed project directory: {fixedProjectPath}");
+                    return fixedProjectPath;
+                }
+                
+                // Final fallback to the running directory
+                Console.WriteLine($"Falling back to base directory: {baseDirectory}");
+                return baseDirectory;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error determining project directory: {ex.Message}");
+                // Final fallback to d:\Project\FAS_Closet if available
+                return @"d:\Project\FAS_Closet\FAS_Closet";
             }
         }
 

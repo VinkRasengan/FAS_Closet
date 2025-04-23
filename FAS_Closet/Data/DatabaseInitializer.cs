@@ -18,19 +18,7 @@ namespace FASCloset.Data
                     fs.Close(); // Ensure file handle is released
                 }
             }
-            
-            // Always initialize schema to ensure all required tables exist
-            using (var connection = new SqliteConnection($"Data Source={dbPath}"))
-            {
-                connection.Open();
-                InitializeDatabaseSchema(connection);
-                
-                // Create demo data only for a new database
-                if (newDatabase)
-                {
-                    CreateDemoData(connection);
-                }
-            }
+           
         }
         
         public static void InitializeDatabaseSchema(SqliteConnection connection)
@@ -77,9 +65,10 @@ namespace FASCloset.Data
                     CategoryID INTEGER NOT NULL,
                     ManufacturerID INTEGER,
                     Price DECIMAL(10, 2) NOT NULL,
-                    Stock INTEGER NOT NULL,
+                    Stock INTEGER NOT NULL DEFAULT 0,
                     Description TEXT NOT NULL,
                     IsActive BOOLEAN NOT NULL DEFAULT 1,
+                    MinimumStockThreshold INTEGER NOT NULL DEFAULT 5,
                     FOREIGN KEY (CategoryID) REFERENCES Category(CategoryID) ON DELETE CASCADE,
                     FOREIGN KEY (ManufacturerID) REFERENCES Manufacturer(ManufacturerID) ON DELETE SET NULL
                 );",
@@ -109,14 +98,6 @@ namespace FASCloset.Data
                     Subject TEXT NOT NULL,
                     Message TEXT NOT NULL,
                     Timestamp DATETIME NOT NULL
-                );",
-                
-                @"CREATE TABLE IF NOT EXISTS Inventory (
-                    InventoryID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    ProductID INTEGER NOT NULL,
-                    StockQuantity INTEGER NOT NULL,
-                    MinimumStockThreshold INTEGER NOT NULL,
-                    FOREIGN KEY (ProductID) REFERENCES Product(ProductID) ON DELETE CASCADE
                 );"
             };
             
@@ -128,10 +109,12 @@ namespace FASCloset.Data
                 }
             }
             
-            // Check for existing Product table that needs to be updated with IsActive column
+            // Check for existing Product table that needs to be updated with IsActive and MinimumStockThreshold columns
             using (var cmd = new SqliteCommand("PRAGMA table_info(Product);", connection))
             {
                 bool hasIsActiveColumn = false;
+                bool hasMinimumStockThresholdColumn = false;
+                
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
@@ -140,7 +123,10 @@ namespace FASCloset.Data
                         if (columnName.Equals("IsActive", StringComparison.OrdinalIgnoreCase))
                         {
                             hasIsActiveColumn = true;
-                            break;
+                        }
+                        else if (columnName.Equals("MinimumStockThreshold", StringComparison.OrdinalIgnoreCase))
+                        {
+                            hasMinimumStockThresholdColumn = true;
                         }
                     }
                 }
@@ -159,6 +145,23 @@ namespace FASCloset.Data
                     catch (Exception ex)
                     {
                         Console.WriteLine($"Error adding IsActive column: {ex.Message}");
+                    }
+                }
+                
+                // If MinimumStockThreshold column doesn't exist, add it
+                if (!hasMinimumStockThresholdColumn)
+                {
+                    try
+                    {
+                        using (var alterCmd = new SqliteCommand("ALTER TABLE Product ADD COLUMN MinimumStockThreshold INTEGER NOT NULL DEFAULT 5;", connection))
+                        {
+                            alterCmd.ExecuteNonQuery();
+                            Console.WriteLine("Added MinimumStockThreshold column to existing Product table.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error adding MinimumStockThreshold column: {ex.Message}");
                     }
                 }
             }
@@ -243,32 +246,18 @@ namespace FASCloset.Data
         private static void CreateDemoProducts(SqliteConnection connection)
         {
             string[] insertProductCommands = {
-                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Description) VALUES ('Blue Button-Up Shirt', 1, 1, 29.99, 'Classic blue button-up shirt for all occasions')",
-                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Black Slim Pants', 2, 2, 39.99, 30, 'Stylish slim-fit pants in black')",
-                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Summer Floral Dress', 3, 3, 49.99, 25, 'Beautiful floral pattern dress for summer')",
-                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Winter Jacket', 4, 4, 89.99, 20, 'Warm winter jacket with hood')",
-                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Leather Belt', 5, 2, 19.99, 40, 'Quality leather belt')",
-                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Striped T-Shirt', 1, 4, 24.99, 35, 'Casual striped t-shirt')",
-                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Jeans', 2, 1, 59.99, 45, 'Classic blue jeans')",
-                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Evening Gown', 3, 3, 129.99, 15, 'Elegant evening gown for special occasions')",
-                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Wool Scarf', 5, 3, 34.99, 30, 'Soft wool scarf for winter')",
-                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description) VALUES ('Denim Jacket', 4, 2, 69.99, 25, 'Classic denim jacket')"
+                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, MinimumStockThreshold, Description, IsActive) VALUES ('Blue Button-Up Shirt', 1, 1, 29.99, 50, 5, 'Classic blue button-up shirt for all occasions', 1)",
+                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, MinimumStockThreshold, Description, IsActive) VALUES ('Black Slim Pants', 2, 2, 39.99, 30, 5, 'Stylish slim-fit pants in black', 1)",
+                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, MinimumStockThreshold, Description, IsActive) VALUES ('Summer Floral Dress', 3, 3, 49.99, 25, 5, 'Beautiful floral pattern dress for summer', 1)",
+                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, MinimumStockThreshold, Description, IsActive) VALUES ('Winter Jacket', 4, 4, 89.99, 20, 5, 'Warm winter jacket with hood', 1)",
+                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, MinimumStockThreshold, Description, IsActive) VALUES ('Leather Belt', 5, 2, 19.99, 40, 5, 'Quality leather belt', 1)",
+                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, MinimumStockThreshold, Description, IsActive) VALUES ('Striped T-Shirt', 1, 4, 24.99, 35, 5, 'Casual striped t-shirt', 1)",
+                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, MinimumStockThreshold, Description, IsActive) VALUES ('Jeans', 2, 1, 59.99, 45, 5, 'Classic blue jeans', 1)",
+                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, MinimumStockThreshold, Description, IsActive) VALUES ('Evening Gown', 3, 3, 129.99, 15, 5, 'Elegant evening gown for special occasions', 1)",
+                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, MinimumStockThreshold, Description, IsActive) VALUES ('Wool Scarf', 5, 3, 34.99, 30, 5, 'Soft wool scarf for winter', 1)",
+                "INSERT OR IGNORE INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, MinimumStockThreshold, Description, IsActive) VALUES ('Denim Jacket', 4, 2, 69.99, 25, 5, 'Classic denim jacket', 1)"
             };
             ExecuteCommands(connection, insertProductCommands);
-
-            string[] insertInventoryCommands = {
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (1, 50, 5)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (2, 30, 5)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (3, 25, 5)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (4, 20, 5)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (5, 40, 5)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (6, 35, 5)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (7, 45, 5)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (8, 15, 5)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (9, 30, 5)",
-                "INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) VALUES (10, 25, 5)"
-            };
-            ExecuteCommands(connection, insertInventoryCommands);
         }
         
         private static void CreateDemoCustomers(SqliteConnection connection)

@@ -13,6 +13,7 @@ namespace FASCloset.Models
         public int Stock { get; set; }
         public string Description { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
+        public int MinimumStockThreshold { get; set; } = 5;
         
         // Navigation properties - not stored in database but useful for displaying related data
         public string CategoryName { get; set; } = string.Empty;

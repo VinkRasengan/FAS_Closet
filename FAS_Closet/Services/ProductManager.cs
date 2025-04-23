@@ -28,11 +28,10 @@ namespace FASCloset.Services
                 SELECT p.*, 
                        c.CategoryName, 
                        m.ManufacturerName,
-                       CASE WHEN p.Stock <= COALESCE(i.MinimumStockThreshold, 10) THEN 1 ELSE 0 END as IsLowStock
+                       CASE WHEN p.Stock <= p.MinimumStockThreshold THEN 1 ELSE 0 END as IsLowStock
                 FROM Product p
                 LEFT JOIN Category c ON p.CategoryID = c.CategoryID
                 LEFT JOIN Manufacturer m ON p.ManufacturerID = m.ManufacturerID
-                LEFT JOIN Inventory i ON p.ProductID = i.ProductID
                 WHERE (p.IsActive = 1 OR @IncludeInactive = 1)
                 ORDER BY p.ProductID";
 
@@ -69,11 +68,10 @@ namespace FASCloset.Services
                 SELECT p.*, 
                        c.CategoryName, 
                        m.ManufacturerName,
-                       CASE WHEN p.Stock <= COALESCE(i.MinimumStockThreshold, 10) THEN 1 ELSE 0 END as IsLowStock
+                       CASE WHEN p.Stock <= p.MinimumStockThreshold THEN 1 ELSE 0 END as IsLowStock
                 FROM Product p
                 LEFT JOIN Category c ON p.CategoryID = c.CategoryID
                 LEFT JOIN Manufacturer m ON p.ManufacturerID = m.ManufacturerID
-                LEFT JOIN Inventory i ON p.ProductID = i.ProductID
                 WHERE p.CategoryID = @CategoryID AND (p.IsActive = 1 OR @IncludeInactive = 1)
                 ORDER BY p.ProductID";
 
@@ -102,11 +100,10 @@ namespace FASCloset.Services
                 SELECT p.*, 
                        c.CategoryName, 
                        m.ManufacturerName,
-                       CASE WHEN p.Stock <= COALESCE(i.MinimumStockThreshold, 10) THEN 1 ELSE 0 END as IsLowStock
+                       CASE WHEN p.Stock <= p.MinimumStockThreshold THEN 1 ELSE 0 END as IsLowStock
                 FROM Product p
                 LEFT JOIN Category c ON p.CategoryID = c.CategoryID
                 LEFT JOIN Manufacturer m ON p.ManufacturerID = m.ManufacturerID
-                LEFT JOIN Inventory i ON p.ProductID = i.ProductID
                 WHERE p.ProductID = @ProductID";
 
             var parameters = new Dictionary<string, object> { { "@ProductID", productId } };
@@ -118,8 +115,8 @@ namespace FASCloset.Services
         public static void AddProduct(Product product)
         {
             string query = @"
-                INSERT INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description, IsActive) 
-                VALUES (@ProductName, @CategoryID, @ManufacturerID, @Price, @Stock, @Description, @IsActive);
+                INSERT INTO Product (ProductName, CategoryID, ManufacturerID, Price, Stock, Description, IsActive, MinimumStockThreshold) 
+                VALUES (@ProductName, @CategoryID, @ManufacturerID, @Price, @Stock, @Description, @IsActive, @MinimumStockThreshold);
                 SELECT last_insert_rowid();";
 
             var parameters = new Dictionary<string, object>
@@ -130,24 +127,11 @@ namespace FASCloset.Services
                 { "@Price", product.Price },
                 { "@Stock", product.Stock },
                 { "@Description", product.Description },
-                { "@IsActive", product.IsActive ? 1 : 0 }
+                { "@IsActive", product.IsActive ? 1 : 0 },
+                { "@MinimumStockThreshold", product.MinimumStockThreshold > 0 ? product.MinimumStockThreshold : 5 }
             };
 
-            int productId = DataAccessHelper.ExecuteScalar<int>(query, parameters);
-            
-            // Add default inventory record
-            string inventoryQuery = @"
-                INSERT OR IGNORE INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) 
-                VALUES (@ProductID, @StockQuantity, @MinimumStockThreshold)";
-
-            var inventoryParams = new Dictionary<string, object>
-            {
-                { "@ProductID", productId },
-                { "@StockQuantity", product.Stock },
-                { "@MinimumStockThreshold", 10 } // Default threshold
-            };
-
-            DataAccessHelper.ExecuteNonQuery(inventoryQuery, inventoryParams);
+            DataAccessHelper.ExecuteScalar<int>(query, parameters);
         }
 
         // Update an existing product
@@ -165,7 +149,8 @@ namespace FASCloset.Services
                     Price = @Price, 
                     Stock = @Stock, 
                     Description = @Description,
-                    IsActive = @IsActive
+                    IsActive = @IsActive,
+                    MinimumStockThreshold = @MinimumStockThreshold
                 WHERE ProductID = @ProductID";
 
             var parameters = new Dictionary<string, object>
@@ -177,15 +162,17 @@ namespace FASCloset.Services
                 { "@Price", product.Price },
                 { "@Stock", product.Stock },
                 { "@Description", product.Description },
-                { "@IsActive", product.IsActive ? 1 : 0 }
+                { "@IsActive", product.IsActive ? 1 : 0 },
+                { "@MinimumStockThreshold", product.MinimumStockThreshold > 0 ? product.MinimumStockThreshold : 5 }
             };
 
             DataAccessHelper.ExecuteNonQuery(query, parameters);
 
-            // If stock changed, update the inventory table as well
+            // If stock changed, we might need to trigger inventory notifications or other actions
             if (stockChanged)
             {
-                InventoryManager.UpdateStock(product.ProductID, product.Stock);
+                // Log stock change or trigger notifications if needed
+                // This would replace the previous call to InventoryManager.UpdateStock
             }
         }
 
@@ -309,11 +296,10 @@ namespace FASCloset.Services
                 SELECT p.*, 
                        c.CategoryName, 
                        m.ManufacturerName,
-                       CASE WHEN p.Stock <= COALESCE(i.MinimumStockThreshold, 10) THEN 1 ELSE 0 END as IsLowStock
+                       CASE WHEN p.Stock <= p.MinimumStockThreshold THEN 1 ELSE 0 END as IsLowStock
                 FROM Product p
                 LEFT JOIN Category c ON p.CategoryID = c.CategoryID
                 LEFT JOIN Manufacturer m ON p.ManufacturerID = m.ManufacturerID
-                LEFT JOIN Inventory i ON p.ProductID = i.ProductID
                 WHERE (p.ProductName LIKE @SearchText OR p.Description LIKE @SearchText) 
                 AND (p.IsActive = 1 OR @IncludeInactive = 1)
                 ORDER BY p.ProductName";
@@ -338,33 +324,21 @@ namespace FASCloset.Services
                 SELECT p.*, 
                        c.CategoryName, 
                        m.ManufacturerName,
-                       i.StockQuantity as WarehouseStock,
-                       CASE WHEN i.StockQuantity <= COALESCE(i.MinimumStockThreshold, 10) THEN 1 ELSE 0 END as IsLowStock
+                       CASE WHEN p.Stock <= p.MinimumStockThreshold THEN 1 ELSE 0 END as IsLowStock
                 FROM Product p
                 LEFT JOIN Category c ON p.CategoryID = c.CategoryID
                 LEFT JOIN Manufacturer m ON p.ManufacturerID = m.ManufacturerID
-                LEFT JOIN Inventory i ON p.ProductID = i.ProductID AND i.WarehouseID = @WarehouseID
                 WHERE (p.IsActive = 1 OR @IncludeInactive = 1)
                 ORDER BY p.ProductName";
 
             var parameters = new Dictionary<string, object>
             {
-                { warehouseIdParam, warehouseId },
                 { includeInactiveParam, includeInactive ? 1 : 0 }
             };
 
             try
             {
-                var products = DataAccessHelper.ExecuteReader(query, reader =>
-                {
-                    var product = MapProductWithDetails(reader);
-                    
-                    // Get warehouse-specific stock if available
-                    if (!reader.IsDBNull(reader.GetOrdinal("WarehouseStock")))
-                        product.Stock = reader.GetInt32(reader.GetOrdinal("WarehouseStock"));
-
-                    return product;
-                }, parameters);
+                var products = DataAccessHelper.ExecuteReader(query, reader => MapProductWithDetails(reader), parameters);
                     
                 Console.WriteLine($"Retrieved {products.Count} products for warehouse {warehouseId}");
                 return products;
@@ -387,8 +361,10 @@ namespace FASCloset.Services
                 ManufacturerID = reader.IsDBNull(reader.GetOrdinal("ManufacturerID")) ? null : reader.GetInt32(reader.GetOrdinal("ManufacturerID")),
                 Price = reader.GetDecimal(reader.GetOrdinal("Price")),
                 Stock = reader.GetInt32(reader.GetOrdinal("Stock")),
+                MinimumStockThreshold = reader.GetInt32(reader.GetOrdinal("MinimumStockThreshold")),
                 Description = reader.GetString(reader.GetOrdinal("Description")),
-                IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
+                IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+                IsLowStock = reader.GetInt32(reader.GetOrdinal("Stock")) <= reader.GetInt32(reader.GetOrdinal("MinimumStockThreshold"))
             };
         }
 
@@ -417,6 +393,8 @@ namespace FASCloset.Services
 
                 if (hasLowStock)
                     product.IsLowStock = reader.GetBoolean(reader.GetOrdinal("IsLowStock"));
+                else
+                    product.IsLowStock = product.Stock <= product.MinimumStockThreshold;
             }
 
             return product;
@@ -477,10 +455,12 @@ namespace FASCloset.Services
                 ManufacturerID = reader.IsDBNull(reader.GetOrdinal("ManufacturerID")) ? null : reader.GetInt32(reader.GetOrdinal("ManufacturerID")),
                 Price = reader.GetDecimal(reader.GetOrdinal("Price")),
                 Stock = reader.GetInt32(reader.GetOrdinal("Stock")),
+                MinimumStockThreshold = reader.GetInt32(reader.GetOrdinal("MinimumStockThreshold")),
                 Description = reader.GetString(reader.GetOrdinal("Description")),
                 IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
                 CategoryName = reader.IsDBNull(reader.GetOrdinal("CategoryName")) ? string.Empty : reader.GetString(reader.GetOrdinal("CategoryName")),
                 ManufacturerName = reader.IsDBNull(reader.GetOrdinal("ManufacturerName")) ? string.Empty : reader.GetString(reader.GetOrdinal("ManufacturerName")),
+                IsLowStock = reader.GetInt32(reader.GetOrdinal("Stock")) <= reader.GetInt32(reader.GetOrdinal("MinimumStockThreshold"))
             }, parameters);
         }
     }

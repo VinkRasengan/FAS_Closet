@@ -22,11 +22,6 @@ namespace FASCloset.Services
         {
             string connectionString = GetConnectionString();
             string productUpdate = "UPDATE Product SET Stock = @Stock WHERE ProductID = @ProductID";
-            string inventoryUpsert = @"
-                INSERT INTO Inventory (ProductID, StockQuantity, MinimumStockThreshold) 
-                VALUES (@ProductID, @StockQuantity, @MinimumStockThreshold)
-                ON CONFLICT(ProductID) DO UPDATE SET 
-                StockQuantity = @StockQuantity";
 
             try
             {
@@ -43,15 +38,6 @@ namespace FASCloset.Services
                             cmd.ExecuteNonQuery();
                         }
                         
-                        // Update or insert into Inventory table with a single operation
-                        using (var cmd = new SqliteCommand(inventoryUpsert, connection, transaction))
-                        {
-                            cmd.Parameters.AddWithValue("@ProductID", productId);
-                            cmd.Parameters.AddWithValue("@StockQuantity", newStock);
-                            cmd.Parameters.AddWithValue("@MinimumStockThreshold", 5); // Default
-                            cmd.ExecuteNonQuery();
-                        }
-                        
                         transaction.Commit();
                     }
                 }
@@ -63,13 +49,50 @@ namespace FASCloset.Services
             }
         }
 
+        // Update minimum stock threshold for a product
+        public static void UpdateMinimumStockThreshold(int productId, int newThreshold)
+        {
+            string connectionString = GetConnectionString();
+            string productUpdate = "UPDATE Product SET MinimumStockThreshold = @MinimumStockThreshold WHERE ProductID = @ProductID";
+
+            try
+            {
+                using (var connection = new SqliteConnection(connectionString))
+                {
+                    connection.Open();
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        using (var cmd = new SqliteCommand(productUpdate, connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@ProductID", productId);
+                            cmd.Parameters.AddWithValue("@MinimumStockThreshold", newThreshold);
+                            cmd.ExecuteNonQuery();
+                        }
+                        
+                        transaction.Commit();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating minimum stock threshold: {ex.Message}");
+                throw new ApplicationException($"Failed to update minimum stock threshold: {ex.Message}", ex);
+            }
+        }
+
         // Async version of UpdateStock to prevent UI freezing
         public static async Task UpdateStockAsync(int productId, int newStock)
         {
             await Task.Run(() => UpdateStock(productId, newStock));
         }
 
-        // Get products with low stock (based on individual product thresholds in the Inventory table)
+        // Async version of UpdateMinimumStockThreshold
+        public static async Task UpdateMinimumStockThresholdAsync(int productId, int newThreshold)
+        {
+            await Task.Run(() => UpdateMinimumStockThreshold(productId, newThreshold));
+        }
+
+        // Get products with low stock (based on individual product thresholds)
         public static List<LowStockProductView> GetLowStockProducts()
         {
             string query = @"
@@ -82,17 +105,16 @@ namespace FASCloset.Services
                     p.Stock AS StockQuantity, 
                     p.Description, 
                     p.IsActive,
+                    p.MinimumStockThreshold,
                     c.CategoryName, 
-                    m.ManufacturerName,
-                    i.MinimumStockThreshold
+                    m.ManufacturerName
                 FROM Product p
                 LEFT JOIN Category c ON p.CategoryID = c.CategoryID
                 LEFT JOIN Manufacturer m ON p.ManufacturerID = m.ManufacturerID
-                LEFT JOIN Inventory i ON p.ProductID = i.ProductID
-                WHERE p.Stock <= COALESCE(i.MinimumStockThreshold, 5) AND p.IsActive = 1
+                WHERE p.Stock <= p.MinimumStockThreshold AND p.IsActive = 1
                 ORDER BY 
                     CASE WHEN p.Stock = 0 THEN 0 ELSE 1 END, -- Out of stock items first
-                    (1.0 * p.Stock / COALESCE(i.MinimumStockThreshold, 5)) ASC, -- Then by % of threshold
+                    (1.0 * p.Stock / p.MinimumStockThreshold) ASC, -- Then by % of threshold
                     p.ProductName -- Then alphabetically
                 ";
 
@@ -108,7 +130,7 @@ namespace FASCloset.Services
                 IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
                 CategoryName = reader.IsDBNull(reader.GetOrdinal("CategoryName")) ? string.Empty : reader.GetString(reader.GetOrdinal("CategoryName")),
                 ManufacturerName = reader.IsDBNull(reader.GetOrdinal("ManufacturerName")) ? string.Empty : reader.GetString(reader.GetOrdinal("ManufacturerName")),
-                MinimumStockThreshold = reader.IsDBNull(reader.GetOrdinal("MinimumStockThreshold")) ? 5 : reader.GetInt32(reader.GetOrdinal("MinimumStockThreshold"))
+                MinimumStockThreshold = reader.GetInt32(reader.GetOrdinal("MinimumStockThreshold"))
             });
         }
 
@@ -137,6 +159,7 @@ namespace FASCloset.Services
                 ManufacturerID = reader.IsDBNull(reader.GetOrdinal("ManufacturerID")) ? null : reader.GetInt32(reader.GetOrdinal("ManufacturerID")),
                 Price = reader.GetDecimal(reader.GetOrdinal("Price")),
                 Stock = reader.GetInt32(reader.GetOrdinal("Stock")),
+                MinimumStockThreshold = reader.GetInt32(reader.GetOrdinal("MinimumStockThreshold")),
                 Description = reader.GetString(reader.GetOrdinal("Description")),
                 IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
                 CategoryName = reader.IsDBNull(reader.GetOrdinal("CategoryName")) ? string.Empty : reader.GetString(reader.GetOrdinal("CategoryName")),
@@ -164,11 +187,12 @@ namespace FASCloset.Services
                 ManufacturerID = reader.IsDBNull(reader.GetOrdinal("ManufacturerID")) ? null : reader.GetInt32(reader.GetOrdinal("ManufacturerID")),
                 Price = reader.GetDecimal(reader.GetOrdinal("Price")),
                 Stock = reader.GetInt32(reader.GetOrdinal("Stock")),
+                MinimumStockThreshold = reader.GetInt32(reader.GetOrdinal("MinimumStockThreshold")),
                 Description = reader.GetString(reader.GetOrdinal("Description")),
                 IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
                 CategoryName = reader.IsDBNull(reader.GetOrdinal("CategoryName")) ? string.Empty : reader.GetString(reader.GetOrdinal("CategoryName")),
                 ManufacturerName = reader.IsDBNull(reader.GetOrdinal("ManufacturerName")) ? string.Empty : reader.GetString(reader.GetOrdinal("ManufacturerName")),
-                IsLowStock = reader.GetInt32(reader.GetOrdinal("Stock")) < 5
+                IsLowStock = reader.GetInt32(reader.GetOrdinal("Stock")) <= reader.GetInt32(reader.GetOrdinal("MinimumStockThreshold"))
             });
         }
 
