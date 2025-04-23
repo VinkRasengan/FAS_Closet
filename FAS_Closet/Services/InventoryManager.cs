@@ -95,43 +95,81 @@ namespace FASCloset.Services
         // Get products with low stock (based on individual product thresholds)
         public static List<LowStockProductView> GetLowStockProducts()
         {
-            string query = @"
-                SELECT 
-                    p.ProductID, 
-                    p.ProductName, 
-                    p.CategoryID, 
-                    p.ManufacturerID,
-                    p.Price, 
-                    p.Stock AS StockQuantity, 
-                    p.Description, 
-                    p.IsActive,
-                    p.MinimumStockThreshold,
-                    c.CategoryName, 
-                    m.ManufacturerName
-                FROM Product p
-                LEFT JOIN Category c ON p.CategoryID = c.CategoryID
-                LEFT JOIN Manufacturer m ON p.ManufacturerID = m.ManufacturerID
-                WHERE p.Stock <= p.MinimumStockThreshold AND p.IsActive = 1
-                ORDER BY 
-                    CASE WHEN p.Stock = 0 THEN 0 ELSE 1 END, -- Out of stock items first
-                    (1.0 * p.Stock / p.MinimumStockThreshold) ASC, -- Then by % of threshold
-                    p.ProductName -- Then alphabetically
-                ";
-
-            return DataAccessHelper.ExecuteReader(query, reader => new LowStockProductView
+            try
             {
-                ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
-                ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
-                CategoryID = reader.GetInt32(reader.GetOrdinal("CategoryID")),
-                ManufacturerID = reader.IsDBNull(reader.GetOrdinal("ManufacturerID")) ? null : reader.GetInt32(reader.GetOrdinal("ManufacturerID")),
-                Price = reader.GetDecimal(reader.GetOrdinal("Price")),
-                StockQuantity = reader.GetInt32(reader.GetOrdinal("StockQuantity")),
-                Description = reader.GetString(reader.GetOrdinal("Description")),
-                IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
-                CategoryName = reader.IsDBNull(reader.GetOrdinal("CategoryName")) ? string.Empty : reader.GetString(reader.GetOrdinal("CategoryName")),
-                ManufacturerName = reader.IsDBNull(reader.GetOrdinal("ManufacturerName")) ? string.Empty : reader.GetString(reader.GetOrdinal("ManufacturerName")),
-                MinimumStockThreshold = reader.GetInt32(reader.GetOrdinal("MinimumStockThreshold"))
-            });
+                string query = @"
+                    SELECT 
+                        p.ProductID, 
+                        p.ProductName, 
+                        p.CategoryID, 
+                        p.ManufacturerID,
+                        p.Price, 
+                        p.Stock AS StockQuantity, 
+                        p.Description, 
+                        p.IsActive,
+                        p.MinimumStockThreshold,
+                        c.CategoryName, 
+                        m.ManufacturerName
+                    FROM Product p
+                    LEFT JOIN Category c ON p.CategoryID = c.CategoryID
+                    LEFT JOIN Manufacturer m ON p.ManufacturerID = m.ManufacturerID
+                    WHERE p.Stock <= p.MinimumStockThreshold AND p.IsActive = 1
+                    ORDER BY 
+                        CASE WHEN p.Stock = 0 THEN 0 ELSE 1 END, -- Out of stock items first
+                        (1.0 * p.Stock / p.MinimumStockThreshold) ASC, -- Then by % of threshold
+                        p.ProductName -- Then alphabetically
+                    ";
+
+                var lowStockProducts = DataAccessHelper.ExecuteReader(query, reader => {
+                    try {
+                        // Get all required fields safely
+                        int productId = reader.GetInt32(reader.GetOrdinal("ProductID"));
+                        string productName = reader.GetString(reader.GetOrdinal("ProductName"));
+                        int categoryId = reader.GetInt32(reader.GetOrdinal("CategoryID")); 
+                        int? manufacturerId = reader.IsDBNull(reader.GetOrdinal("ManufacturerID")) ? 
+                            null : reader.GetInt32(reader.GetOrdinal("ManufacturerID"));
+                        decimal price = reader.GetDecimal(reader.GetOrdinal("Price"));
+                        int stockQuantity = reader.GetInt32(reader.GetOrdinal("StockQuantity"));
+                        int minimumStockThreshold = reader.GetInt32(reader.GetOrdinal("MinimumStockThreshold"));
+                        string description = reader.GetString(reader.GetOrdinal("Description"));
+                        bool isActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
+                        
+                        // Optional fields
+                        string categoryName = reader.IsDBNull(reader.GetOrdinal("CategoryName")) ? 
+                            string.Empty : reader.GetString(reader.GetOrdinal("CategoryName"));
+                        string manufacturerName = reader.IsDBNull(reader.GetOrdinal("ManufacturerName")) ? 
+                            string.Empty : reader.GetString(reader.GetOrdinal("ManufacturerName"));
+                        
+                        // Create the object with all retrieved values
+                        return new LowStockProductView
+                        {
+                            ProductID = productId,
+                            ProductName = productName,
+                            CategoryID = categoryId,
+                            ManufacturerID = manufacturerId,
+                            Price = price,
+                            StockQuantity = stockQuantity,
+                            Description = description,
+                            IsActive = isActive,
+                            CategoryName = categoryName,
+                            ManufacturerName = manufacturerName,
+                            MinimumStockThreshold = minimumStockThreshold
+                        };
+                    }
+                    catch (Exception ex) {
+                        Console.WriteLine($"Error mapping low stock product: {ex.Message}");
+                        return null;
+                    }
+                });
+                
+                // Filter out any nulls from mapping errors
+                return lowStockProducts.Where(p => p != null).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting low stock products: {ex.Message}");
+                return new List<LowStockProductView>();
+            }
         }
 
         // Async version of GetLowStockProducts
