@@ -166,8 +166,25 @@ namespace FASCloset.Forms
                 ApplyMetricStyle(lblTotalCustomers, "Khách Hàng", Color.FromArgb(40, 167, 69));
                 ApplyMetricStyle(lblTotalOrders, "Đơn Hàng", Color.FromArgb(255, 193, 7));
 
-                // Get low stock products
-                var lowStockItems = InventoryManager.GetLowStockProducts();
+                // Get low stock products - updated to use ProductManager instead of InventoryManager
+                var lowStockItems = ProductManager.GetProducts()
+                    .Where(p => p.IsLowStock)
+                    .Select(p => new LowStockProductView
+                    {
+                        ProductID = p.ProductID,
+                        ProductName = p.ProductName,
+                        CategoryID = p.CategoryID,
+                        ManufacturerID = p.ManufacturerID,
+                        Price = p.Price,
+                        StockQuantity = p.Stock,
+                        MinimumStockThreshold = p.MinimumStockThreshold,
+                        Description = p.Description,
+                        IsActive = p.IsActive,
+                        CategoryName = p.CategoryName,
+                        ManufacturerName = p.ManufacturerName
+                    })
+                    .OrderBy(p => p.StockQuantity)
+                    .ToList();
                 
                 // Update low stock warning with enhanced styling
                 int lowStockCount = lowStockItems.Count;
