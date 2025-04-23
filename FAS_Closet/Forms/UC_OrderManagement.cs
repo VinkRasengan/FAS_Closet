@@ -71,7 +71,7 @@ namespace FASCloset.Forms
         private void ShowOrderDetailPopup(Order order, List<OrderDetail> orderDetails)
         {
             // Create the popup form
-            Form popup = new Form
+            Form popup = new Form 
             {
                 Text = "Order Details",
                 Size = new Size(600, 400),

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Microsoft.Data.Sqlite;
+using System.Diagnostics;
 
 namespace FASCloset.Data
 {
@@ -8,17 +9,72 @@ namespace FASCloset.Data
     {
         public static void Initialize(string dbPath)
         {
-            bool newDatabase = !File.Exists(dbPath);
-            
-            // Create database file if it doesn't exist
-            if (newDatabase)
+            try
             {
-                using (FileStream fs = File.Create(dbPath))
+                Console.WriteLine($"Initializing database at: {dbPath}");
+                
+                // Check if the directory exists, if not create it
+                string directory = Path.GetDirectoryName(dbPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
-                    fs.Close(); // Ensure file handle is released
+                    Directory.CreateDirectory(directory);
+                    Console.WriteLine($"Created directory: {directory}");
                 }
+                
+                bool newDatabase = !File.Exists(dbPath);
+                
+                // Create database file if it doesn't exist
+                if (newDatabase)
+                {
+                    using (FileStream fs = File.Create(dbPath))
+                    {
+                        fs.Close(); // Ensure file handle is released
+                    }
+                    Console.WriteLine("Created new database file");
+                }
+                
+                // Create a connection and initialize the schema
+                using (var connection = new SqliteConnection($"Data Source={dbPath}"))
+                {
+                    connection.Open();
+                    Console.WriteLine("Successfully opened database connection");
+                    
+                    // Create tables and schema
+                    InitializeDatabaseSchema(connection);
+                    Console.WriteLine("Initialized database schema");
+                    
+                    // Create demo data if it's a new database
+                    if (newDatabase)
+                    {
+                        CreateDemoData(connection);
+                        Console.WriteLine("Created demo data");
+                    }
+                }
+                
+                Console.WriteLine("Database initialization completed successfully");
             }
-           
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing database: {ex.Message}");
+                Debug.WriteLine($"Database initialization error: {ex}");
+                
+                // Try to show the error to the user if possible
+                try
+                {
+                    System.Windows.Forms.MessageBox.Show(
+                        $"Lỗi khởi tạo cơ sở dữ liệu: {ex.Message}\n\nĐường dẫn database: {dbPath}",
+                        "Lỗi Khởi Tạo CSDL",
+                        System.Windows.Forms.MessageBoxButtons.OK,
+                        System.Windows.Forms.MessageBoxIcon.Error);
+                }
+                catch
+                {
+                    // If MessageBox fails, just continue
+                }
+                
+                // Rethrow to let calling code handle the error
+                throw;
+            }
         }
         
         public static void InitializeDatabaseSchema(SqliteConnection connection)
