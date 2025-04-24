@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using FASCloset.Models;
 using FASCloset.Services;
 using System.ComponentModel;
+using System.Drawing.Drawing2D;
 
 namespace FASCloset.Forms
 {
@@ -355,6 +356,13 @@ namespace FASCloset.Forms
             this.Controls.Add(dgvCustomers);
             this.Controls.Add(lblPurchaseHistory);
             this.Controls.Add(dataGridViewPurchaseHistory);
+
+            btnAdd.Region = new Region(GetRoundRectangle(btnAdd.ClientRectangle, 30)); // Bo góc
+            btnEdit.Region = new Region(GetRoundRectangle(btnEdit.ClientRectangle, 30)); // Bo góc
+            btnDelete.Region = new Region(GetRoundRectangle(btnDelete.ClientRectangle, 30)); // Bo góc
+            btnSave.Region = new Region(GetRoundRectangle(btnSave.ClientRectangle, 30)); // Bo góc
+            btnCancel.Region = new Region(GetRoundRectangle(btnCancel.ClientRectangle, 30)); // Bo gó
+            btnRefresh.Region = new Region(GetRoundRectangle(btnRefresh.ClientRectangle, 30)); // Bo gó
         }
 
         private void UC_CustomerManagement_Load(object sender, EventArgs e)
@@ -886,6 +894,17 @@ namespace FASCloset.Forms
             {
                 MessageBox.Show($"Lỗi khi tải danh sách khách hàng: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private static GraphicsPath GetRoundRectangle(Rectangle rect, int radius)
+        {
+            GraphicsPath path = new GraphicsPath();
+            path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+            path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+            path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+            path.CloseAllFigures();
+            return path;
         }
     }
 }

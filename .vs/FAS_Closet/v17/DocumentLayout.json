@@ -3,12 +3,24 @@
   "WorkspaceRootPath": "C:\\LTWD\\FAS_Closet\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\ltwd\\fas_closet\\fas_closet\\forms\\uc_ordermanagement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\forms\\uc_ordermanagement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\ltwd\\fas_closet\\fas_closet\\forms\\uc_customermanagement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\forms\\uc_customermanagement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\ltwd\\fas_closet\\fas_closet\\forms\\uc_customermanagement.resx||{81828910-B8B3-4D2B-99A3-067027C180C1}",
+      "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\forms\\uc_customermanagement.resx||{81828910-B8B3-4D2B-99A3-067027C180C1}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\ltwd\\fas_closet\\fas_closet\\forms\\uc_ordermanagement.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\forms\\uc_ordermanagement.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\ltwd\\fas_closet\\fas_closet\\forms\\uc_ordermanagement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\forms\\uc_ordermanagement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\ltwd\\fas_closet\\fas_closet\\forms\\uc_inventorymanagement.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\forms\\uc_inventorymanagement.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\ltwd\\fas_closet\\fas_closet\\forms\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -17,10 +29,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\ltwd\\fas_closet\\fas_closet\\forms\\uc_inventorymanagement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\forms\\uc_inventorymanagement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|c:\\ltwd\\fas_closet\\fas_closet\\forms\\uc_inventorymanagement.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{242A6B3E-6B98-4C4F-8169-28E54120E6EF}|FAS_Closet\\FAS_Closet.csproj|solutionrelative:fas_closet\\forms\\uc_inventorymanagement.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,30 +38,55 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "UC_CustomerManagement.cs",
+              "DocumentMoniker": "C:\\LTWD\\FAS_Closet\\FAS_Closet\\Forms\\UC_CustomerManagement.cs",
+              "RelativeDocumentMoniker": "FAS_Closet\\Forms\\UC_CustomerManagement.cs",
+              "ToolTip": "C:\\LTWD\\FAS_Closet\\FAS_Closet\\Forms\\UC_CustomerManagement.cs",
+              "RelativeToolTip": "FAS_Closet\\Forms\\UC_CustomerManagement.cs",
+              "ViewState": "AgIAAGUAAAAAAAAAAAAYwFIAAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-24T01:47:31.035Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "UC_CustomerManagement.resx",
+              "DocumentMoniker": "C:\\LTWD\\FAS_Closet\\FAS_Closet\\Forms\\UC_CustomerManagement.resx",
+              "RelativeDocumentMoniker": "FAS_Closet\\Forms\\UC_CustomerManagement.resx",
+              "ToolTip": "C:\\LTWD\\FAS_Closet\\FAS_Closet\\Forms\\UC_CustomerManagement.resx",
+              "RelativeToolTip": "FAS_Closet\\Forms\\UC_CustomerManagement.resx",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001005|",
+              "WhenOpened": "2025-04-24T01:47:21.285Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "UC_OrderManagement.Designer.cs",
               "DocumentMoniker": "C:\\LTWD\\FAS_Closet\\FAS_Closet\\Forms\\UC_OrderManagement.Designer.cs",
               "RelativeDocumentMoniker": "FAS_Closet\\Forms\\UC_OrderManagement.Designer.cs",
               "ToolTip": "C:\\LTWD\\FAS_Closet\\FAS_Closet\\Forms\\UC_OrderManagement.Designer.cs",
               "RelativeToolTip": "FAS_Closet\\Forms\\UC_OrderManagement.Designer.cs",
-              "ViewState": "AgIAAGoAAAAAAAAAAAAAwG4AAAAaAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAG4AAAAaAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-24T01:35:12.803Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "UC_OrderManagement.cs",
               "DocumentMoniker": "C:\\LTWD\\FAS_Closet\\FAS_Closet\\Forms\\UC_OrderManagement.cs",
               "RelativeDocumentMoniker": "FAS_Closet\\Forms\\UC_OrderManagement.cs",
               "ToolTip": "C:\\LTWD\\FAS_Closet\\FAS_Closet\\Forms\\UC_OrderManagement.cs",
               "RelativeToolTip": "FAS_Closet\\Forms\\UC_OrderManagement.cs",
-              "ViewState": "AgIAAHsCAAAAAAAAAAAQwI8CAABZAAAAAAAAAA==",
+              "ViewState": "AgIAACsAAAAAAAAAAAAgwDgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-24T01:22:23.605Z",
               "EditorCaption": ""
@@ -73,7 +106,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 5,
               "Title": "MainForm.cs",
               "DocumentMoniker": "C:\\LTWD\\FAS_Closet\\FAS_Closet\\Forms\\MainForm.cs",
               "RelativeDocumentMoniker": "FAS_Closet\\Forms\\MainForm.cs",
@@ -86,7 +119,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
               "Title": "UC_InventoryManagement.cs",
               "DocumentMoniker": "C:\\LTWD\\FAS_Closet\\FAS_Closet\\Forms\\UC_InventoryManagement.cs",
               "RelativeDocumentMoniker": "FAS_Closet\\Forms\\UC_InventoryManagement.cs",
