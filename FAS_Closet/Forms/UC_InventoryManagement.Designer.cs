@@ -106,6 +106,61 @@ namespace FASCloset.Forms
             this.panel1.Size = new Size(325, 119);
             this.panel1.TabIndex = 1;
 
+            btnAdd = new Button
+             {
+                 FlatStyle = FlatStyle.Flat,
+                 BackColor = Color.FromArgb(0, 123, 255),
+                 ForeColor = Color.White,
+                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                 FlatAppearance = { BorderSize = 0 },
+                 Cursor = Cursors.Hand,
+                 Text = "Thêm",
+                 Location = new Point(530, 110),
+                 Size = new Size(80, 30)
+             };
+             btnAdd.Click += BtnAddCategory_Click;
+ 
+             btnEdit = new Button
+             {
+                 FlatStyle = FlatStyle.Flat,
+                 BackColor = Color.FromArgb(40, 167, 69),
+                 ForeColor = Color.White,
+                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                 FlatAppearance = { BorderSize = 0 },
+                 Cursor = Cursors.Hand,
+                 Text = "Sửa",
+                 Location = new Point(620, 110),
+                 Size = new Size(80, 30)
+             };
+             btnEdit.Click += BtnUpdateCategory_Click;
+ 
+             btnDelete = new Button
+             {
+                 FlatStyle = FlatStyle.Flat,
+                 BackColor = Color.FromArgb(220, 53, 69),
+                 ForeColor = Color.White,
+                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                 FlatAppearance = { BorderSize = 0 },
+                 Cursor = Cursors.Hand,
+                 Text = "Xóa",
+                 Location = new Point(710, 110),
+                 Size = new Size(80, 30)
+             };
+             btnDelete.Click += BtnDeleteCategory_Click;
+ 
+             btnRefresh = new Button
+             {
+                 FlatStyle = FlatStyle.Flat,
+                 BackColor = Color.FromArgb(108, 117, 125),
+                 ForeColor = Color.White,
+                 Font = new Font("Segoe UI", 10F),
+                 FlatAppearance = { BorderSize = 0 },
+                 Cursor = Cursors.Hand,
+                 Text = "Làm mới",
+                 Location = new Point(800, 110),
+                 Size = new Size(80, 30)
+             };
+
             // Configure the products ComboBox
             this.cmbProducts.Location = new Point(106, 12);
             this.cmbProducts.Name = "cmbProducts";
@@ -144,6 +199,10 @@ namespace FASCloset.Forms
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.btnViewProductsByCategory);
+            this.Controls.Add(this.btnAdd);
+            this.Controls.Add(this.btnEdit);
+            this.Controls.Add(this.btnDelete);
+            this.Controls.Add(this.btnRefresh);
 
             this.AutoScaleDimensions = new SizeF(7F, 15F);
             this.AutoScaleMode = AutoScaleMode.Font;
@@ -159,7 +218,10 @@ namespace FASCloset.Forms
         public Button btnQuickUpdateStock; // NEW: Quick update button field
         public Button btnTransferStock;
         public Button btnViewProductsByCategory;
-
+        private Button btnAdd;
+        private Button btnEdit;
+        private Button btnDelete;
+        private Button btnRefresh;
         private DataGridView dataGridViewCategories;
         private TextBox txtCategoryName;
         private TextBox txtCategoryDescription;
