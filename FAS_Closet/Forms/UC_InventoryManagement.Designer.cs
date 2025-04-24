@@ -183,13 +183,33 @@ namespace FASCloset.Forms
             this.btnUpdateStock.UseVisualStyleBackColor = true;
             this.btnUpdateStock.Click += new EventHandler(this.btnUpdateStock_Click);
 
-            this.btnViewProductsByCategory.Location = new Point(350, 300);
+            this.btnViewProductsByCategory.Location = new Point(530, 150);
             this.btnViewProductsByCategory.Name = "btnViewProductsByCategory";
-            this.btnViewProductsByCategory.Size = new Size(130, 30);
+            this.btnViewProductsByCategory.Size = new Size(150, 40); // Tăng kích thước nút
             this.btnViewProductsByCategory.TabIndex = 7;
             this.btnViewProductsByCategory.Text = "View Products";
-            this.btnViewProductsByCategory.UseVisualStyleBackColor = true;
+            this.btnViewProductsByCategory.UseVisualStyleBackColor = false; // Không sử dụng mặc định
+            this.btnViewProductsByCategory.BackColor = Color.FromArgb(255, 193, 7); // Màu nền vàng
+            this.btnViewProductsByCategory.ForeColor = Color.White; // Màu chữ trắng
+            this.btnViewProductsByCategory.FlatStyle = FlatStyle.Flat; // Đặt kiểu viền phẳng
+            this.btnViewProductsByCategory.FlatAppearance.BorderSize = 0; // Không có viền
+            this.btnViewProductsByCategory.Font = new Font("Segoe UI", 12, FontStyle.Bold); // Font chữ đẹp
+            this.btnViewProductsByCategory.Cursor = Cursors.Hand; // Đổi con trỏ khi hover
+
+            // Sự kiện hover để thay đổi màu khi di chuột vào
+            this.btnViewProductsByCategory.MouseEnter += (sender, e) =>
+            {
+                this.btnViewProductsByCategory.BackColor = Color.FromArgb(255, 162, 0); // Màu vàng đậm khi hover
+            };
+
+            this.btnViewProductsByCategory.MouseLeave += (sender, e) =>
+            {
+                this.btnViewProductsByCategory.BackColor = Color.FromArgb(255, 193, 7); // Màu vàng ban đầu
+            };
+
             this.btnViewProductsByCategory.Click += new EventHandler(this.btnViewProductsByCategory_Click);
+
+
 
             this.Controls.Add(lblCategory);
             this.Controls.Add(this.dataGridViewCategories);
