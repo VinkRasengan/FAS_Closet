@@ -17,29 +17,84 @@ namespace FASCloset.Forms
             LoadCustomers();
             LoadOrders();
 
-            Button btnDeleteProduct = new Button();
-            btnDeleteProduct.Text = "Delete Product";
-            btnDeleteProduct.Location = new Point(530, 160); // bên phải bảng
+            Button btnDeleteProduct = new Button
+            {
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(220, 53, 69), // Màu nền đỏ
+                ForeColor = Color.White, // Màu chữ trắng
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                FlatAppearance = { BorderSize = 0 },
+                Cursor = Cursors.Hand,
+                Text = "Delete Product",
+                Location = new Point(530, 160),
+                Size = new Size(130, 30)
+            };
+            btnDeleteProduct.Region = new Region(GetRoundRectangle(btnDeleteProduct.ClientRectangle, 30)); // Bo góc
+            btnDeleteProduct.MouseEnter += (sender, e) =>
+            {
+                btnDeleteProduct.BackColor = Color.FromArgb(204, 40, 48); // Màu đỏ đậm khi hover
+            };
+            btnDeleteProduct.MouseLeave += (sender, e) =>
+            {
+                btnDeleteProduct.BackColor = Color.FromArgb(220, 53, 69); // Màu đỏ ban đầu
+            };
             btnDeleteProduct.Click += btnDeleteProduct_Click;
             this.Controls.Add(btnDeleteProduct);
 
-            Button btnDeleteDraftOrder = new Button();
-            btnDeleteDraftOrder.Text = "Delete Draft Order";
-            btnDeleteDraftOrder.Location = new Point(530, 370);  // bên phải bảng
+
+            Button btnDeleteDraftOrder = new Button
+            {
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(255, 87, 34), // Màu nền cam
+                ForeColor = Color.White, // Màu chữ trắng
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                FlatAppearance = { BorderSize = 0 },
+                Cursor = Cursors.Hand,
+                Text = "Delete Draft Order",
+                Location = new Point(530, 370),
+                Size = new Size(150, 30)
+            };
+            btnDeleteDraftOrder.Region = new Region(GetRoundRectangle(btnDeleteDraftOrder.ClientRectangle, 30)); // Bo góc
+            btnDeleteDraftOrder.MouseEnter += (sender, e) =>
+            {
+                btnDeleteDraftOrder.BackColor = Color.FromArgb(255, 81, 23); // Màu cam đậm khi hover
+            };
+            btnDeleteDraftOrder.MouseLeave += (sender, e) =>
+            {
+                btnDeleteDraftOrder.BackColor = Color.FromArgb(255, 87, 34); // Màu cam ban đầu
+            };
             btnDeleteDraftOrder.Click += btnDeleteDraftOrder_Click;
             this.Controls.Add(btnDeleteDraftOrder);
 
             productList.CellClick += productList_CellClick;  // Attach here
 
-            Button btnCancelOrder = new Button();
-            btnCancelOrder.Text = "Cancel Order";
-            btnCancelOrder.Location = new Point(530, 500); // Adjust the location as needed
+            Button btnCancelOrder = new Button
+            {
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(220, 53, 69), // Màu nền đỏ
+                ForeColor = Color.White, // Màu chữ trắng
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                FlatAppearance = { BorderSize = 0 },
+                Cursor = Cursors.Hand,
+                Text = "Cancel Order",
+                Location = new Point(530, 500),
+                Size = new Size(130, 30)
+            };
+            btnCancelOrder.Region = new Region(GetRoundRectangle(btnCancelOrder.ClientRectangle, 30)); // Bo góc
+            btnCancelOrder.MouseEnter += (sender, e) =>
+            {
+                btnCancelOrder.BackColor = Color.FromArgb(255, 162, 0); // Màu vàng đậm khi hover
+            };
+            btnCancelOrder.MouseLeave += (sender, e) =>
+            {
+                btnCancelOrder.BackColor = Color.FromArgb(255, 193, 7); // Màu vàng ban đầu
+            };
             btnCancelOrder.Click += btnCancelOrder_Click;
             this.Controls.Add(btnCancelOrder);
 
             Button btnViewOrderDetails = new Button();
             btnViewOrderDetails.Text = "View Order Details";
-            btnViewOrderDetails.Location = new Point(530, 530); // Điều chỉnh vị trí nút
+            btnViewOrderDetails.Location = new Point(530, 550); // Điều chỉnh vị trí nút
             btnViewOrderDetails.Size = new Size(130, 30);
             btnViewOrderDetails.FlatStyle = FlatStyle.Flat; // Đặt kiểu viền phẳng
             btnViewOrderDetails.FlatAppearance.BorderSize = 0; // Không có viền
@@ -49,7 +104,7 @@ namespace FASCloset.Forms
             btnViewOrderDetails.Cursor = Cursors.Hand; // Đổi con trỏ khi hover
 
             // Bo góc cho nút
-            btnViewOrderDetails.Region = new Region(GetRoundRectangle(btnViewOrderDetails.ClientRectangle, 15)); // Bo góc với bán kính 15
+            btnViewOrderDetails.Region = new Region(GetRoundRectangle(btnViewOrderDetails.ClientRectangle, 30)); // Bo góc với bán kính 15
 
             // Sự kiện hover để thay đổi màu khi di chuột vào
             btnViewOrderDetails.MouseEnter += (sender, e) =>
