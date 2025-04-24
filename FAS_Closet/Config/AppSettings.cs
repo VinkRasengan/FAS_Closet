@@ -1,22 +1,23 @@
 using System;
 using System.Configuration;
 using System.IO;
+using System.Reflection;
 
 namespace FASCloset.Config
 {
     public static class AppSettings
     {
-        // Get the project directory path (not the bin directory)
+        // Đường dẫn cơ sở tới project source code (không phải thư mục bin)
         private static readonly string _projectDirectory = GetProjectDirectory();
         
-        // Use the project directory to locate the database file
-        private static readonly string _defaultDatabasePath = Path.Combine(
-            _projectDirectory, 
-            "Data", 
-            "FASClosetDB.sqlite");
+        // Đường dẫn tới thư mục Data trong project source code
+        private static readonly string _sourceDataDirectory = Path.Combine(_projectDirectory, "Data");
+        
+        // Đường dẫn mặc định tới file database trong thư mục Data của project source code
+        private static readonly string _defaultDatabasePath = Path.Combine(_sourceDataDirectory, "FASClosetDB.sqlite");
 
         /// <summary>
-        /// Gets the database path from configuration or returns the default path
+        /// Đường dẫn tới file database - ưu tiên sử dụng thư mục Data trong project source code
         /// </summary>
         public static string DatabasePath
         {
@@ -24,66 +25,117 @@ namespace FASCloset.Config
             {
                 try
                 {
-                    string? path = ConfigurationManager.AppSettings["DatabasePath"];
+                    // Kiểm tra cấu hình trong App.config
+                    string? configPath = ConfigurationManager.AppSettings["DatabasePath"];
                     
-                    // Replace environment variables in the path
-                    if (!string.IsNullOrEmpty(path))
+                    // Nếu đường dẫn được chỉ định trong cấu hình
+                    if (!string.IsNullOrEmpty(configPath))
                     {
-                        path = Environment.ExpandEnvironmentVariables(path);
+                        // Thay thế biến môi trường trong đường dẫn
+                        configPath = Environment.ExpandEnvironmentVariables(configPath);
+                        
+                        // Nếu là đường dẫn tương đối, chuyển thành tuyệt đối dựa trên project directory
+                        if (!Path.IsPathRooted(configPath))
+                        {
+                            configPath = Path.Combine(_projectDirectory, configPath);
+                        }
+                        
+                        // Đảm bảo thư mục chứa file tồn tại
+                        string? directory = Path.GetDirectoryName(configPath);
+                        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                        {
+                            Directory.CreateDirectory(directory);
+                        }
+                        
+                        Console.WriteLine($"Using configured database path: {configPath}");
+                        return configPath;
                     }
                     
-                    return string.IsNullOrEmpty(path) ? _defaultDatabasePath : path;
+                    // Tạo thư mục Data trong project directory nếu chưa tồn tại
+                    if (!Directory.Exists(_sourceDataDirectory))
+                    {
+                        try
+                        {
+                            Directory.CreateDirectory(_sourceDataDirectory);
+                            Console.WriteLine($"Created source data directory: {_sourceDataDirectory}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error creating source data directory: {ex.Message}");
+                        }
+                    }
+                    
+                    // Sử dụng đường dẫn mặc định trong project source code
+                    Console.WriteLine($"Using default database path in source code directory: {_defaultDatabasePath}");
+                    
+                    // Hiển thị thông tin đầy đủ về đường dẫn file
+                    if (File.Exists(_defaultDatabasePath))
+                    {
+                        var fileInfo = new FileInfo(_defaultDatabasePath);
+                        Console.WriteLine($"Database file exists: {fileInfo.Length} bytes, last modified: {fileInfo.LastWriteTime}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Database file does not exist and will be created");
+                    }
+                    
+                    return _defaultDatabasePath;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error reading DatabasePath from configuration: {ex.Message}");
+                    Console.WriteLine($"Error determining DatabasePath: {ex.Message}");
                     return _defaultDatabasePath;
                 }
             }
         }
 
-        // Get the project directory (not the bin directory)
+        /// <summary>
+        /// Lấy đường dẫn tới thư mục project source code (không phải bin directory)
+        /// </summary>
         private static string GetProjectDirectory()
         {
             try
             {
-                // Start with the directory where the application is running
+                // Bắt đầu từ vị trí file thực thi (.exe)
                 string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                Console.WriteLine($"Base directory: {baseDirectory}");
                 
-                // Navigate up from bin\Debug or bin\Release to get to the project directory
+                // Đi lên để tìm thư mục project
                 DirectoryInfo? directory = new DirectoryInfo(baseDirectory);
                 
-                // Go up until we find the project directory that contains "Data" folder
-                while (directory != null && !Directory.Exists(Path.Combine(directory.FullName, "Data")))
+                // Tìm thư mục gốc của project (thư mục chứa file .csproj)
+                while (directory != null && 
+                       !File.Exists(Path.Combine(directory.FullName, "FAS_Closet.csproj")) && 
+                       !Directory.Exists(Path.Combine(directory.FullName, "Data")))
                 {
                     directory = directory.Parent;
                 }
                 
-                // If we found the directory with Data folder, use that
-                if (directory != null && Directory.Exists(Path.Combine(directory.FullName, "Data")))
+                // Nếu tìm thấy thư mục project
+                if (directory != null && 
+                    (File.Exists(Path.Combine(directory.FullName, "FAS_Closet.csproj")) || 
+                     Directory.Exists(Path.Combine(directory.FullName, "Data"))))
                 {
                     Console.WriteLine($"Found project directory: {directory.FullName}");
                     return directory.FullName;
                 }
                 
-                // If we didn't find it, go back to a fixed location
-                // Uses d:\Project\FAS_Closet as the base directory
-                string fixedProjectPath = @"d:\Project\FAS_Closet\FAS_Closet";
-                if (Directory.Exists(fixedProjectPath))
+                // Nếu không tìm thấy, giải quyết bằng cách sử dụng đường dẫn cứng cho môi trường phát triển
+                string hardcodedPath = @"d:\Project\FAS_Closet\FAS_Closet";
+                if (Directory.Exists(hardcodedPath))
                 {
-                    Console.WriteLine($"Using fixed project directory: {fixedProjectPath}");
-                    return fixedProjectPath;
+                    Console.WriteLine($"Using hardcoded development path: {hardcodedPath}");
+                    return hardcodedPath;
                 }
                 
-                // Final fallback to the running directory
-                Console.WriteLine($"Falling back to base directory: {baseDirectory}");
+                // Cuối cùng, sử dụng chính thư mục chứa file thực thi
+                Console.WriteLine($"Using application base directory: {baseDirectory}");
                 return baseDirectory;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error determining project directory: {ex.Message}");
-                // Final fallback to d:\Project\FAS_Closet if available
-                return @"d:\Project\FAS_Closet\FAS_Closet";
+                Console.WriteLine($"Error in GetProjectDirectory: {ex.Message}");
+                return AppDomain.CurrentDomain.BaseDirectory;
             }
         }
 

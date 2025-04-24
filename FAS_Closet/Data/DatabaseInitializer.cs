@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Microsoft.Data.Sqlite;
 using System.Diagnostics;
+using FASCloset.Config;
 
 namespace FASCloset.Data
 {
@@ -13,43 +14,52 @@ namespace FASCloset.Data
             {
                 Console.WriteLine($"Initializing database at: {dbPath}");
                 
-                // Check if the directory exists, if not create it
+                // Kiểm tra và tạo thư mục chứa database nếu chưa tồn tại
                 string directory = Path.GetDirectoryName(dbPath);
                 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
-                    Directory.CreateDirectory(directory);
-                    Console.WriteLine($"Created directory: {directory}");
+                    try
+                    {
+                        Directory.CreateDirectory(directory);
+                        Console.WriteLine($"Created directory: {directory}");
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Không thể tạo thư mục database: {ex.Message}", ex);
+                    }
                 }
                 
                 bool newDatabase = !File.Exists(dbPath);
+                Console.WriteLine($"Database file exists: {!newDatabase}");
                 
-                // Create database file if it doesn't exist
-                if (newDatabase)
+                // Tạo kết nối đến database
+                string connectionString = $"Data Source={dbPath}";
+                using (var connection = new SqliteConnection(connectionString))
                 {
-                    using (FileStream fs = File.Create(dbPath))
+                    try
                     {
-                        fs.Close(); // Ensure file handle is released
+                        connection.Open();
+                        Console.WriteLine("Successfully opened database connection");
                     }
-                    Console.WriteLine("Created new database file");
-                }
-                
-                // Create a connection and initialize the schema
-                using (var connection = new SqliteConnection($"Data Source={dbPath}"))
-                {
-                    connection.Open();
-                    Console.WriteLine("Successfully opened database connection");
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Không thể mở kết nối tới database: {ex.Message}", ex);
+                    }
                     
-                    // Create tables and schema
+                    // Luôn khởi tạo schema để đảm bảo đầy đủ bảng và cột mới nhất
                     InitializeDatabaseSchema(connection);
                     Console.WriteLine("Initialized database schema");
                     
-                    // Create demo data if it's a new database
+                    // Tạo dữ liệu demo nếu là database mới
                     if (newDatabase)
                     {
                         CreateDemoData(connection);
                         Console.WriteLine("Created demo data");
                     }
                 }
+                
+                // Xác minh database sau khi tạo
+                VerifyDatabase(dbPath);
                 
                 Console.WriteLine("Database initialization completed successfully");
             }
@@ -58,22 +68,57 @@ namespace FASCloset.Data
                 Console.WriteLine($"Error initializing database: {ex.Message}");
                 Debug.WriteLine($"Database initialization error: {ex}");
                 
-                // Try to show the error to the user if possible
+                // Hiển thị thông báo lỗi
                 try
                 {
                     System.Windows.Forms.MessageBox.Show(
-                        $"Lỗi khởi tạo cơ sở dữ liệu: {ex.Message}\n\nĐường dẫn database: {dbPath}",
+                        $"Lỗi khởi tạo cơ sở dữ liệu: {ex.Message}\n\nĐường dẫn database: {dbPath}\n\nVui lòng kiểm tra lại đường dẫn và quyền truy cập.",
                         "Lỗi Khởi Tạo CSDL",
                         System.Windows.Forms.MessageBoxButtons.OK,
                         System.Windows.Forms.MessageBoxIcon.Error);
                 }
                 catch
                 {
-                    // If MessageBox fails, just continue
+                    // Nếu không hiển thị được MessageBox, bỏ qua
                 }
                 
-                // Rethrow to let calling code handle the error
+                // Ném lại ngoại lệ để mã gọi có thể xử lý
                 throw;
+            }
+        }
+        
+        /// <summary>
+        /// Xác minh database đã được khởi tạo đúng với tất cả các bảng cần thiết
+        /// </summary>
+        private static void VerifyDatabase(string dbPath)
+        {
+            if (!File.Exists(dbPath))
+            {
+                throw new FileNotFoundException($"Database file không tồn tại sau khi khởi tạo: {dbPath}");
+            }
+            
+            using (var connection = new SqliteConnection($"Data Source={dbPath}"))
+            {
+                connection.Open();
+                
+                // Kiểm tra xem các bảng chính có tồn tại không
+                string[] requiredTables = {
+                    "User", "Category", "Customer", "Manufacturer", 
+                    "Product", "Orders", "OrderDetails"
+                };
+                
+                foreach (var table in requiredTables)
+                {
+                    string query = $"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}'";
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        var result = command.ExecuteScalar();
+                        if (result == null)
+                        {
+                            throw new Exception($"Bảng '{table}' không tồn tại trong database sau khi khởi tạo");
+                        }
+                    }
+                }
             }
         }
         
@@ -159,17 +204,35 @@ namespace FASCloset.Data
             
             foreach (var command in createTableCommands)
             {
-                using (var cmd = new SqliteCommand(command, connection))
+                try
                 {
-                    cmd.ExecuteNonQuery();
+                    using (var cmd = new SqliteCommand(command, connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Lỗi khi tạo schema: {ex.Message}\nLệnh SQL: {command}", ex);
                 }
             }
             
-            // Check for existing Product table that needs to be updated with IsActive and MinimumStockThreshold columns
+            // Kiểm tra cập nhật schema cho bảng Product
+            Console.WriteLine("Checking for schema updates...");
+            UpdateProductTableSchema(connection);
+        }
+        
+        /// <summary>
+        /// Cập nhật schema cho bảng Product nếu cần
+        /// </summary>
+        private static void UpdateProductTableSchema(SqliteConnection connection)
+        {
+            // Kiểm tra các cột cần thiết trong bảng Product
             using (var cmd = new SqliteCommand("PRAGMA table_info(Product);", connection))
             {
                 bool hasIsActiveColumn = false;
                 bool hasMinimumStockThresholdColumn = false;
+                bool hasStockColumn = false;
                 
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -184,15 +247,21 @@ namespace FASCloset.Data
                         {
                             hasMinimumStockThresholdColumn = true;
                         }
+                        else if (columnName.Equals("Stock", StringComparison.OrdinalIgnoreCase))
+                        {
+                            hasStockColumn = true;
+                        }
                     }
                 }
                 
-                // If IsActive column doesn't exist, add it
+                // Thêm cột IsActive nếu chưa có
                 if (!hasIsActiveColumn)
                 {
                     try
                     {
-                        using (var alterCmd = new SqliteCommand("ALTER TABLE Product ADD COLUMN IsActive BOOLEAN NOT NULL DEFAULT 1;", connection))
+                        using (var alterCmd = new SqliteCommand(
+                            "ALTER TABLE Product ADD COLUMN IsActive BOOLEAN NOT NULL DEFAULT 1;", 
+                            connection))
                         {
                             alterCmd.ExecuteNonQuery();
                             Console.WriteLine("Added IsActive column to existing Product table.");
@@ -204,12 +273,14 @@ namespace FASCloset.Data
                     }
                 }
                 
-                // If MinimumStockThreshold column doesn't exist, add it
+                // Thêm cột MinimumStockThreshold nếu chưa có
                 if (!hasMinimumStockThresholdColumn)
                 {
                     try
                     {
-                        using (var alterCmd = new SqliteCommand("ALTER TABLE Product ADD COLUMN MinimumStockThreshold INTEGER NOT NULL DEFAULT 5;", connection))
+                        using (var alterCmd = new SqliteCommand(
+                            "ALTER TABLE Product ADD COLUMN MinimumStockThreshold INTEGER NOT NULL DEFAULT 5;", 
+                            connection))
                         {
                             alterCmd.ExecuteNonQuery();
                             Console.WriteLine("Added MinimumStockThreshold column to existing Product table.");
@@ -218,6 +289,25 @@ namespace FASCloset.Data
                     catch (Exception ex)
                     {
                         Console.WriteLine($"Error adding MinimumStockThreshold column: {ex.Message}");
+                    }
+                }
+                
+                // Thêm cột Stock nếu chưa có
+                if (!hasStockColumn)
+                {
+                    try
+                    {
+                        using (var alterCmd = new SqliteCommand(
+                            "ALTER TABLE Product ADD COLUMN Stock INTEGER NOT NULL DEFAULT 0;", 
+                            connection))
+                        {
+                            alterCmd.ExecuteNonQuery();
+                            Console.WriteLine("Added Stock column to existing Product table.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error adding Stock column: {ex.Message}");
                     }
                 }
             }
