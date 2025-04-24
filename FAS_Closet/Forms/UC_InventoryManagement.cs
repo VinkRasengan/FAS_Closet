@@ -330,5 +330,20 @@ namespace FASCloset.Forms
         }
 
         public void btnUpdateStock_Click(object? sender, EventArgs e) => UpdateProductStock();
+        private void ResetForm()
+        {
+            // Chỉ xóa giá trị của txtCategoryName và txtCategoryDescription
+            txtCategoryName.Clear();
+            txtCategoryDescription.Clear();
+        }
+        private void btnRefresh_Click(object sender, EventArgs e)
+        {
+            // Reset các trường nhập liệu
+            ResetForm();
+            
+            // Load lại dữ liệu sau khi reset nếu cần
+            LoadCategories();
+            _ = LoadProducts(); // Load products asynchronously
+        }
     }
 }

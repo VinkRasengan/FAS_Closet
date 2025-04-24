@@ -160,6 +160,7 @@ namespace FASCloset.Forms
                  Location = new Point(800, 110),
                  Size = new Size(80, 30)
              };
+            btnRefresh.Click += btnRefresh_Click;
 
             // Configure the products ComboBox
             this.cmbProducts.Location = new Point(106, 12);
