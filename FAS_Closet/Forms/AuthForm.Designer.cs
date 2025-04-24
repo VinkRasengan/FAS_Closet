@@ -143,8 +143,35 @@ namespace FASCloset.Forms
             // 
             // pictureBox1
             //
-            string imagePath = Path.Combine(Application.StartupPath, @"..\..\..\..\Assets\Images\loginbg.jpg");
-            pictureBox1.Image = Image.FromFile(imagePath);
+            try
+            {
+                // Try loading image from assets folder relative to executable first
+                string exeImagePath = Path.Combine(Application.StartupPath, "Assets", "Images", "loginbg.jpg");
+                if (File.Exists(exeImagePath))
+                {
+                    pictureBox1.Image = Image.FromFile(exeImagePath);
+                }
+                else
+                {
+                    // Fallback to development path
+                    string devImagePath = Path.Combine(Application.StartupPath, @"..\..\..\..\Assets\Images\loginbg.jpg");
+                    if (File.Exists(devImagePath))
+                    {
+                        pictureBox1.Image = Image.FromFile(devImagePath);
+                    }
+                    else
+                    {
+                        // If both paths fail, set a placeholder color
+                        pictureBox1.BackColor = Color.LightBlue;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Handle loading errors gracefully
+                pictureBox1.BackColor = Color.LightBlue;
+            }
+            
             pictureBox1.Dock = DockStyle.Left;
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(399, 472);
@@ -295,9 +322,36 @@ namespace FASCloset.Forms
             pnlRegisterForm.AutoScroll = true;
             // 
             // pictureBox3
-            // 
-            string imagePathSignup = Path.Combine(Application.StartupPath, @"..\..\..\..\Assets\Images\signupbg.jpg");
-            pictureBox3.Image = Image.FromFile(imagePathSignup);
+            //
+            try
+            {
+                // Try loading image from assets folder relative to executable first
+                string exeImagePath = Path.Combine(Application.StartupPath, "Assets", "Images", "signupbg.jpg");
+                if (File.Exists(exeImagePath))
+                {
+                    pictureBox3.Image = Image.FromFile(exeImagePath);
+                }
+                else
+                {
+                    // Fallback to development path
+                    string devImagePath = Path.Combine(Application.StartupPath, @"..\..\..\..\Assets\Images\signupbg.jpg");
+                    if (File.Exists(devImagePath))
+                    {
+                        pictureBox3.Image = Image.FromFile(devImagePath);
+                    }
+                    else
+                    {
+                        // If both paths fail, set a placeholder color
+                        pictureBox3.BackColor = Color.LightBlue;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Handle loading errors gracefully
+                pictureBox3.BackColor = Color.LightBlue;
+            }
+            
             pictureBox3.Dock = DockStyle.Left;
             pictureBox3.Name = "pictureBox3";
             pictureBox3.Size = new Size(399, 472);
