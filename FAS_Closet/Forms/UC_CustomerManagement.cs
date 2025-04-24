@@ -219,7 +219,7 @@ namespace FASCloset.Forms
             btnDelete.Cursor = Cursors.Hand;
             btnDelete.Text = "Xóa";
             btnDelete.Location = new Point(280, 265);
-            btnDelete.Size = new Size(120, 30);
+            btnDelete.Size = new Size(80, 30);
             btnDelete.Click += btnDeleteCustomer_Click;
 
             btnRefresh.FlatStyle = FlatStyle.Flat;
@@ -229,7 +229,7 @@ namespace FASCloset.Forms
             btnRefresh.FlatAppearance.BorderSize = 0;
             btnRefresh.Cursor = Cursors.Hand;
             btnRefresh.Text = "Làm mới";
-            btnRefresh.Location = new Point(410, 265);
+            btnRefresh.Location = new Point(370, 265);
             btnRefresh.Size = new Size(120, 30);
             btnRefresh.Click += BtnRefresh_Click;
             
@@ -316,7 +316,7 @@ namespace FASCloset.Forms
             // Create label for purchase history
             Label lblPurchaseHistory = new Label();
             lblPurchaseHistory.Text = "LỊCH SỬ MUA HÀNG";
-            lblPurchaseHistory.Location = new Point(440, 265);
+            lblPurchaseHistory.Location = new Point(600, 265);
             lblPurchaseHistory.Size = new Size(200, 30);
             lblPurchaseHistory.Font = new Font("Segoe UI Semibold", 10F);
             lblPurchaseHistory.ForeColor = Color.FromArgb(93, 64, 150);
