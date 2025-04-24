@@ -651,9 +651,9 @@ namespace FASCloset.Forms
                 
                 // Set the data source after column configuration
                 dgvOrders.DataSource = orders;
-                
+
                 // Apply complete visibility optimization
-                Color orderHeaderColor = Color.FromArgb(0, 123, 255); // Blue theme for orders
+                Color orderHeaderColor = Color.FromArgb(40, 167, 69); // Green theme for orders
                 FASCloset.Extensions.DataGridViewStyleHelper.ApplyCompleteVisibilityOptimization(dgvOrders, orderHeaderColor);
                 
                 // Add row numbers

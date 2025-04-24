@@ -170,13 +170,37 @@
             txtQuantity.Size = new Size(150, 23);
             this.txtQuantity = txtQuantity;
 
-            // Add Product Button
-            Button btnAddProduct = new Button();
-            btnAddProduct.Location = new Point(400, 80);
-            btnAddProduct.Name = "btnAddProduct";
-            btnAddProduct.Size = new Size(150, 30);
-            btnAddProduct.Text = "Select This Product";
+            Button btnAddProduct = new Button
+            {
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255), // Màu xanh biển
+                ForeColor = Color.White, // Màu chữ trắng
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                FlatAppearance = { BorderSize = 0 }, // Không có viền
+                Cursor = Cursors.Hand,
+                Text = "Select This Product",
+                Location = new Point(400, 80),
+                Size = new Size(150, 30) // Kích thước nút
+            };
+
+            // Bo góc với bán kính 30
+            btnAddProduct.Region = new Region(GetRoundRectangle(btnAddProduct.ClientRectangle, 30));
+
+            // Thêm hiệu ứng hover
+            btnAddProduct.MouseEnter += (sender, e) =>
+            {
+                btnAddProduct.BackColor = Color.FromArgb(28, 89, 164); // Màu xanh đậm khi hover
+            };
+            btnAddProduct.MouseLeave += (sender, e) =>
+            {
+                btnAddProduct.BackColor = Color.FromArgb(0, 123, 255); // Màu xanh biển khi không hover
+            };
+
+            // Đăng ký sự kiện click
             btnAddProduct.Click += new EventHandler(this.btnAddProduct_Click);
+
+            // Thêm nút vào form
+            this.Controls.Add(btnAddProduct);
 
             // Product Label
             Label lblProduct = new Label();
