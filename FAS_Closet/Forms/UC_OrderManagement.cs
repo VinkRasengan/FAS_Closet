@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using FASCloset.Models;
 using FASCloset.Services;
+using System.Drawing.Drawing2D;
 
 namespace FASCloset.Forms
 {
@@ -38,9 +39,42 @@ namespace FASCloset.Forms
 
             Button btnViewOrderDetails = new Button();
             btnViewOrderDetails.Text = "View Order Details";
-            btnViewOrderDetails.Location = new Point(530, 530); // Adjust the location as needed
+            btnViewOrderDetails.Location = new Point(530, 530); // Điều chỉnh vị trí nút
+            btnViewOrderDetails.Size = new Size(130, 30);
+            btnViewOrderDetails.FlatStyle = FlatStyle.Flat; // Đặt kiểu viền phẳng
+            btnViewOrderDetails.FlatAppearance.BorderSize = 0; // Không có viền
+            btnViewOrderDetails.BackColor = Color.FromArgb(255, 193, 7);
+            btnViewOrderDetails.ForeColor = Color.White; // Màu chữ trắng
+            btnViewOrderDetails.Font = new Font("Segoe UI", 12, FontStyle.Bold); // Font chữ đẹp
+            btnViewOrderDetails.Cursor = Cursors.Hand; // Đổi con trỏ khi hover
+
+            // Bo góc cho nút
+            btnViewOrderDetails.Region = new Region(GetRoundRectangle(btnViewOrderDetails.ClientRectangle, 15)); // Bo góc với bán kính 15
+
+            // Sự kiện hover để thay đổi màu khi di chuột vào
+            btnViewOrderDetails.MouseEnter += (sender, e) =>
+            {
+                btnViewOrderDetails.BackColor = Color.FromArgb(13, 110, 253); // Màu xanh đậm khi hover
+            };
+
+            btnViewOrderDetails.MouseLeave += (sender, e) =>
+            {
+                btnViewOrderDetails.BackColor = Color.FromArgb(0, 123, 255); // Màu xanh biển ban đầu
+            };
+
             btnViewOrderDetails.Click += btnViewOrderDetail_Click;
             this.Controls.Add(btnViewOrderDetails);
+        }
+
+        private static GraphicsPath GetRoundRectangle(Rectangle rect, int radius)
+        {
+            GraphicsPath path = new GraphicsPath();
+            path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+            path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+            path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+            path.CloseAllFigures();
+            return path;
         }
 
         private void btnViewOrderDetail_Click(object sender, EventArgs e)

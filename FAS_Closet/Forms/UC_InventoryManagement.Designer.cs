@@ -1,3 +1,5 @@
+using System.Drawing.Drawing2D;
+
 namespace FASCloset.Forms
 {
     partial class UcInventoryManagement
@@ -185,7 +187,7 @@ namespace FASCloset.Forms
 
             this.btnViewProductsByCategory.Location = new Point(530, 150);
             this.btnViewProductsByCategory.Name = "btnViewProductsByCategory";
-            this.btnViewProductsByCategory.Size = new Size(150, 40); // Tăng kích thước nút
+            this.btnViewProductsByCategory.Size = new Size(130,30); // Tăng kích thước nút
             this.btnViewProductsByCategory.TabIndex = 7;
             this.btnViewProductsByCategory.Text = "View Products";
             this.btnViewProductsByCategory.UseVisualStyleBackColor = false; // Không sử dụng mặc định
@@ -195,6 +197,9 @@ namespace FASCloset.Forms
             this.btnViewProductsByCategory.FlatAppearance.BorderSize = 0; // Không có viền
             this.btnViewProductsByCategory.Font = new Font("Segoe UI", 12, FontStyle.Bold); // Font chữ đẹp
             this.btnViewProductsByCategory.Cursor = Cursors.Hand; // Đổi con trỏ khi hover
+
+            this.btnViewProductsByCategory.Region = new Region(GetRoundRectangle(btnViewProductsByCategory.ClientRectangle, 20)); // Bo góc với bán kính 15
+
 
             // Sự kiện hover để thay đổi màu khi di chuột vào
             this.btnViewProductsByCategory.MouseEnter += (sender, e) =>
@@ -229,6 +234,17 @@ namespace FASCloset.Forms
             this.AutoScaleMode = AutoScaleMode.Font;
             this.Name = "UcInventoryManagement";
             this.Size = new Size(800, 750);
+        }
+
+        private static GraphicsPath GetRoundRectangle(Rectangle rect, int radius)
+        {
+            GraphicsPath path = new GraphicsPath();
+            path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+            path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+            path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+            path.CloseAllFigures();
+            return path;
         }
 
         public Label lblTitle;
