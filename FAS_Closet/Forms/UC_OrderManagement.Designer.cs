@@ -19,11 +19,6 @@
         private DataGridView dgvDraftOrders;
         private Label lblSuccessOrder;
 
-        private Button btnAdd;
-        private Button btnEdit;
-        private Button btnDelete;
-        private Button btnRefresh;
-
         /// <summary> 
         /// Clean up any resources being used.
         /// </summary>
