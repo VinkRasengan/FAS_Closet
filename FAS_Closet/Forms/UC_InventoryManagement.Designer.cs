@@ -109,59 +109,98 @@ namespace FASCloset.Forms
             this.panel1.TabIndex = 1;
 
             btnAdd = new Button
-             {
-                 FlatStyle = FlatStyle.Flat,
-                 BackColor = Color.FromArgb(0, 123, 255),
-                 ForeColor = Color.White,
-                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                 FlatAppearance = { BorderSize = 0 },
-                 Cursor = Cursors.Hand,
-                 Text = "Thêm",
-                 Location = new Point(530, 110),
-                 Size = new Size(80, 30)
-             };
-             btnAdd.Click += BtnAddCategory_Click;
- 
-             btnEdit = new Button
-             {
-                 FlatStyle = FlatStyle.Flat,
-                 BackColor = Color.FromArgb(40, 167, 69),
-                 ForeColor = Color.White,
-                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                 FlatAppearance = { BorderSize = 0 },
-                 Cursor = Cursors.Hand,
-                 Text = "Sửa",
-                 Location = new Point(620, 110),
-                 Size = new Size(80, 30)
-             };
-             btnEdit.Click += BtnUpdateCategory_Click;
- 
-             btnDelete = new Button
-             {
-                 FlatStyle = FlatStyle.Flat,
-                 BackColor = Color.FromArgb(220, 53, 69),
-                 ForeColor = Color.White,
-                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                 FlatAppearance = { BorderSize = 0 },
-                 Cursor = Cursors.Hand,
-                 Text = "Xóa",
-                 Location = new Point(710, 110),
-                 Size = new Size(80, 30)
-             };
-             btnDelete.Click += BtnDeleteCategory_Click;
- 
-             btnRefresh = new Button
-             {
-                 FlatStyle = FlatStyle.Flat,
-                 BackColor = Color.FromArgb(108, 117, 125),
-                 ForeColor = Color.White,
-                 Font = new Font("Segoe UI", 10F),
-                 FlatAppearance = { BorderSize = 0 },
-                 Cursor = Cursors.Hand,
-                 Text = "Làm mới",
-                 Location = new Point(800, 110),
-                 Size = new Size(80, 30)
-             };
+            {
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255), // Màu nền xanh dương
+                ForeColor = Color.White, // Màu chữ trắng
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                FlatAppearance = { BorderSize = 0 },
+                Cursor = Cursors.Hand,
+                Text = "Thêm",
+                Location = new Point(530, 110),
+                Size = new Size(80, 30)
+            };
+            btnAdd.Region = new Region(GetRoundRectangle(btnAdd.ClientRectangle, 25)); // Bo góc
+            btnAdd.MouseEnter += (sender, e) =>
+            {
+                btnAdd.BackColor = Color.FromArgb(0, 102, 204); // Màu xanh đậm khi hover
+            };
+            btnAdd.MouseLeave += (sender, e) =>
+            {
+                btnAdd.BackColor = Color.FromArgb(0, 123, 255); // Màu xanh dương ban đầu
+            };
+            btnAdd.Click += BtnAddCategory_Click;
+
+            // Button Edit
+            btnEdit = new Button
+            {
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(40, 167, 69), // Màu nền xanh lá
+                ForeColor = Color.White, // Màu chữ trắng
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                FlatAppearance = { BorderSize = 0 },
+                Cursor = Cursors.Hand,
+                Text = "Sửa",
+                Location = new Point(620, 110),
+                Size = new Size(80, 30)
+            };
+            btnEdit.Region = new Region(GetRoundRectangle(btnEdit.ClientRectangle, 25)); // Bo góc
+            btnEdit.MouseEnter += (sender, e) =>
+            {
+                btnEdit.BackColor = Color.FromArgb(28, 136, 43); // Màu xanh lá đậm khi hover
+            };
+            btnEdit.MouseLeave += (sender, e) =>
+            {
+                btnEdit.BackColor = Color.FromArgb(40, 167, 69); // Màu xanh lá ban đầu
+            };
+            btnEdit.Click += BtnUpdateCategory_Click;
+
+            // Button Delete
+            btnDelete = new Button
+            {
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(220, 53, 69), // Màu nền đỏ
+                ForeColor = Color.White, // Màu chữ trắng
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                FlatAppearance = { BorderSize = 0 },
+                Cursor = Cursors.Hand,
+                Text = "Xóa",
+                Location = new Point(710, 110),
+                Size = new Size(80, 30)
+            };
+            btnDelete.Region = new Region(GetRoundRectangle(btnDelete.ClientRectangle, 25)); // Bo góc
+            btnDelete.MouseEnter += (sender, e) =>
+            {
+                btnDelete.BackColor = Color.FromArgb(204, 40, 48); // Màu đỏ đậm khi hover
+            };
+            btnDelete.MouseLeave += (sender, e) =>
+            {
+                btnDelete.BackColor = Color.FromArgb(220, 53, 69); // Màu đỏ ban đầu
+            };
+            btnDelete.Click += BtnDeleteCategory_Click;
+
+            // Button Refresh
+            btnRefresh = new Button
+            {
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(108, 117, 125), // Màu nền xám
+                ForeColor = Color.White, // Màu chữ trắng
+                Font = new Font("Segoe UI", 10F),
+                FlatAppearance = { BorderSize = 0 },
+                Cursor = Cursors.Hand,
+                Text = "Làm mới",
+                Location = new Point(800, 110),
+                Size = new Size(80, 30)
+            };
+            btnRefresh.Region = new Region(GetRoundRectangle(btnRefresh.ClientRectangle, 25)); // Bo góc
+            btnRefresh.MouseEnter += (sender, e) =>
+            {
+                btnRefresh.BackColor = Color.FromArgb(96, 103, 110); // Màu xám đậm khi hover
+            };
+            btnRefresh.MouseLeave += (sender, e) =>
+            {
+                btnRefresh.BackColor = Color.FromArgb(108, 117, 125); // Màu xám ban đầu
+            };
             btnRefresh.Click += btnRefresh_Click;
 
             // Configure the products ComboBox
@@ -198,7 +237,7 @@ namespace FASCloset.Forms
             this.btnViewProductsByCategory.Font = new Font("Segoe UI", 12, FontStyle.Bold); // Font chữ đẹp
             this.btnViewProductsByCategory.Cursor = Cursors.Hand; // Đổi con trỏ khi hover
 
-            this.btnViewProductsByCategory.Region = new Region(GetRoundRectangle(btnViewProductsByCategory.ClientRectangle, 20)); // Bo góc với bán kính 15
+            this.btnViewProductsByCategory.Region = new Region(GetRoundRectangle(btnViewProductsByCategory.ClientRectangle, 25)); // Bo góc với bán kính 15
 
 
             // Sự kiện hover để thay đổi màu khi di chuột vào
